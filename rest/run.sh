@@ -460,7 +460,8 @@ elif [ ! -z "${API_VERSION}" ]; then
     TESTS=`cd tests; /bin/ls v${API_VERSION}/*.yaml`
     run_tests "${TESTS}"
 else
-    TESTS=`cd tests; /bin/ls {v1,v2}/*.yaml`
+    #TESTS=`cd tests; /bin/ls {v1,v2}/*.yaml`
+    TESTS=`cd tests; /bin/ls v2/*.yaml`
     run_tests "${TESTS}"
 fi
 
