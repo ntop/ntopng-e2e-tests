@@ -240,7 +240,7 @@ ntopng_run() {
     fi
 
     if [ ! -z "${4}" ]; then
-        echo "--test-script-post=bash ${2} >> ${5}" >> ${NTOPNG_TEST_CONF}
+        echo "--test-script-post=bash ${4} >> ${5}" >> ${NTOPNG_TEST_CONF}
     fi
 
     if [ ! -z "${7}" ]; then
