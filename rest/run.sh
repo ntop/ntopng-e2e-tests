@@ -215,11 +215,12 @@ EOF
 # Params:
 # $1 - Pcap files (Optional)
 # $2 - Pre Script (Optional) 
-# $3 - Post Script (Optional) 
-# $4 - Script Output file
-# $5 - ntopng Output file
-# $6 - Local networks
-# $7 - Extra options file
+# $3 - Runtime Script (Optional) 
+# $4 - Post Script (Optional) 
+# $5 - Script Output file
+# $6 - ntopng Output file
+# $7 - Local networks
+# $8 - Extra options file
 #
 ntopng_run() {
     if [ ! -z "${1}" ]; then
@@ -231,30 +232,34 @@ ntopng_run() {
     fi
 
     if [ ! -z "${2}" ]; then
-        echo "--test-script-pre=bash ${2} >> ${4}" >> ${NTOPNG_TEST_CONF}
+        echo "--test-script-pre=bash ${2} >> ${5}" >> ${NTOPNG_TEST_CONF}
     fi
 
     if [ ! -z "${3}" ]; then
-        echo "--test-script=bash ${3} >> ${4}" >> ${NTOPNG_TEST_CONF}
+        echo "--test-script=bash ${3} >> ${5}" >> ${NTOPNG_TEST_CONF}
     fi
 
-    if [ ! -z "${6}" ]; then
-        echo "-m=${6}" >> ${NTOPNG_TEST_CONF}
+    if [ ! -z "${4}" ]; then
+        echo "--test-script-post=bash ${2} >> ${5}" >> ${NTOPNG_TEST_CONF}
     fi
 
     if [ ! -z "${7}" ]; then
-        cat "${7}" >> ${NTOPNG_TEST_CONF}
+        echo "-m=${7}" >> ${NTOPNG_TEST_CONF}
+    fi
+
+    if [ ! -z "${8}" ]; then
+        cat "${8}" >> ${NTOPNG_TEST_CONF}
     fi
 
     # Start the test
 
     cd ${NTOPNG_ROOT};
 
-    touch ${5}
+    touch ${6}
     if [ "${DEBUG_LEVEL}" -gt "0" ]; then
         ${NTOPNG_BIN} ${NTOPNG_TEST_CONF}
     else
-        ${NTOPNG_BIN} ${NTOPNG_TEST_CONF} > ${5} 2>&1
+        ${NTOPNG_BIN} ${NTOPNG_TEST_CONF} > ${6} 2>&1
     fi
 
     cd ${TESTS_PATH}
@@ -366,6 +371,7 @@ run_tests() {
         OUT_JSON=${TMP_FILE}.json
         OUT_DIFF=${TMP_FILE}.diff
         PRE_TEST=${TMP_FILE}.pre
+        RUNTIME_TEST=${TMP_FILE}.runtime
         POST_TEST=${TMP_FILE}.post
         IGNORE=${TMP_FILE}.ignore
         EXTRA_OPTIONS=${TMP_FILE}.opt
@@ -376,12 +382,13 @@ run_tests() {
         PCAP=`cat tests/${TEST}.yaml | shyaml -q get-value input`
         LOCALNET=`cat tests/${TEST}.yaml | shyaml -q get-value localnet`
         cat tests/${TEST}.yaml | shyaml -q get-value pre > ${PRE_TEST}
+        cat tests/${TEST}.yaml | shyaml -q get-value runtime > ${RUNTIME_TEST}
         cat tests/${TEST}.yaml | shyaml -q get-value post > ${POST_TEST}
         cat tests/${TEST}.yaml | shyaml -q get-values ignore > ${IGNORE}
 	cat tests/${TEST}.yaml | shyaml -q get-values options > ${EXTRA_OPTIONS}
 
         # Run the test
-        ntopng_run "${PCAP}" "${PRE_TEST}" "${POST_TEST}" "${SCRIPT_OUT}" "${NTOPNG_LOG}" "${LOCALNET}" "${EXTRA_OPTIONS}"
+        ntopng_run "${PCAP}" "${PRE_TEST}" "${RUNTIME_TEST}" "${POST_TEST}" "${SCRIPT_OUT}" "${NTOPNG_LOG}" "${LOCALNET}" "${EXTRA_OPTIONS}"
 
         # Filter/process ntopng output
         filter_ntopng_log "${NTOPNG_LOG}" "${NTOPNG_FILTERED_LOG}"
@@ -442,7 +449,7 @@ run_tests() {
 
         fi
 
-        /bin/rm -f ${TMP_FILE} ${SCRIPT_OUT} ${NTOPNG_LOG} ${NTOPNG_FILTERED_LOG} ${OUT_DIFF} ${OUT_JSON} ${PRE_TEST} ${POST_TEST} ${IGNORE} ${FORMATTED_OLD_OUT} ${FORMATTED_NEW_OUT}
+        /bin/rm -f ${TMP_FILE} ${SCRIPT_OUT} ${NTOPNG_LOG} ${NTOPNG_FILTERED_LOG} ${OUT_DIFF} ${OUT_JSON} ${PRE_TEST} "${RUNTIME_TEST}" ${POST_TEST} ${IGNORE} ${FORMATTED_OLD_OUT} ${FORMATTED_NEW_OUT}
     done
 
     if [ "${NUM_SUCCESS}" == "${NUM_TESTS}" ]; then
