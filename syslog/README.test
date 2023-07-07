@@ -13,10 +13,14 @@ Example for the impatient:
 
   ntopng -i syslog://127.0.0.1:9999
 
-As second step, use netcat to replay the log to the configured
-port of the ntopng host:
+As second step, use run.sh to replay the log to the configured
+port of the ntopng host (netcat is required):
 
-  cat suricata.log | netcat 127.0.0.1 9999
+  ./run.sh <ntopng IP> <ntopng syslog port>
+
+Example:
+
+  ./run.sh 127.0.0.1 9999
 
 The sample log file contains both flows and alerts (e.g. an alert
 about a trojan AlienSpy RAT is present).
