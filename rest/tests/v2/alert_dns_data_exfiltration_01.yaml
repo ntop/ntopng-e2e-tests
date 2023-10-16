@@ -12,7 +12,8 @@ ignore:
   - num_records_processed
 
 pre: |
-  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "enable"}' http://localhost:3333/lua/toggle_all_checks.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "ndpi_dns_suspicious_traffic", "action": "enable"}' http://localhost:3333/lua/toggle_check.lua
 
 runtime: |
-  curl -s -u admin:admin  -H "Content-Type: application/json" -d '{"ifid": 0}' http://localhost:3333/lua/rest/v2/get/flow/alert/list.lua
+  curl -s -u admin:admin  -H "Content-Type: application/json" -d '{"ifid": 0, "status": "any"}' http://localhost:3333/lua/rest/v2/get/flow/alert/list.lua
