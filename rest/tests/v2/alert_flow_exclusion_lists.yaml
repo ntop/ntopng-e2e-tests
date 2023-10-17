@@ -12,13 +12,11 @@ ignore:
   - num_records_processed
 
 pre: |
-  # Enable all user scripts
-  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "enable"}' http://localhost:3333/lua/toggle_all_checks.lua
+  # Enable related user scripts only
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "tls_certificate_expired", "action": "enable"}' http://localhost:3333/lua/toggle_check.lua
 
   # Add some filters to test alert exclusion lists
-
-  # Exclude a Suspicious TCP SYN probing alerts for 2.23.155.233
-  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"alert_addr": "2.23.155.233","subdir":"flow","flow_alert_key":"17"}' http://localhost:3333/lua/pro/rest/v2/add/alert/exclusion.lua
 
   # Exclude TLS Certificate Expired alerts for 31.13.86.36
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"alert_addr": "31.13.86.36","subdir":"flow","flow_alert_key":"22"}' http://localhost:3333/lua/pro/rest/v2/add/alert/exclusion.lua
