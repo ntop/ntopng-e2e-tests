@@ -12,7 +12,7 @@ ignore:
 
 pre: |
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua
-  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "ndpi_dns_suspicious_traffic", "action": "enable"}' http://localhost:3333/lua/toggle_check.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "ndpi_dns_suspicious_traffic"}' http://localhost:3333/lua/rest/v2/enable/check.lua
 
   # Add a filter to avoid the invalid-query alert to be triggered. The filter specifies fields matching the flow alert so that a match will prevent the alert from being generated
   # Exclude flow_alert_dns_data_exfiltration for 4.2.2.4

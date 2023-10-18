@@ -14,7 +14,7 @@ ignore:
 pre: |
   # Enable related user scripts only
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua
-  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "tls_certificate_expired", "action": "enable"}' http://localhost:3333/lua/toggle_check.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "tls_certificate_expired"}' http://localhost:3333/lua/rest/v2/enable/check.lua
 
   # Add some filters to test alert exclusion lists
 
