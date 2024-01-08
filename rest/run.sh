@@ -340,6 +340,7 @@ run_tests() {
     TESTS="${1}"
     TESTS_ARR=( $TESTS )
     NUM_TESTS=${#TESTS_ARR[@]}
+    NUM_RAN=0
     NUM_SUCCESS=0
 
     # Check Internet connectivity
@@ -389,8 +390,13 @@ run_tests() {
         cat tests/${TEST}.yaml | shyaml -q get-values options > ${EXTRA_OPTIONS}
 
         if [ ! -z "$REQUIRES" ]; then
-            echo "[i] This test requires ntopng Pro/Enterprise"
+            if [ ! -d ../../../pro ]; then
+                echo "[i] This test requires ntopng Pro/Enterprise (skip)"
+                continue
+            fi
         fi
+
+        ((NUM_RAN=NUM_RAN+1))
 
         # Run the test
         ntopng_run "${PCAP}" "${PRE_TEST}" "${RUNTIME_TEST}" "${POST_TEST}" "${SCRIPT_OUT}" "${NTOPNG_LOG}" "${LOCALNET}" "${EXTRA_OPTIONS}"
@@ -457,10 +463,10 @@ run_tests() {
         /bin/rm -f ${TMP_FILE} ${SCRIPT_OUT} ${NTOPNG_LOG} ${NTOPNG_FILTERED_LOG} ${OUT_DIFF} ${OUT_JSON} ${PRE_TEST} "${RUNTIME_TEST}" ${POST_TEST} ${IGNORE} ${FORMATTED_OLD_OUT} ${FORMATTED_NEW_OUT}
     done
 
-    if [ "${NUM_SUCCESS}" == "${NUM_TESTS}" ]; then
+    if [ "${NUM_SUCCESS}" == "${NUM_RAN}" ]; then
         send_success "ntopng TESTS completed successfully" "All tests completed successfully with the expected output."
     else
-        send_error "ntopng TESTS completed with errors" "${NUM_SUCCESS} out of ${NUM_TESTS} completed successfully." ""
+        send_error "ntopng TESTS completed with errors" "${NUM_SUCCESS} out of ${NUM_RAN} completed successfully." ""
     fi
 
     #ntopng_cleanup
