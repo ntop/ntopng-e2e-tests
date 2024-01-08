@@ -3,6 +3,8 @@ input: synscan.pcap
 options:
   - -F="clickhouse;127.0.0.1;ntopngtests;default;"
 
+requires: pro
+
 ignore:
   - date
   - tstamp

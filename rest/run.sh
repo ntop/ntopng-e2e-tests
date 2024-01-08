@@ -57,42 +57,42 @@ function usage {
 for i in "$@"
 do
     case $i in
-	-f=*|--mail-from=*)
-	    MAIL_FROM="${i#*=}"
-	    ;;
+        -f=*|--mail-from=*)
+            MAIL_FROM="${i#*=}"
+            ;;
 
-	-t=*|--mail-to=*)
-	    MAIL_TO="${i#*=}"
-	    ;;
+        -t=*|--mail-to=*)
+            MAIL_TO="${i#*=}"
+            ;;
 
-	-d=*|--discord-webhook=*)
-	    DISCORD_WEBHOOK="${i#*=}"
-	    ;;
+        -d=*|--discord-webhook=*)
+            DISCORD_WEBHOOK="${i#*=}"
+            ;;
 
-	-y=*|--test=*)
-	    TEST_NAME="${i#*=}"
-	    ;;
+        -y=*|--test=*)
+            TEST_NAME="${i#*=}"
+            ;;
 
-	-v=*|--api-version=*)
-	    API_VERSION="${i#*=}"
-	    ;;
+        -v=*|--api-version=*)
+            API_VERSION="${i#*=}"
+            ;;
 
-	-D=*|--debug=*)
-	    DEBUG_LEVEL=${i#*=}
-	    ;;
+        -D=*|--debug=*)
+            DEBUG_LEVEL=${i#*=}
+            ;;
 
-	-K|--keep-running)
-	    KEEP_RUNNING=1
-	    ;;
+        -K|--keep-running)
+            KEEP_RUNNING=1
+            ;;
 
-	-h|--help)
-	    usage
-	    exit 0
-	    ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
 
-	*)
-	    # unknown option
-	    ;;
+        *)
+            # unknown option
+            ;;
     esac
 done
 
@@ -164,7 +164,7 @@ check_connectivity() {
         echo "[i] Connectivity ok"
     else
         send_error "Unable to run tests" "No connectivity, unable to run the tests" "${CURL_LOG}"
-	exit 1
+        exit 1
     fi
 }
 
@@ -347,14 +347,14 @@ run_tests() {
 
     if [ ! -f "${NTOPNG_ROOT}/ntopng" ]; then
         send_error "Unable to run tests" "ntopng binary not found, unable to run the tests"
-	exit 1
+        exit 1
     fi
 
     I=1
     for T in ${TESTS}; do 
         TEST=${T%.yaml}
 
-	echo "[>] Running test '${TEST}' (${I}/${NUM_TESTS})"
+        echo "[>] Running test '${TEST}' (${I}/${NUM_TESTS})"
         ((I=I+1))
 
         # Cleanup ntopng
@@ -381,11 +381,16 @@ run_tests() {
         # Parsing YAML
         PCAP=`cat tests/${TEST}.yaml | shyaml -q get-value input`
         LOCALNET=`cat tests/${TEST}.yaml | shyaml -q get-value localnet`
+        REQUIRES=`cat tests/${TEST}.yaml | shyaml -q get-value requires`
         cat tests/${TEST}.yaml | shyaml -q get-value pre > ${PRE_TEST}
         cat tests/${TEST}.yaml | shyaml -q get-value runtime > ${RUNTIME_TEST}
         cat tests/${TEST}.yaml | shyaml -q get-value post > ${POST_TEST}
         cat tests/${TEST}.yaml | shyaml -q get-values ignore > ${IGNORE}
-	cat tests/${TEST}.yaml | shyaml -q get-values options > ${EXTRA_OPTIONS}
+        cat tests/${TEST}.yaml | shyaml -q get-values options > ${EXTRA_OPTIONS}
+
+        if [ ! -z "$REQUIRES" ]; then
+            echo "[i] This test requires ntopng Pro/Enterprise"
+        fi
 
         # Run the test
         ntopng_run "${PCAP}" "${PRE_TEST}" "${RUNTIME_TEST}" "${POST_TEST}" "${SCRIPT_OUT}" "${NTOPNG_LOG}" "${LOCALNET}" "${EXTRA_OPTIONS}"
@@ -403,8 +408,8 @@ run_tests() {
 
         elif [ ! -s "${SCRIPT_OUT}" ]; then
 
-	    send_error "Test Failure" "No output produced by the test '${TEST}'"
-	    RC=1
+            send_error "Test Failure" "No output produced by the test '${TEST}'"
+            RC=1
 
         elif [ ! -f result/${TEST}.out ]; then
             ((NUM_SUCCESS=NUM_SUCCESS+1))
