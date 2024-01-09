@@ -351,6 +351,13 @@ run_tests() {
         exit 1
     fi
 
+    RESULTS_FOLDER=result
+    CONFLICTS_FOLDER=conflicts
+    if [ ! -d ${NTOPNG_ROOT}/pro ]; then
+        RESULTS_FOLDER=result-community
+        CONFLICTS_FOLDER=conflicts-community
+    fi
+
     I=1
     for T in ${TESTS}; do 
         TEST=${T%.yaml}
@@ -390,7 +397,7 @@ run_tests() {
         cat tests/${TEST}.yaml | shyaml -q get-values options > ${EXTRA_OPTIONS}
 
         if [ ! -z "$REQUIRES" ]; then
-            if [ ! -d ../../../pro ]; then
+            if [ ! -d ${NTOPNG_ROOT}/pro ]; then
                 echo "[i] This test requires ntopng Pro/Enterprise (skip)"
                 continue
             fi
@@ -417,12 +424,12 @@ run_tests() {
             send_error "Test Failure" "No output produced by the test '${TEST}'"
             RC=1
 
-        elif [ ! -f result/${TEST}.out ]; then
+        elif [ ! -f ${RESULTS_FOLDER}/${TEST}.out ]; then
             ((NUM_SUCCESS=NUM_SUCCESS+1))
             echo "[i] SAVING OUTPUT"
 
             # Output not present, setting current output as expected
-            cat ${SCRIPT_OUT} | jq -cS . > result/${TEST}.out
+            cat ${SCRIPT_OUT} | jq -cS . > ${RESULTS_FOLDER}/${TEST}.out
 
         else
 
@@ -433,7 +440,7 @@ run_tests() {
             # https://stackoverflow.com/questions/31930041/using-jq-or-alternative-command-line-tools-to-compare-json-files/31933234#31933234
            
             # Formatting JSON
-            jq -S 'def post_recurse(f): def r: (f | select(. != null) | r), .; r; def post_recurse: post_recurse(.[]?); (. | (post_recurse | arrays) |= sort)' "result/${TEST}.out" > ${FORMATTED_OLD_OUT}
+            jq -S 'def post_recurse(f): def r: (f | select(. != null) | r), .; r; def post_recurse: post_recurse(.[]?); (. | (post_recurse | arrays) |= sort)' "${RESULTS_FOLDER}/${TEST}.out" > ${FORMATTED_OLD_OUT}
             jq -S 'def post_recurse(f): def r: (f | select(. != null) | r), .; r; def post_recurse: post_recurse(.[]?); (. | (post_recurse | arrays) |= sort)' "${OUT_JSON}" > ${FORMATTED_NEW_OUT}
             
             # Computing diff between old and new JSON with sorting
@@ -445,16 +452,16 @@ run_tests() {
                 echo "[i] OK"
 
                 # Remove old conflicts if any
-                rm -f conflicts/${TEST}.out
+                rm -f ${CONFLICTS_FOLDER}/${TEST}.out
             else
                 # Computing diff between old and new JSON (unsorted)
                 diff --side-by-side --suppress-common-lines --ignore-all-space <(cat ${FORMATTED_OLD_OUT}) <(cat ${FORMATTED_NEW_OUT}) >"${OUT_DIFF}"
                 filter_json "${OUT_DIFF}" "${IGNORE}"
 
                 # Store the new output under conflicts for debugging
-                cp ${OUT_JSON} conflicts/${TEST}.out
+                cp ${OUT_JSON} ${CONFLICTS_FOLDER}/${TEST}.out
 
-                send_error "Test Failure" "Unexpected output from the test '${TEST}'. Please check conflicts/${TEST}.out" "${OUT_DIFF}"
+                send_error "Test Failure" "Unexpected output from the test '${TEST}'. Please check ${CONFLICTS_FOLDER}/${TEST}.out" "${OUT_DIFF}"
                 RC=1
             fi
 
