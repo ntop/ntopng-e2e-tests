@@ -7,7 +7,8 @@ package.path = dirs.installdir .. "/scripts/lua/modules/?.lua;" .. package.path
 package.path = dirs.installdir .. "/pro/scripts/lua/modules/?.lua;" .. package.path
 
 local page_utils = require "page_utils"
-require "lua_utils"
+require "check_redis_prefs"
+require "locales_utils"
 
 sendHTTPContentTypeHeader('text/html')
 
