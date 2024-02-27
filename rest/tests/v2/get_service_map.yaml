@@ -1,0 +1,9 @@
+input: lateral_movement.pcap
+
+ignore:
+  - value
+
+pre: |
+
+runtime: |
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "unicast_only": false, "service_status": 3, "network": -1, "page":"table", "view":"standard", "map":"service_map", "asset_family":"ntp","draw":2, "order":"desc","start":0,"length":10,"sort":"num_uses"  }' http://localhost:3333/lua/pro/enterprise/get_map.lua
