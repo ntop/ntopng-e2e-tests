@@ -43,7 +43,7 @@ function usage {
     echo "Usage: run.sh [-y=<test>] [-f=<mail from>] [-t=<mail to>] [-d=<discord webhook>] [-D=<debug level>] [-K]"
     echo ""
     echo "Options:"
-    echo "[-y|--test]=<test>                | Run a selected test"
+    echo "[-y|--test]=<test>                | Run a selected test (e.g. -y=v2/get_host_active_01)"
     echo "[-v|--api-version]=<version>      | Run a test for the specified Rest API Version (1|2)"
     echo "[-f|--mail-from]=<address>        | Send notifications from the specified email address"
     echo "[-t|--mail-to]=<address>          | Send notifications to the specified email address"
