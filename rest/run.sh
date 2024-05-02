@@ -101,6 +101,11 @@ if ! command -v shyaml &> /dev/null; then
     exit 0
 fi
 
+if ! command -v curl &> /dev/null; then
+    echo "Please install curl"
+    exit 0
+fi
+
 if ! command -v jq &> /dev/null; then
     echo "Please install jq"
     exit 0
