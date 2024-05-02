@@ -97,7 +97,7 @@ do
 done
 
 if ! command -v shyaml &> /dev/null; then
-    echo "Please install shyaml"
+    echo "Please install shyaml (pip install shyaml)"
     exit 0
 fi
 
