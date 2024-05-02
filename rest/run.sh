@@ -15,6 +15,8 @@ TESTS_PATH="${PWD}"
 NTOPNG_ROOT="../../.."
 NTOPNG_BIN="./ntopng"
 
+RUN_FROM_PACKAGES=false
+
 NTOPNG_TEST_DATADIR="${TESTS_PATH}/data"
 NTOPNG_TEST_CONF="${NTOPNG_TEST_DATADIR}/ntopng.conf"
 NTOPNG_TEST_CUSTOM_PROTOS="${NTOPNG_TEST_DATADIR}/protos.txt"
@@ -32,6 +34,11 @@ API_VERSION=""
 
 DEBUG_LEVEL=0
 KEEP_RUNNING=0
+
+if [ "${RUN_FROM_PACKAGES}" = false ]; then
+    NTOPNG_ROOT="."
+    NTOPNG_BIN="ntopng"
+fi
 
 NOTIFICATIONS_ON=false
 if [ -d packager ]; then
@@ -351,16 +358,20 @@ run_tests() {
     # Check Internet connectivity
     check_connectivity
 
-    if [ ! -f "${NTOPNG_ROOT}/ntopng" ]; then
-        send_error "Unable to run tests" "ntopng binary not found, unable to run the tests"
-        exit 1
+    if [ "${RUN_FROM_PACKAGES}" = false ]; then
+        if [ ! -f "${NTOPNG_ROOT}/ntopng" ]; then
+            send_error "Unable to run tests" "ntopng binary not found, unable to run the tests"
+            exit 1
+        fi
     fi
 
     RESULTS_FOLDER=result
     CONFLICTS_FOLDER=conflicts
-    if [ ! -d ${NTOPNG_ROOT}/pro ]; then
-        RESULTS_FOLDER=result-community
-        CONFLICTS_FOLDER=conflicts-community
+    if [ "${RUN_FROM_PACKAGES}" = false ]; then
+        if [ ! -d ${NTOPNG_ROOT}/pro ]; then
+            RESULTS_FOLDER=result-community
+            CONFLICTS_FOLDER=conflicts-community
+        fi
     fi
 
     I=1
