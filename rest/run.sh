@@ -178,6 +178,10 @@ check_connectivity() {
         send_error "Unable to run tests" "No connectivity, unable to run the tests" "${CURL_LOG}"
         exit 1
     fi
+
+    if [ "${KEEP_RUNNING}" -eq "1" ]; then
+        echo "[i] ntopng is reachable on port ${NTOPNG_TEST_HTTP_PORT}"
+    fi
 }
 
 ntopng_cleanup() {
