@@ -35,7 +35,7 @@ API_VERSION=""
 DEBUG_LEVEL=0
 KEEP_RUNNING=0
 
-if [ "${RUN_FROM_PACKAGES}" = false ]; then
+if [ "${RUN_FROM_PACKAGES}" = true ]; then
     NTOPNG_ROOT="."
     NTOPNG_BIN="ntopng"
 fi
