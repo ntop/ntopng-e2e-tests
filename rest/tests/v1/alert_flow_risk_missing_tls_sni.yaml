@@ -1,5 +1,7 @@
 input: tls_cipher_suites.pcap
 
+localnet: 10.206.0.0/16
+
 ignore:
   - date
   - tstamp
