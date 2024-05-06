@@ -1,5 +1,7 @@
 input: bad-dns-traffic.pcap
 
+localnet: 192.168.43.0/24
+
 ignore:
   - date
   - tstamp
