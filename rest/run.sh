@@ -35,11 +35,6 @@ API_VERSION=""
 DEBUG_LEVEL=0
 KEEP_RUNNING=0
 
-if [ "${RUN_FROM_PACKAGES}" = true ]; then
-    NTOPNG_ROOT="."
-    NTOPNG_BIN="ntopng"
-fi
-
 NOTIFICATIONS_ON=false
 if [ -d packager ]; then
     source packager/utils/alerts.sh
@@ -55,6 +50,7 @@ function usage {
     echo "[-f|--mail-from]=<address>        | Send notifications from the specified email address"
     echo "[-t|--mail-to]=<address>          | Send notifications to the specified email address"
     echo "[-d|--discord-webhook]=<endpoint> | Send notification to the specified Discord endpoint"
+    echo "[-p|--use-package]                | Run ntopng from binary package"
     echo "[-D|--debug]=<level>              | Set the debug level (0 - default, 1 - verbose, 2 - gdb)"
     echo "[-K|--keep-running]               | Keep ntopng running after completing the test (with -y)"
     echo "[-h|--help]                       | Print this help"
@@ -79,7 +75,11 @@ do
         -y=*|--test=*)
             TEST_NAME="${i#*=}"
             ;;
-
+            
+        -p|--use-package)
+            RUN_FROM_PACKAGES=true
+            ;;
+            
         -v=*|--api-version=*)
             API_VERSION="${i#*=}"
             ;;
@@ -361,6 +361,11 @@ run_tests() {
 
     # Check Internet connectivity
     check_connectivity
+
+    if [ "${RUN_FROM_PACKAGES}" = true ]; then
+    NTOPNG_ROOT="."
+    NTOPNG_BIN="ntopng"
+    fi
 
     if [ "${RUN_FROM_PACKAGES}" = false ]; then
         if [ ! -f "${NTOPNG_ROOT}/ntopng" ]; then
