@@ -15,8 +15,6 @@ TESTS_PATH="${PWD}"
 NTOPNG_ROOT="../../.."
 NTOPNG_BIN="./ntopng"
 
-RUN_FROM_PACKAGES=false
-
 NTOPNG_TEST_DATADIR="${TESTS_PATH}/data"
 NTOPNG_TEST_CONF="${NTOPNG_TEST_DATADIR}/ntopng.conf"
 NTOPNG_TEST_CUSTOM_PROTOS="${NTOPNG_TEST_DATADIR}/protos.txt"
@@ -32,6 +30,7 @@ DISCORD_WEBHOOK=""
 TEST_NAME=""
 API_VERSION=""
 
+RUN_FROM_PACKAGES=false
 DEBUG_LEVEL=0
 KEEP_RUNNING=0
 
@@ -50,7 +49,7 @@ function usage {
     echo "[-f|--mail-from]=<address>        | Send notifications from the specified email address"
     echo "[-t|--mail-to]=<address>          | Send notifications to the specified email address"
     echo "[-d|--discord-webhook]=<endpoint> | Send notification to the specified Discord endpoint"
-    echo "[-p|--use-package]                | Run ntopng from binary package"
+    echo "[-p|--use-package]		    | Run ntopng from package"
     echo "[-D|--debug]=<level>              | Set the debug level (0 - default, 1 - verbose, 2 - gdb)"
     echo "[-K|--keep-running]               | Keep ntopng running after completing the test (with -y)"
     echo "[-h|--help]                       | Print this help"
@@ -75,11 +74,11 @@ do
         -y=*|--test=*)
             TEST_NAME="${i#*=}"
             ;;
-            
-        -p|--use-package)
-            RUN_FROM_PACKAGES=true
-            ;;
-            
+
+	-p|--use-package)
+	    RUN_FROM_PACKAGES=true
+	    ;;
+
         -v=*|--api-version=*)
             API_VERSION="${i#*=}"
             ;;
@@ -344,15 +343,16 @@ filter_json() {
     cat ${TMP} > ${1}
     /bin/rm -f ${TMP}
 }
+
 #
 # Filter test output (CSV) to remove fields that can change
 # Params:
 # $1 - CSV file
 # $2 - File with items to be ignores
 #
-
 filter_csv() {
     TMP=${1}.1
+    #cp ${1} ${TMP}
 
     # Filter out information unnecessary for comparison
     if [ -s "${2}" ]; then 
@@ -366,6 +366,7 @@ filter_csv() {
 
     /bin/rm -f ${TMP}
 }
+
 RC=0
 
 #
@@ -383,12 +384,14 @@ run_tests() {
     # Check Internet connectivity
     check_connectivity
 
+    # Use binary package if -p is set
     if [ "${RUN_FROM_PACKAGES}" = true ]; then
-    NTOPNG_ROOT="."
-    NTOPNG_BIN="ntopng"
+        NTOPNG_ROOT="."
+        NTOPNG_BIN="ntopng"
     fi
 
     if [ "${RUN_FROM_PACKAGES}" = false ]; then
+	echo "non ok"
         if [ ! -f "${NTOPNG_ROOT}/ntopng" ]; then
             send_error "Unable to run tests" "ntopng binary not found, unable to run the tests"
             exit 1
@@ -422,7 +425,7 @@ run_tests() {
         NTOPNG_LOG=${TMP_FILE}.ntopng
         NTOPNG_FILTERED_LOG=${TMP_FILE}.filtered
         SCRIPT_OUT=${TMP_FILE}.out
-        OUT_CSV=${TMP_FILE}.csv
+	    OUT_CSV=${TMP_FILE}.csv
         OUT_JSON=${TMP_FILE}.json
         OUT_DIFF=${TMP_FILE}.diff
         PRE_TEST=${TMP_FILE}.pre
@@ -436,18 +439,18 @@ run_tests() {
         # Parsing YAML
         PCAP=`cat tests/${TEST}.yaml | shyaml -q get-value input`
         LOCALNET=`cat tests/${TEST}.yaml | shyaml -q get-value localnet`
-        FORMAT=`cat tests/${TEST}.yaml | shyaml -q get-value format`
+	    FORMAT=`cat tests/${TEST}.yaml | shyaml -q get-value format`
         REQUIRES=`cat tests/${TEST}.yaml | shyaml -q get-value requires`
         cat tests/${TEST}.yaml | shyaml -q get-value pre > ${PRE_TEST}
         cat tests/${TEST}.yaml | shyaml -q get-value runtime > ${RUNTIME_TEST}
         cat tests/${TEST}.yaml | shyaml -q get-value post > ${POST_TEST}
         cat tests/${TEST}.yaml | shyaml -q get-values ignore > ${IGNORE}
         cat tests/${TEST}.yaml | shyaml -q get-values options > ${EXTRA_OPTIONS}
-
+	
 	    if [ -z "${FORMAT}" ] || [ $FORMAT == "None" ]; then
-	        FORMAT="json"
+		    FORMAT="json"
 	    fi
-
+	
         if [ ! -z "$REQUIRES" ]; then
             if [ ! -d ${NTOPNG_ROOT}/pro ]; then
                 echo "[i] This test requires ntopng Pro/Enterprise (skip)"
@@ -479,54 +482,55 @@ run_tests() {
         elif [ ! -f ${RESULTS_FOLDER}/${TEST}.out ]; then
             ((NUM_SUCCESS=NUM_SUCCESS+1))
             echo "[i] SAVING OUTPUT"
-
             # Output not present, setting current output as expected
-	        if [ $FORMAT == "json" ]; then
-                cat ${SCRIPT_OUT} | jq -cS . > ${RESULTS_FOLDER}/${TEST}.out
 
-    	    elif [ $FORMAT == "csv" ]; then
-		        cat ${SCRIPT_OUT} > ${RESULTS_FOLDER}/${TEST}.out
-	        fi
+	    if [ $FORMAT == "json" ]; then
+
+            cat ${SCRIPT_OUT} | jq -cS . > ${RESULTS_FOLDER}/${TEST}.out
+
+    	elif [ $FORMAT == "csv" ]; then
+		    cat ${SCRIPT_OUT} > ${RESULTS_FOLDER}/${TEST}.out
+	    fi
+
         else
+	    
+	    if [ $FORMAT == "json" ]; then
 
-	        if [ $FORMAT == "json" ]; then
+            # NOTE: using jq as sometimes the json is sorted differently
+        	cat ${SCRIPT_OUT} | jq -cS . > ${OUT_JSON}
 
-                # NOTE: using jq as sometimes the json is sorted differently
-        	    cat ${SCRIPT_OUT} | jq -cS . > ${OUT_JSON}
-
-        	    # Comparison of two JSONs in bash, see
-        	    # https://stackoverflow.com/questions/31930041/using-jq-or-alternative-command-line-tools-to-compare-json-files/31933234#31933234
+        	# Comparison of two JSONs in bash, see
+        	# https://stackoverflow.com/questions/31930041/using-jq-or-alternative-command-line-tools-to-compare-json-files/31933234#31933234
            
-                # Formatting JSON
-                jq -S 'def post_recurse(f): def r: (f | select(. != null) | r), .; r; def post_recurse: post_recurse(.[]?); (. | (post_recurse | arrays) |= sort)' "${RESULTS_FOLDER}/${TEST}.out" > ${FORMATTED_OLD_OUT}
-        	    jq -S 'def post_recurse(f): def r: (f | select(. != null) | r), .; r; def post_recurse: post_recurse(.[]?); (. | (post_recurse | arrays) |= sort)' "${OUT_JSON}" > ${FORMATTED_NEW_OUT}
+            # Formatting JSON
+            jq -S 'def post_recurse(f): def r: (f | select(. != null) | r), .; r; def post_recurse: post_recurse(.[]?); (. | (post_recurse | arrays) |= sort)' "${RESULTS_FOLDER}/${TEST}.out" > ${FORMATTED_OLD_OUT}
+        	jq -S 'def post_recurse(f): def r: (f | select(. != null) | r), .; r; def post_recurse: post_recurse(.[]?); (. | (post_recurse | arrays) |= sort)' "${OUT_JSON}" > ${FORMATTED_NEW_OUT}
             
-        	    # Computing diff between old and new JSON with sorting
-        	    diff --side-by-side --suppress-common-lines --ignore-all-space <(cat ${FORMATTED_OLD_OUT} | sort) <(cat ${FORMATTED_NEW_OUT} | sort) >"${OUT_DIFF}"
-                filter_json "${OUT_DIFF}" "${IGNORE}"
+        	# Computing diff between old and new JSON with sorting
+        	diff --side-by-side --suppress-common-lines --ignore-all-space <(cat ${FORMATTED_OLD_OUT} | sort) <(cat ${FORMATTED_NEW_OUT} | sort) >"${OUT_DIFF}"
+            filter_json "${OUT_DIFF}" "${IGNORE}"
 	
-	         elif [ $FORMAT == "csv" ]; then
+	     elif [ $FORMAT == "csv" ]; then
 
-		        cat ${SCRIPT_OUT} > ${OUT_CSV}
-                TEMP1=${TMP_FILE}.1
-                TEMP2=${TMP_FILE}.2
-                cat ${RESULTS_FOLDER}/${TEST}.out > ${TEMP1}
-                cat ${OUT_CSV} > ${TEMP2}
-                # Computing diff between old and new CSV with sorting
-                filter_csv "${TEMP1}" "${IGNORE}"
-                filter_csv "${TEMP2}" "${IGNORE}"
-		        diff --side-by-side --suppress-common-lines --ignore-all-space <(cat ${TEMP1} | sort) <(cat ${TEMP2} | sort) >"${OUT_DIFF}"
-                /bin/rm -f ${TEMP1}
-                /bin/rm -f ${TEMP2}
+		    cat ${SCRIPT_OUT} > ${OUT_CSV}
+            TEMP1=${TMP_FILE}.1
+            TEMP2=${TMP_FILE}.2
+            cat ${RESULTS_FOLDER}/${TEST}.out > ${TEMP1}
+            cat ${OUT_CSV} > ${TEMP2}
+            filter_csv "${TEMP1}" "${IGNORE}"
+            filter_csv "${TEMP2}" "${IGNORE}"
+		    diff --side-by-side --suppress-common-lines --ignore-all-space <(cat ${TEMP1} | sort) <(cat ${TEMP2} | sort) >"${OUT_DIFF}"
+            /bin/rm -f ${TEMP1}
+            /bin/rm -f ${TEMP2}
 
-	        fi
+	    fi
 
             if [ `cat "${OUT_DIFF}" | wc -l` -eq 0 ]; then
                 ((NUM_SUCCESS=NUM_SUCCESS+1))
                 echo "[i] OK"
 
                 # Remove old conflicts if any
-                rm -f ${CONFLICTS_FOLDER}/${TEST}.out
+		        rm -f ${CONFLICTS_FOLDER}/${TEST}.out
             else
 		        if [ $FORMAT == "json" ]; then
 		            # Computing diff between old and new JSON (unsorted)
@@ -539,14 +543,14 @@ run_tests() {
 		            # Store the new output under conflicts for debugging
 		            cp ${OUT_CSV} ${CONFLICTS_FOLDER}/${TEST}.out
 		        fi
-          
+
                 send_error "Test Failure" "Unexpected output from the test '${TEST}'. Please check ${CONFLICTS_FOLDER}/${TEST}.out" "${OUT_DIFF}"
                 RC=1
             fi
 
         fi
 
-        /bin/rm -f ${TMP_FILE} ${SCRIPT_OUT} ${NTOPNG_LOG} ${NTOPNG_FILTERED_LOG} ${OUT_DIFF} ${OUT_CSV} ${OUT_JSON} ${PRE_TEST} "${RUNTIME_TEST}" ${POST_TEST} ${IGNORE} ${FORMATTED_OLD_OUT} ${FORMATTED_NEW_OUT}
+        /bin/rm -f ${TMP_FILE} ${SCRIPT_OUT} ${NTOPNG_LOG} ${NTOPNG_FILTERED_LOG} ${OUT_DIFF} ${OUT_JSON} ${OUT_CSV} ${PRE_TEST} "${RUNTIME_TEST}" ${POST_TEST} ${IGNORE} ${FORMATTED_OLD_OUT} ${FORMATTED_NEW_OUT}
     done
 
     if [ "${NUM_SUCCESS}" == "${NUM_RAN}" ]; then
