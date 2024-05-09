@@ -390,7 +390,6 @@ run_tests() {
     fi
 
     if [ "${RUN_FROM_PACKAGES}" = false ]; then
-	echo "non ok"
         if [ ! -f "${NTOPNG_ROOT}/ntopng" ]; then
             send_error "Unable to run tests" "ntopng binary not found, unable to run the tests"
             exit 1
