@@ -49,7 +49,7 @@ function usage {
     echo "[-f|--mail-from]=<address>        | Send notifications from the specified email address"
     echo "[-t|--mail-to]=<address>          | Send notifications to the specified email address"
     echo "[-d|--discord-webhook]=<endpoint> | Send notification to the specified Discord endpoint"
-    echo "[-p|--use-package]		    | Run ntopng from package"
+    echo "[-p|--use-package]		    | Run ntopng from binary package"
     echo "[-D|--debug]=<level>              | Set the debug level (0 - default, 1 - verbose, 2 - gdb)"
     echo "[-K|--keep-running]               | Keep ntopng running after completing the test (with -y)"
     echo "[-h|--help]                       | Print this help"
