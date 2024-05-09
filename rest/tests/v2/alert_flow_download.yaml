@@ -1,0 +1,15 @@
+input: bad-dns-traffic.pcap
+
+localnet: 192.168.43.0/24
+
+format: csv
+
+ignore: 
+  - duration
+
+pre: |
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "enable"}' http://localhost:3333/lua/toggle_all_checks.lua
+
+runtime: |
+  sleep 1m
+  curl -s -u admin:admin "http://localhost:3333//lua/rest/v2/get/flow/alert/list.lua?ifid=0&epoch_begin=1407197820&epoch_end=1561633813&query_preset=&count=&status=historical&page=flow&format=txt&visible_columns=actions%2Ctstamp%2Cscore%2Calert_category%2Cl7_proto%2Cmsg%2Cflow%2Cdescription%2Ccommunity_id%2Cinfo%2Ctotal_bytes%2Ccli_host_pool_id%2Csrv_host_pool_id%2Ccli_network%2Csrv_network%2Cprobe_ip"
