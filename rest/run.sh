@@ -344,7 +344,28 @@ filter_json() {
     cat ${TMP} > ${1}
     /bin/rm -f ${TMP}
 }
+#
+# Filter test output (CSV) to remove fields that can change
+# Params:
+# $1 - CSV file
+# $2 - File with items to be ignores
+#
 
+filter_csv() {
+    TMP=${1}.1
+
+    # Filter out information unnecessary for comparison
+    if [ -s "${2}" ]; then 
+        while read p; do
+            cutting_value=$(head -n 1 ${1} | tr "|" " " | awk -v search="$p" '{ for(i=1; i<=NF; i++) if($i == search) print i }')
+            cat ${TMP} | cut -d '|' --complement --fields=$cutting_value > ${TMP}
+        done < "${IGNORE}"
+    fi
+
+    cat ${TMP} > ${1}
+
+    /bin/rm -f ${TMP}
+}
 RC=0
 
 #
@@ -401,6 +422,7 @@ run_tests() {
         NTOPNG_LOG=${TMP_FILE}.ntopng
         NTOPNG_FILTERED_LOG=${TMP_FILE}.filtered
         SCRIPT_OUT=${TMP_FILE}.out
+        OUT_CSV=${TMP_FILE}.csv
         OUT_JSON=${TMP_FILE}.json
         OUT_DIFF=${TMP_FILE}.diff
         PRE_TEST=${TMP_FILE}.pre
@@ -414,12 +436,17 @@ run_tests() {
         # Parsing YAML
         PCAP=`cat tests/${TEST}.yaml | shyaml -q get-value input`
         LOCALNET=`cat tests/${TEST}.yaml | shyaml -q get-value localnet`
+        FORMAT=`cat tests/${TEST}.yaml | shyaml -q get-value format`
         REQUIRES=`cat tests/${TEST}.yaml | shyaml -q get-value requires`
         cat tests/${TEST}.yaml | shyaml -q get-value pre > ${PRE_TEST}
         cat tests/${TEST}.yaml | shyaml -q get-value runtime > ${RUNTIME_TEST}
         cat tests/${TEST}.yaml | shyaml -q get-value post > ${POST_TEST}
         cat tests/${TEST}.yaml | shyaml -q get-values ignore > ${IGNORE}
         cat tests/${TEST}.yaml | shyaml -q get-values options > ${EXTRA_OPTIONS}
+
+	    if [ -z "${FORMAT}" ] || [ $FORMAT == "None" ]; then
+	        FORMAT="json"
+	    fi
 
         if [ ! -z "$REQUIRES" ]; then
             if [ ! -d ${NTOPNG_ROOT}/pro ]; then
@@ -454,23 +481,45 @@ run_tests() {
             echo "[i] SAVING OUTPUT"
 
             # Output not present, setting current output as expected
-            cat ${SCRIPT_OUT} | jq -cS . > ${RESULTS_FOLDER}/${TEST}.out
+	        if [ $FORMAT == "json" ]; then
+                cat ${SCRIPT_OUT} | jq -cS . > ${RESULTS_FOLDER}/${TEST}.out
 
+    	    elif [ $FORMAT == "csv" ]; then
+		        cat ${SCRIPT_OUT} > ${RESULTS_FOLDER}/${TEST}.out
+	        fi
         else
 
-            # NOTE: using jq as sometimes the json is sorted differently
-            cat ${SCRIPT_OUT} | jq -cS . > ${OUT_JSON}
+	        if [ $FORMAT == "json" ]; then
 
-            # Comparison of two JSONs in bash, see
-            # https://stackoverflow.com/questions/31930041/using-jq-or-alternative-command-line-tools-to-compare-json-files/31933234#31933234
+                # NOTE: using jq as sometimes the json is sorted differently
+        	    cat ${SCRIPT_OUT} | jq -cS . > ${OUT_JSON}
+
+        	    # Comparison of two JSONs in bash, see
+        	    # https://stackoverflow.com/questions/31930041/using-jq-or-alternative-command-line-tools-to-compare-json-files/31933234#31933234
            
-            # Formatting JSON
-            jq -S 'def post_recurse(f): def r: (f | select(. != null) | r), .; r; def post_recurse: post_recurse(.[]?); (. | (post_recurse | arrays) |= sort)' "${RESULTS_FOLDER}/${TEST}.out" > ${FORMATTED_OLD_OUT}
-            jq -S 'def post_recurse(f): def r: (f | select(. != null) | r), .; r; def post_recurse: post_recurse(.[]?); (. | (post_recurse | arrays) |= sort)' "${OUT_JSON}" > ${FORMATTED_NEW_OUT}
+                # Formatting JSON
+                jq -S 'def post_recurse(f): def r: (f | select(. != null) | r), .; r; def post_recurse: post_recurse(.[]?); (. | (post_recurse | arrays) |= sort)' "${RESULTS_FOLDER}/${TEST}.out" > ${FORMATTED_OLD_OUT}
+        	    jq -S 'def post_recurse(f): def r: (f | select(. != null) | r), .; r; def post_recurse: post_recurse(.[]?); (. | (post_recurse | arrays) |= sort)' "${OUT_JSON}" > ${FORMATTED_NEW_OUT}
             
-            # Computing diff between old and new JSON with sorting
-            diff --side-by-side --suppress-common-lines --ignore-all-space <(cat ${FORMATTED_OLD_OUT} | sort) <(cat ${FORMATTED_NEW_OUT} | sort) >"${OUT_DIFF}"
-            filter_json "${OUT_DIFF}" "${IGNORE}"
+        	    # Computing diff between old and new JSON with sorting
+        	    diff --side-by-side --suppress-common-lines --ignore-all-space <(cat ${FORMATTED_OLD_OUT} | sort) <(cat ${FORMATTED_NEW_OUT} | sort) >"${OUT_DIFF}"
+                filter_json "${OUT_DIFF}" "${IGNORE}"
+	
+	         elif [ $FORMAT == "csv" ]; then
+
+		        cat ${SCRIPT_OUT} > ${OUT_CSV}
+                TEMP1=${TMP_FILE}.1
+                TEMP2=${TMP_FILE}.2
+                cat ${RESULTS_FOLDER}/${TEST}.out > ${TEMP1}
+                cat ${OUT_CSV} > ${TEMP2}
+                # Computing diff between old and new CSV with sorting
+                filter_csv "${TEMP1}" "${IGNORE}"
+                filter_csv "${TEMP2}" "${IGNORE}"
+		        diff --side-by-side --suppress-common-lines --ignore-all-space <(cat ${TEMP1} | sort) <(cat ${TEMP2} | sort) >"${OUT_DIFF}"
+                /bin/rm -f ${TEMP1}
+                /bin/rm -f ${TEMP2}
+
+	        fi
 
             if [ `cat "${OUT_DIFF}" | wc -l` -eq 0 ]; then
                 ((NUM_SUCCESS=NUM_SUCCESS+1))
@@ -479,20 +528,25 @@ run_tests() {
                 # Remove old conflicts if any
                 rm -f ${CONFLICTS_FOLDER}/${TEST}.out
             else
-                # Computing diff between old and new JSON (unsorted)
-                diff --side-by-side --suppress-common-lines --ignore-all-space <(cat ${FORMATTED_OLD_OUT}) <(cat ${FORMATTED_NEW_OUT}) >"${OUT_DIFF}"
-                filter_json "${OUT_DIFF}" "${IGNORE}"
+		        if [ $FORMAT == "json" ]; then
+		            # Computing diff between old and new JSON (unsorted)
+        	        diff --side-by-side --suppress-common-lines --ignore-all-space <(cat ${FORMATTED_OLD_OUT}) <(cat ${FORMATTED_NEW_OUT}) >"${OUT_DIFF}"
+        	        filter_json "${OUT_DIFF}" "${IGNORE}"
 
-                # Store the new output under conflicts for debugging
-                cp ${OUT_JSON} ${CONFLICTS_FOLDER}/${TEST}.out
-
+		            # Store the new output under conflicts for debugging
+                    cp ${OUT_JSON} ${CONFLICTS_FOLDER}/${TEST}.out
+		        elif [ $FORMAT == "csv" ]; then
+		            # Store the new output under conflicts for debugging
+		            cp ${OUT_CSV} ${CONFLICTS_FOLDER}/${TEST}.out
+		        fi
+          
                 send_error "Test Failure" "Unexpected output from the test '${TEST}'. Please check ${CONFLICTS_FOLDER}/${TEST}.out" "${OUT_DIFF}"
                 RC=1
             fi
 
         fi
 
-        /bin/rm -f ${TMP_FILE} ${SCRIPT_OUT} ${NTOPNG_LOG} ${NTOPNG_FILTERED_LOG} ${OUT_DIFF} ${OUT_JSON} ${PRE_TEST} "${RUNTIME_TEST}" ${POST_TEST} ${IGNORE} ${FORMATTED_OLD_OUT} ${FORMATTED_NEW_OUT}
+        /bin/rm -f ${TMP_FILE} ${SCRIPT_OUT} ${NTOPNG_LOG} ${NTOPNG_FILTERED_LOG} ${OUT_DIFF} ${OUT_CSV} ${OUT_JSON} ${PRE_TEST} "${RUNTIME_TEST}" ${POST_TEST} ${IGNORE} ${FORMATTED_OLD_OUT} ${FORMATTED_NEW_OUT}
     done
 
     if [ "${NUM_SUCCESS}" == "${NUM_RAN}" ]; then
