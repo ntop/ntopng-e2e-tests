@@ -1,5 +1,7 @@
 input: synscan.pcap
 
+localnet: 172.16.0.0/12
+
 options:
   - -F="clickhouse;127.0.0.1;ntopngtests;default;"
 
