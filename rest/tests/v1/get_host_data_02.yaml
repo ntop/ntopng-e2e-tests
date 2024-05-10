@@ -14,6 +14,7 @@ ignore: # duration and last seen depend on the current system time, whereas firs
   - num_flows
 
 pre: |
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "enable"}' http://localhost:3333/lua/toggle_all_checks.lua
 
 runtime: |
   curl -s -u admin:admin  -H "Content-Type: application/json" -d '{"ifid": 0, "host" : "192.168.1.93"}' http://localhost:3333/lua/rest/v1/get/host/data.lua
