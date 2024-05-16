@@ -10,7 +10,6 @@
 #
 # Clone the packager repository in the same folder to enable notifications
 #
-# New comment
 
 TESTS_PATH="${PWD}"
 NTOPNG_ROOT="../../.."
