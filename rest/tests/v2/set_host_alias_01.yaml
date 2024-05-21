@@ -15,6 +15,7 @@ ignore: # duration and last seen depend on the current system time, whereas firs
 
 pre: |
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua
+  sleep 5s
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"host" : "192.168.1.93", "custom_name": "Charles"}' http://localhost:3333/lua/rest/v2/set/host/alias.lua
 
 runtime: |
