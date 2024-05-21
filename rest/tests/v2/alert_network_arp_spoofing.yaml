@@ -1,0 +1,15 @@
+input: arp_spoofing.pcap
+
+localnet: 192.168.1.0/24
+
+ignore:
+  - duration
+  - num_records_processed
+  - query_duration_msec
+
+pre: | 
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "network", "script_key": "ip_reassignment"}' http://localhost:3333/lua/rest/v2/enable/check.lua
+
+runtime: |
+  curl -s -u admin:admin  -H "Content-Type: application/json" -d '{"ifid": 0, "status": "any"}' http://localhost:3333/lua/rest/v2/get/mac/alert/list.lua
