@@ -18,6 +18,7 @@ pre: |
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "unexpected_dns"}' http://localhost:3333/lua/rest/v2/disable/check.lua
   # Disable blacklisted to remove noise
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "blacklisted"}' http://localhost:3333/lua/rest/v2/disable/check.lua
+  sleep 10s
 
 runtime: |
   curl -s -u admin:admin  -H "Content-Type: application/json" -d '{"ifid": 0, "status": "any"}' http://localhost:3333/lua/rest/v2/get/flow/alert/list.lua
