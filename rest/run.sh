@@ -248,7 +248,7 @@ ntopng_run() {
 
     if [ ! -z "${2}" ]; then
         if [ "${DEBUG_LEVEL}" -gt "0" ]; then
-            echo "Pre-script:"
+            echo "[D] Pre-script:"
             cat ${2}
         fi
 
@@ -257,7 +257,7 @@ ntopng_run() {
 
     if [ ! -z "${3}" ]; then
         if [ "${DEBUG_LEVEL}" -gt "0" ]; then
-            echo "Runtime-script:"
+            echo "[D] Runtime-script:"
             cat ${3}
         fi
 
@@ -266,7 +266,7 @@ ntopng_run() {
 
     if [ ! -z "${4}" ]; then
         if [ "${DEBUG_LEVEL}" -gt "0" ]; then
-            echo "Post-script:"
+            echo "[D] Post-script:"
             cat ${4}
         fi
 
@@ -288,7 +288,7 @@ ntopng_run() {
     touch ${6}
     if [ "${DEBUG_LEVEL}" -gt "0" ]; then
 
-        echo "Configuration:"
+        echo "[D] Configuration:"
         cat ${NTOPNG_TEST_CONF}
 
         ${NTOPNG_BIN} ${NTOPNG_TEST_CONF}
