@@ -19,5 +19,5 @@ pre: |
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "script_key": "elephant_flows", "check_subdir": "flow", "JSON": "{\"all\":{\"enabled\":true,\"script_conf\":{\"l2r_bytes_value\":3240,\"r2l_bytes_value\":3240}}}"}' http://localhost:3333/lua/edit_check_config.lua
   sleep 5s
 
-runtime: |
+post: |
   curl -s -u admin:admin  -H "Content-Type: application/json" -d '{"ifid": 0, "status": "any"}' http://localhost:3333/lua/rest/v2/get/flow/alert/list.lua
