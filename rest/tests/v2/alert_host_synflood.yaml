@@ -1,0 +1,15 @@
+input: synflood.pcap
+
+ignore:
+  - date
+  - tstamp
+  - duration
+  - link_to_past_flows
+
+pre: |
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "host", "script_key": "syn_flood"}' http://localhost:3333/lua/rest/v2/enable/check.lua
+
+runtime: |
+  sleep 1m
+  curl -s -u admin:admin  -H "Content-Type: application/json" -d '{"ifid": 0, "status": "engaged"}' http://localhost:3333/lua/rest/v2/get/host/alert/list.lua
