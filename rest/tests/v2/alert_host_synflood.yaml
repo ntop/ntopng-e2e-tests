@@ -1,5 +1,7 @@
 input: synflood.pcap
 
+localnet: 10.10.10.0/24
+
 ignore:
   - date
   - tstamp
