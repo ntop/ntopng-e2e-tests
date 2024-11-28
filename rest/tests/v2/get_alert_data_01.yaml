@@ -12,6 +12,7 @@ ignore:
   - epoch_end
 
 pre: |
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"config": [{"key": "dns_list", "value": "10.10.10.10"}]}' http://localhost:3333/lua/rest/v2/set/network/config.lua
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "enable"}' http://localhost:3333/lua/toggle_all_checks.lua
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "tls_certificate_expired"}' http://localhost:3333/lua/rest/v2/disable/check.lua
 
