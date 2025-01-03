@@ -5,6 +5,7 @@ localnet: 172.16.0.0/24
 ignore:
   - date
   - tstamp
+  - title
   - historical_url
   - query_duration_msec
   - epoch_begin

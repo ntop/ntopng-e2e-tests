@@ -4,6 +4,7 @@ localnet: 192.168.137.0/24
 
 ignore:
   - tstamp
+  - title
   - duration
   - epoch_begin
   - epoch_end

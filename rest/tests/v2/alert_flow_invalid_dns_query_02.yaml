@@ -6,6 +6,7 @@ ignore:
   - date
   - duration
   - tstamp
+  - title
   - historical_url
   - epoch_begin
   - epoch_end

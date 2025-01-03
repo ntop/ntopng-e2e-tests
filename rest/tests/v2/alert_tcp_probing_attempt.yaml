@@ -4,6 +4,7 @@ localnet: 192.168.1.0/24
 
 ignore:
   - duration
+  - title
   - epoch_end
   - num_records_processed
   - query_duration_msec

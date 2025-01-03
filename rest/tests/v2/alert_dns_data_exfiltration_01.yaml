@@ -5,6 +5,7 @@ localnet: 192.168.43.0/24
 ignore:
   - date
   - tstamp
+  - title
   - rowid
   - historical_url
   - query_duration_msec

@@ -3,6 +3,7 @@ input: selfsigned.pcap
 ignore:
   - date
   - tstamp
+  - title
   - historical_url
   - query_duration_msec
   - epoch_begin

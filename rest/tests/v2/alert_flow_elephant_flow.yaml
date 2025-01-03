@@ -10,6 +10,7 @@ ignore:
   - epoch_begin
   - epoch_end
   - num_records_processed
+  - title
 
 pre: |
   # Enable related user scripts only
