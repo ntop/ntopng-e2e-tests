@@ -6,6 +6,7 @@ localnet: 192.168.1.0/24
 ignore:
   - tstamp
   - duration
+  - title
 
 pre: |
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua

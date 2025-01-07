@@ -9,6 +9,7 @@ ignore:
   - query_duration_msec
   - num_records_processed
   - duration
+  - title
   - epoch_end
 
 pre: |

@@ -10,6 +10,7 @@ ignore:
   - epoch_begin
   - epoch_end
   - duration
+  - title
   - num_records_processed
   - label
 
