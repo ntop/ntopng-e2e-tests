@@ -1,0 +1,10 @@
+input: retr_ooo.pcap
+
+ignore:
+  - bps
+  - pps
+
+pre: |
+
+runtime: |
+  curl -s -u admin:admin  -H "Content-Type: application/json" -d '{"ifid": 0, "verbose": true}' http://localhost:3333/lua/rest/v2/get/flow/active.lua
