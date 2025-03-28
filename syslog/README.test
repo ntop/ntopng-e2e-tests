@@ -11,7 +11,7 @@ guide at:
 
 Example for the impatient:
 
-  ntopng -i syslog://127.0.0.1:9999
+  ntopng -i syslog://127.0.0.1:5140
 
 As second step, use run.sh to replay the log to the configured
 port of the ntopng host (netcat is required):
@@ -20,7 +20,7 @@ port of the ntopng host (netcat is required):
 
 Example:
 
-  ./run.sh 127.0.0.1 9999
+  ./run.sh 127.0.0.1 5140
 
 The sample log file contains both flows and alerts (e.g. an alert
 about a trojan AlienSpy RAT is present).
