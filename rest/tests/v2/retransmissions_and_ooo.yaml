@@ -3,6 +3,7 @@ input: retr_ooo.pcap
 ignore:
   - bps
   - pps
+  - score
 
 pre: |
 
