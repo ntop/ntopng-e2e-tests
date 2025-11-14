@@ -23,4 +23,5 @@ pre: |
   sleep 20s
 
 runtime: |
+  sleep 10s
   curl -s -u admin:admin  -H "Content-Type: application/json" -d '{"ifid": 0, "status": "any"}' http://localhost:3333/lua/rest/v2/get/flow/alert/list.lua
