@@ -2,7 +2,6 @@ input: tcp-flood.pcap
 
 localnet: 192.168.1.0/24
 
-
 ignore:
   - tstamp
   - duration
@@ -11,8 +10,9 @@ ignore:
 pre: |
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "host", "script_key": "flow_flood"}' http://localhost:3333/lua/rest/v2/enable/check.lua
+  sleep 10
 
 runtime: |
-  sleep 1m
+  sleep 20
   curl -s -u admin:admin  -H "Content-Type: application/json" -d '{"ifid": 0, "status": "engaged"}' http://localhost:3333/lua/rest/v2/get/host/alert/list.lua
 
