@@ -35,8 +35,8 @@ DEBUG_LEVEL=0
 KEEP_RUNNING=0
 
 NOTIFICATIONS_ON=false
-if [ -d packager ]; then
-    source packager/utils/alerts.sh
+if [ -d ${HOME}/packager ]; then
+    source ${HOME}/packager/utils/alerts.sh
     NOTIFICATIONS_ON=true
 fi
 
