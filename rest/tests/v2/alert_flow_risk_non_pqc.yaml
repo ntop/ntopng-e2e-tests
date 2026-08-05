@@ -1,0 +1,30 @@
+input: non_pqc.pcap
+
+localnet: 192.168.16.213,192.168.1.10,192.168.1.126
+
+ignore:
+  - date
+  - tstamp
+  - historical_url
+  - query_duration_msec
+  - epoch_begin
+  - epoch_end
+  - duration
+  - title
+  - num_records_processed
+  - label
+
+pre: |
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "enable"}' http://localhost:3333/lua/toggle_all_checks.lua
+  # Only interested in PQC, disable noisy stuff
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "unexpected_dns"}' http://localhost:3333/lua/rest/v2/disable/check.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "blacklisted"}' http://localhost:3333/lua/rest/v2/disable/check.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "access_control_list"}' http://localhost:3333/lua/rest/v2/disable/check.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "ndpi_ssh_obsolete_client"}' http://localhost:3333/lua/rest/v2/disable/check.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "ndpi_ssh_obsolete_server"}' http://localhost:3333/lua/rest/v2/disable/check.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "ndpi_malicious_fingerprint"}' http://localhost:3333/lua/rest/v2/disable/check.lua
+  sleep 20s
+
+runtime: |
+  sleep 10s
+  curl -s -u admin:admin  -H "Content-Type: application/json" -d '{"ifid": 0, "status": "any"}' http://localhost:3333/lua/rest/v2/get/flow/alert/list.lua
