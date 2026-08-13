@@ -13,11 +13,9 @@ ignore:
   - title
 
 pre: |
-  # Enable related user scripts only
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua
-  
   # Set upload download elephant flow size to 3 KB (PCAP contains a flow of ~6.9KB)
-  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "script_key": "elephant_flows", "check_subdir": "flow", "JSON": "{\"all\":{\"enabled\":true,\"script_conf\":{\"l2r_bytes_value\":3240,\"r2l_bytes_value\":3240}}}"}' http://localhost:3333/lua/edit_check_config.lua
+  curl -v -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "script_key": "elephant_flows", "check_subdir": "flow", "JSON": "{\"all\":{\"enabled\":true,\"script_conf\":{\"l2r_bytes_value\":3240,\"r2l_bytes_value\":3240}}}"}' http://localhost:3333/lua/rest/v2/set/checks/check_config.lua
 
 post: |
   sleep 10s
