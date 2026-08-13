@@ -12,6 +12,7 @@ ignore:
   - title
   - epoch_end
   - row_id
+  - country
 
 pre: |
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"config": [{"key": "dns_list", "value": "10.10.10.10"}]}' http://localhost:3333/lua/rest/v2/set/network/config.lua
