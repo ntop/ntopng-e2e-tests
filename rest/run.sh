@@ -212,6 +212,7 @@ ntopng_init_conf() {
     echo "--disable-login=1" >> ${NTOPNG_TEST_CONF}
     echo "--dont-change-user" >> ${NTOPNG_TEST_CONF}
     echo "--pid=./ntopng.pid" >> ${NTOPNG_TEST_CONF}
+    echo "--dns-mode=2" >> ${NTOPNG_TEST_CONF}
 
     cat <<EOF >> "${NTOPNG_TEST_CUSTOM_PROTOS}"
 # charles

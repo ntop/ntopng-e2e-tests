@@ -23,6 +23,7 @@ pre: |
 
   # Exclude TLS Certificate Expired alerts for 192.168.1.176
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"alert_addr":"192.168.1.176","subdir":"flow","flow_alert_key":"22"}' http://localhost:3333/lua/pro/rest/v2/add/alert/exclusion.lua
+  sleep 10s
 
-runtime: |
+post: |
   curl -s -u admin:admin  -H "Content-Type: application/json" -d '{"ifid": 0, "status": "any"}' http://localhost:3333/lua/rest/v2/get/flow/alert/list.lua
