@@ -19,7 +19,6 @@ pre: |
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"alert_addr":"4.2.2.4","subdir":"flow","flow_alert_key":"6"}' http://localhost:3333/lua/pro/rest/v2/add/alert/exclusion.lua
   # Exclude flow_alert_ndpi_dns_suspicious_traffic for 4.2.2.4
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"alert_addr":"4.2.2.4","subdir":"flow","flow_alert_key":"53"}' http://localhost:3333/lua/pro/rest/v2/add/alert/exclusion.lua
-  sleep 10s
 
 post: |
   curl -s -u admin:admin  -H "Content-Type: application/json" -d '{"ifid": 0, "status": "any"}' http://localhost:3333/lua/rest/v2/get/flow/alert/list.lua
