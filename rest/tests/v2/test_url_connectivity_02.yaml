@@ -1,0 +1,18 @@
+#
+# test_url_connectivity: an unreachable URL must NOT be reported as reachable.
+#
+# Nothing listens on the privileged port 1, so the connection is always
+# refused without relying on name resolution or external connectivity.
+#
+# The libcurl error string appended to the message ("Could not connect to
+# server") differs across libcurl releases, so the detail after the colon is
+# trimmed to keep the expected output portable
+#
+input: test_01.pcap
+
+ignore:
+
+pre: |
+
+runtime: |
+  curl -s -u admin:admin -G --data-urlencode "url=http://127.0.0.1:1" "http://localhost:3333/lua/rest/v2/get/ntopng/test_url_connectivity.lua" | jq -cS '.rsp.message |= (split(": ")[0])'

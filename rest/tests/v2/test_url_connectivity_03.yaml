@@ -1,0 +1,12 @@
+#
+# test_url_connectivity: a missing url parameter must be rejected as an
+# invalid argument.
+#
+input: test_01.pcap
+
+ignore:
+
+pre: |
+
+runtime: |
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/ntopng/test_url_connectivity.lua"

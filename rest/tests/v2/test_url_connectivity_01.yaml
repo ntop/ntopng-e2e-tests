@@ -1,0 +1,14 @@
+#
+# test_url_connectivity: a reachable URL must be reported as reachable.
+#
+# ntopng's own web server is used as the target: it is guaranteed to be up
+# while the test runs and requires no external connectivity.
+#
+input: test_01.pcap
+
+ignore:
+
+pre: |
+
+runtime: |
+  curl -s -u admin:admin -G --data-urlencode "url=http://localhost:3333" "http://localhost:3333/lua/rest/v2/get/ntopng/test_url_connectivity.lua"
