@@ -1,0 +1,52 @@
+input: sentinel.pcapng
+
+localnet: 192.168.1.0/24
+
+requires: pro
+
+# Fields that legitimately vary run to run (real time / processing speed
+# dependent), unrelated to the feature under test.
+ignore:
+  - duration
+  - seen.last
+  - throughput_bps
+  - throughput_pps
+  - throughput_trend_bps
+  - throughput_trend_pps
+  - bytes
+  - packets
+  - num_flows
+  - bps
+  - pps
+  - country
+
+pre: |
+  # Disable everything not related to this test, to keep the output minimal
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+  # Bind a custom tag ("EDR") to the Sentinel application (host:"sentinel.com"@Sentinel=1025)
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"tags": [{"tag_id": 32, "tag_name": "EDR", "color": "#ff0000", "description": "", "tag_protocols": "1025", "tag_risks": ""}]}' http://localhost:3333/lua/rest/v2/edit/tag/tag.lua -o /dev/null
+
+runtime: |
+  # The flow to sentinel.com must be classified as TLS/Sentinel and carry the EDR tag
+  # TODO: no API to get flow tag
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0}' http://localhost:3333/lua/rest/v2/get/flow/active.lua
+
+  # The local client host must carry the EDR tag too
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "host": "192.168.1.126"}' http://localhost:3333/lua/rest/v2/get/host/data.lua
+
+  # NOTE on Assets: not checked here. The Assets Inventory is populated by a
+  # background "minute-delayed" callback (pro/scripts/callbacks/minute-delayed/
+  # interface/assets.lua) that drains a Redis queue fed by
+  # LocalHost::dumpAssetInfo(). That callback is never even scheduled to run
+  # against a pcap-replay interface: every entry in PeriodicActivities.cpp's
+  # activity table (including "minute-delayed") sets
+  # exclude_pcap_dump_interfaces=true, and ThreadedActivity's interface-queuing
+  # loop (src/ThreadedActivity.cpp:573-574) explicitly skips
+  # interface_type_PCAP_DUMP interfaces when that flag is set. No amount of
+  # waiting changes this - it's an architectural exclusion, not a timing gate -
+  # confirmed empirically: the Redis queue for this test's interface never
+  # drained even after 200+ seconds of sleep. Verifying Assets would need a
+  # production-side change to that exclusion (and, separately, to how/when the
+  # host-level entry itself gets queued - see git history for the full
+  # investigation), not a test-only workaround.

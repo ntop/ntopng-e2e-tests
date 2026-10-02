@@ -171,6 +171,9 @@ host:"sebastian"@Sebastian
 
 # lando
 host:"lando"@Lando
+
+# sentinel
+host:"sentinel.com"@Sentinel=1025
 EOF
 }
 
