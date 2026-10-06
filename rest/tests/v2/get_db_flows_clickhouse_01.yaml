@@ -1,0 +1,17 @@
+input: test_01.pcap
+
+requires: pro
+
+clickhouse: true
+
+pre: |
+
+post: |
+  # Flows are flushed to ClickHouse when the interface is shut down, wait a bit
+  sleep 5
+
+  # Historical flows (pcap timestamps are in the past, use a wide time range)
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "select_clause": "IPV4_SRC_ADDR,IPV4_DST_ADDR,IP_SRC_PORT,IP_DST_PORT,PROTOCOL,L7_PROTO,L7_PROTO_MASTER,PACKETS,SRC2DST_BYTES,DST2SRC_BYTES,FIRST_SEEN,LAST_SEEN", "begin_time_clause": 0, "end_time_clause": 2000000000, "maxhits_clause": 1000, "order_by_clause": "FIRST_SEEN,IPV4_SRC_ADDR,IP_SRC_PORT,IPV4_DST_ADDR,IP_DST_PORT"}' http://localhost:3333/lua/pro/rest/v2/get/db/flows.lua
+
+  # Filtered query: TCP flows only
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "select_clause": "IPV4_SRC_ADDR,IPV4_DST_ADDR,IP_DST_PORT,L7_PROTO", "where_clause": "PROTOCOL=6", "begin_time_clause": 0, "end_time_clause": 2000000000, "maxhits_clause": 1000, "order_by_clause": "FIRST_SEEN,IPV4_SRC_ADDR,IP_SRC_PORT,IPV4_DST_ADDR,IP_DST_PORT"}' http://localhost:3333/lua/pro/rest/v2/get/db/flows.lua
