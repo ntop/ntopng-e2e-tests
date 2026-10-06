@@ -138,6 +138,7 @@ ntopng_cleanup() {
     # Cleanup database if any
     if command -v clickhouse-client &> /dev/null; then
         clickhouse-client -q "DROP database IF EXISTS ${NTOPNG_TEST_DB}"
+        clickhouse-client -q "DROP USER IF EXISTS ${NTOPNG_TEST_DB}_ro"
     fi
 }
 
@@ -188,6 +189,7 @@ EOF
 # $6 - ntopng Output file
 # $7 - Local networks
 # $8 - Extra options file
+# $9 - Enable ClickHouse flow dump (true|false)
 #
 ntopng_run() {
     if [ ! -z "${1}" ]; then
@@ -231,6 +233,12 @@ ntopng_run() {
 
     if [ ! -z "${8}" ]; then
         cat "${8}" >> ${NTOPNG_TEST_CONF}
+    fi
+
+    if [ "${9}" = "true" ]; then
+        echo "-F=clickhouse;127.0.0.1;${NTOPNG_TEST_DB};default;;${NTOPNG_TEST_DB}_ro;${NTOPNG_TEST_DB}_ro" >> ${NTOPNG_TEST_CONF}
+        # Enable flow dump for pcap (disabled by default)
+        redis-cli -n "${NTOPNG_TEST_REDIS}" set "ntopng.prefs.dump_pcap_to_clickhouse" "1" > /dev/null
     fi
 
     # Start the test

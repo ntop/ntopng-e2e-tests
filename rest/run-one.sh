@@ -66,6 +66,7 @@ PCAP=`cat tests/${TEST}.yaml | shyaml -q get-value input`
 LOCALNET=`cat tests/${TEST}.yaml | shyaml -q get-value localnet`
 FORMAT=`cat tests/${TEST}.yaml | shyaml -q get-value format`
 REQUIRES=`cat tests/${TEST}.yaml | shyaml -q get-value requires`
+CLICKHOUSE=`cat tests/${TEST}.yaml | shyaml -q get-value clickhouse`
 cat tests/${TEST}.yaml | shyaml -q get-value pre > ${PRE_TEST}
 cat tests/${TEST}.yaml | shyaml -q get-value runtime > ${RUNTIME_TEST}
 cat tests/${TEST}.yaml | shyaml -q get-value post > ${POST_TEST}
@@ -84,6 +85,18 @@ if [ ! -z "$REQUIRES" ]; then
     fi
 fi
 
+if [ "${CLICKHOUSE}" = "true" ] || [ "${CLICKHOUSE}" = "1" ]; then
+    CLICKHOUSE=true
+    if ! command -v clickhouse-client &> /dev/null || \
+       ! clickhouse-client -q "SELECT 1" &> /dev/null; then
+        echo "[i] This test requires a local ClickHouse server (skip)"
+        cleanup_tmp
+        exit 2
+    fi
+else
+    CLICKHOUSE=false
+fi
+
 # The pre/runtime/post snippets talk to ntopng on the hard-coded port 3333.
 # A parallel worker runs on its own port, so rewrite the endpoint accordingly.
 if [ "${NTOPNG_TEST_HTTP_PORT}" != "3333" ]; then
@@ -92,7 +105,7 @@ if [ "${NTOPNG_TEST_HTTP_PORT}" != "3333" ]; then
 fi
 
 # Run the test
-ntopng_run "${PCAP}" "${PRE_TEST}" "${RUNTIME_TEST}" "${POST_TEST}" "${SCRIPT_OUT}" "${NTOPNG_LOG}" "${LOCALNET}" "${EXTRA_OPTIONS}"
+ntopng_run "${PCAP}" "${PRE_TEST}" "${RUNTIME_TEST}" "${POST_TEST}" "${SCRIPT_OUT}" "${NTOPNG_LOG}" "${LOCALNET}" "${EXTRA_OPTIONS}" "${CLICKHOUSE}"
 
 # Filter/process ntopng output
 filter_ntopng_log "${NTOPNG_LOG}" "${NTOPNG_FILTERED_LOG}"
