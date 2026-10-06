@@ -85,7 +85,7 @@ if [ ! -z "$REQUIRES" ]; then
     fi
 fi
 
-if [ "${CLICKHOUSE}" = "true" ] || [ "${CLICKHOUSE}" = "1" ]; then
+if [ "${CLICKHOUSE}" = "True" ] || [ "${CLICKHOUSE}" = "true" ] || [ "${CLICKHOUSE}" = "1" ]; then
     CLICKHOUSE=true
     if ! command -v clickhouse-client &> /dev/null || \
        ! clickhouse-client -q "SELECT 1" &> /dev/null; then
