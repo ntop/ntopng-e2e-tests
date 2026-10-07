@@ -1,0 +1,30 @@
+input: test_01.pcap
+
+localnet: 192.168.1.0/24
+
+requires: pro
+
+# Add a view interface (pcap interface ifid 0, view interface ifid 1)
+options:
+  - -i=view:all
+
+ignore:
+  # Hosts on a view are created with the wall clock time (not the pcap time)
+  - first_seen
+  - last_seen
+  - country
+  - bps
+  - pps
+
+pre: |
+
+runtime: |
+  # List interfaces
+  curl -s -u admin:admin http://localhost:3333/lua/rest/v2/get/ntopng/interfaces.lua
+
+  # Read interface data
+  curl -s -u admin:admin -H "Content-Type: application/json" -d "{\"ifid\": 0}" http://localhost:3333/lua/rest/v2/get/interface/data.lua | jq -c '{rc_str, rsp: (.rsp | {ifid, ifname, num_flows, num_hosts, num_local_hosts, num_devices, bytes, packets})}'
+  curl -s -u admin:admin -H "Content-Type: application/json" -d "{\"ifid\": 1}" http://localhost:3333/lua/rest/v2/get/interface/data.lua | jq -c '{rc_str, rsp: (.rsp | {ifid, ifname, num_flows, num_hosts, num_local_hosts, num_devices, bytes, packets})}'
+
+  # Active flows on the view
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 1}' http://localhost:3333/lua/rest/v2/get/flow/active.lua
