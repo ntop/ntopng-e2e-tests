@@ -1,0 +1,60 @@
+input: sentinel.pcapng
+
+localnet: 192.168.1.0/24
+
+requires: pro
+
+pre: |
+  # Disable everything not related to this test, to keep the output minimal
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  HOST="192.168.1.126"
+
+  # Replace the user-defined tags of the host with the specified bitmap
+  set_tags() {
+    curl -s -u admin:admin -H "Content-Type: application/json" -d "{\"ifid\": 0, \"host\": \"${HOST}\", \"pool\": \"0\", \"host_tags_bitmap\": \"${1}\"}" http://localhost:3333/lua/rest/v2/set/host/config.lua -o /dev/null
+  }
+
+  # Print (as a JSON array) the ids of the tags set in the specified bitmap
+  tag_ids() {
+    local ids="" i
+    for i in $(seq 0 63); do
+      if (( (${1} >> i) & 1 )); then ids="${ids:+${ids},}${i}"; fi
+    done
+    echo "[${ids}]"
+  }
+
+  # Print the ids of the tags set on the host.
+  # NOTE: the bitmaps are 64 bit wide (a bitmap with the bit 63 set is
+  # returned as a negative number), so they are extracted and decoded here
+  # with the shell rather than with jq, that would handle them as (rounded)
+  # doubles.
+  check_tags() {
+    local rsp tags user_tags
+    rsp=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/config.lua?ifid=0&host=${HOST}")
+    tags=$(echo "${rsp}" | grep -o '[{,] *"tags" *: *-\?[0-9]\+' | grep -o -- '-\?[0-9]\+$')
+    user_tags=$(echo "${rsp}" | grep -o '"user_tags" *: *-\?[0-9]\+' | grep -o -- '-\?[0-9]\+$')
+    echo "{\"step\": \"${1}\", \"tags\": $(tag_ids "${tags}"), \"user_tags\": $(tag_ids "${user_tags}")}"
+  }
+
+  check_tags "0_initial"
+
+  # Add the tag 63 (the most significant bit of the bitmap)
+  set_tags 9223372036854775808
+  check_tags "1_add_63"
+
+  # Add the tag 40 too (63 + 40)
+  set_tags 9223373136366403584
+  check_tags "2_add_40"
+
+  # Remove the tag 63 (40 only)
+  set_tags 1099511627776
+  check_tags "3_remove_63"
+
+  # Remove the tag 40 too (no tags)
+  set_tags 0
+  check_tags "4_remove_40"
+
+  # NOTE on Assets: not checked here, as the Assets Inventory is not
+  # populated with pcap files (see tags_application_based_01.yaml)
