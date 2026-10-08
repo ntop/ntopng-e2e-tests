@@ -78,6 +78,16 @@ function send_success {
     fi
 }
 
+# Send totals/summary to a secondary Discord channel (if configured)
+function send_summary {
+    TITLE="${1}"
+    MESSAGE="${2}"
+
+    if [ "${NOTIFICATIONS_ON}" = true ] && [ ! -z "${SUMMARY_DISCORD_WEBHOOK}" ]; then
+        sendDiscordTo "${SUMMARY_DISCORD_WEBHOOK}" "${TITLE}" "${MESSAGE}"
+    fi
+}
+
 # Send an error alert
 function send_error {
     TITLE="${1}"

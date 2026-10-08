@@ -26,6 +26,7 @@ DEFAULT_PCAP="test_01.pcap"
 MAIL_FROM=""
 MAIL_TO=""
 DISCORD_WEBHOOK=""
+SUMMARY_DISCORD_WEBHOOK=""
 TEST_NAME=""
 API_VERSION=""
 
@@ -40,7 +41,7 @@ MAX_JOBS=14
 source "${TESTS_PATH}/common.sh"
 
 function usage {
-    echo "Usage: run.sh [-y=<test>] [-j=<jobs>] [-f=<mail from>] [-t=<mail to>] [-d=<discord webhook>] [-D=<debug level>] [-K]"
+    echo "Usage: run.sh [-y=<test>] [-j=<jobs>] [-f=<mail from>] [-t=<mail to>] [-d=<discord webhook>] [-s=<discord webhook>] [-D=<debug level>] [-K]"
     echo ""
     echo "Options:"
     echo "[-y|--test]=<test>                | Run a selected test (e.g. -y=v2/get_host_active_01)"
@@ -49,6 +50,7 @@ function usage {
     echo "[-f|--mail-from]=<address>        | Send notifications from the specified email address"
     echo "[-t|--mail-to]=<address>          | Send notifications to the specified email address"
     echo "[-d|--discord-webhook]=<endpoint> | Send notification to the specified Discord endpoint"
+    echo "[-s|--discord-summary-webhook]=<endpoint> | Send the final summary to a secondary Discord endpoint"
     echo "[-p|--use-package]                | Run ntopng from binary package"
     echo "[-D|--debug]=<level>              | Set the debug level (0 - default, 1 - verbose, 2 - gdb)"
     echo "[-K|--keep-running]               | Keep ntopng running after completing the test (with -y)"
@@ -69,6 +71,10 @@ do
 
         -d=*|--discord-webhook=*)
             DISCORD_WEBHOOK="${i#*=}"
+            ;;
+
+        -s=*|--discord-summary-webhook=*|--summary-webhook=*)
+            SUMMARY_DISCORD_WEBHOOK="${i#*=}"
             ;;
 
         -y=*|--test=*)
@@ -309,8 +315,10 @@ run_tests() {
 
     if [ "${G_SUCCESS}" == "${G_RAN}" ]; then
         send_success "ntopng TESTS completed successfully" "All tests completed successfully with the expected output."
+        send_summary "ntopng TESTS completed successfully" "All ${G_RAN} tests completed successfully with the expected output."
     else
         send_error "ntopng TESTS completed with errors" "${G_SUCCESS} out of ${G_RAN} completed successfully." ""
+        send_summary "ntopng TESTS completed with errors" "${G_SUCCESS} out of ${G_RAN} completed successfully."
     fi
 
     #ntopng_cleanup
