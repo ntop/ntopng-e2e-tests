@@ -1,0 +1,10 @@
+{"dns_server":true,"host":"192.168.2.1"}
+{"dns_server":false,"host":"192.168.2.10"}
+{"dns_server":false,"host":"192.168.2.11"}
+{"dns_server":false,"host":"192.168.2.12"}
+{"dns_server":false,"host":"192.168.2.13"}
+{"dns_server":false,"host":"192.168.2.14"}
+{"dns_server":false,"host":"192.168.2.15"}
+{"dns_server":false,"host":"192.168.2.16"}
+{"dns_server":false,"host":"192.168.2.17"}
+{"dns_server":false,"host":"192.168.2.18"}

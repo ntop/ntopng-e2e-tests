@@ -1,0 +1,53 @@
+input: dns_empty_replies.pcap
+
+localnet: 192.168.2.0/24
+
+requires: pro
+
+# The "DNS Server" built-in tag must be set on the host answering the DNS
+# queries (192.168.2.1), and never on its clients.
+#
+# The pcap has one DNS flow per client. In most of them the replies have no
+# records at all (no answers, no authority, no additional): nDPI keeps waiting
+# for a "valid" reply, so the dissection of the flow is ended when the flow is
+# idle rather than by a packet. In that case the direction of the flow used to
+# be evaluated with a direction that was not the one of a packet, the flow was
+# marked as to be swapped, and the client was tagged as DNS server.
+#
+#   192.168.2.10   A query,    NXDomain reply
+#   192.168.2.11   PTR query,  NXDomain reply
+#   192.168.2.12   AAAA query, reply with no error and no records
+#   192.168.2.13   PTR query,  ServFail reply
+#   192.168.2.14   reply only (query not captured)
+#   192.168.2.15   reply, then the next query of the client
+#   192.168.2.16   reply, then query and reply
+#   192.168.2.17   A query, reply with an answer
+#   192.168.2.18   A query with no reply
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # Print whether the host has the DNS Server tag (tag 0, the least significant
+  # bit of the bitmap of the tags of the host)
+  check_dns_server() {
+    local rsp tags
+    rsp=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/config.lua?ifid=0&host=${1}")
+    tags=$(echo "${rsp}" | grep -o '[{,] *"tags" *: *-\?[0-9]\+' | grep -o -- '-\?[0-9]\+$')
+    if [ -z "${tags}" ]; then
+      echo "{\"host\": \"${1}\", \"dns_server\": \"unknown\"}"
+    elif (( tags & 1 )); then
+      echo "{\"host\": \"${1}\", \"dns_server\": true}"
+    else
+      echo "{\"host\": \"${1}\", \"dns_server\": false}"
+    fi
+  }
+
+  # The server
+  check_dns_server 192.168.2.1
+
+  # The clients
+  for i in $(seq 10 18); do
+    check_dns_server "192.168.2.${i}"
+  done
