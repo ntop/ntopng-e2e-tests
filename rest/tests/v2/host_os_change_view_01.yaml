@@ -1,0 +1,26 @@
+input: host_os_change.pcap
+
+localnet: 172.16.1.0/24
+
+requires: pro
+
+# Add a view interface (pcap interface ifid 0, view interface ifid 1)
+options:
+  - -i=view:all
+
+# Same as host_os_change_01.yaml, with the host on a view interface.
+#
+# The flows of a viewed interface have no hosts, and the host of the view is
+# created later on, by the view: the OS learnt from the TCP fingerprint of a
+# flow used to be lost when the host of the view was not there yet. In this
+# pcap the OS of the host was then learnt only from the User-Agent of its
+# second connection (Windows), that is ignored on the other interfaces as it
+# does not match the OS learnt from the TCP fingerprint (Linux).
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # OS of the host of the view (1 = Windows, 4 = Linux, see ndpi_os) and how it has been learnt
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=172.16.1.137" | jq -c '{rc_str, host: .rsp.ip, os: .rsp.os, os_learning: .rsp.os_learning}'

@@ -1,0 +1,21 @@
+input: host_os_change.pcap
+
+localnet: 172.16.1.0/24
+
+# The Operating System of a host must follow what is observed in its traffic.
+#
+# In the pcap the host 172.16.1.137 opens two TCP connections: the first one
+# with the TCP fingerprint of Windows, the second one (10 seconds later) with
+# the TCP fingerprint of Linux.
+#
+# The change of the OS used to be applied to the host only: the information
+# kept about how the OS has been learnt (and, with it, the OS of the asset)
+# was not updated, and was still reporting the first OS.
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # OS of the host (1 = Windows, 4 = Linux, see ndpi_os) and how it has been learnt
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=172.16.1.137" | jq -c '{rc_str, host: .rsp.ip, os: .rsp.os, os_learning: .rsp.os_learning}'
