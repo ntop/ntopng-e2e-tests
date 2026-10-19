@@ -1,0 +1,43 @@
+input: host_os_change.pcap
+
+localnet: 172.16.1.0/24
+
+requires: pro
+
+# A host is tagged with its Operating System (built-in tags 27-31), and it has
+# at most one of these tags: when the OS changes, the new tag replaces the
+# previous one.
+#
+# In the pcap (see host_os_change_01.yaml) the host 172.16.1.137 opens a TCP
+# connection with the TCP fingerprint of Windows and, later on, another one
+# with the TCP fingerprint of Linux: it must have the Linux tag (28) only.
+# The other host (172.16.1.16) only accepts a connection: its OS is not known
+# and it has no OS tag.
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # The OS tags: they must be listed as built-in tags, each one with its name
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/tag/tags_list.lua" | jq -c '.rsp[] | select(.id >= 27 and .id <= 31) | {id, name, reserved}'
+
+  # Print (as a JSON array) the ids of the OS tags set on the host.
+  # NOTE: the bitmap of the tags is 64 bit wide, so it is extracted and decoded
+  # with the shell rather than with jq (see tags_host_user_defined_01.yaml)
+  check_os_tags() {
+    local rsp tags ids="" i
+    rsp=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/config.lua?ifid=0&host=${1}")
+    tags=$(echo "${rsp}" | grep -o '[{,] *"tags" *: *-\?[0-9]\+' | grep -o -- '-\?[0-9]\+$')
+    if [ -z "${tags}" ]; then
+      echo "{\"host\": \"${1}\", \"os_tags\": \"unknown\"}"
+      return
+    fi
+    for i in $(seq 27 31); do
+      if (( (tags >> i) & 1 )); then ids="${ids:+${ids},}${i}"; fi
+    done
+    echo "{\"host\": \"${1}\", \"os_tags\": [${ids}]}"
+  }
+
+  check_os_tags 172.16.1.137
+  check_os_tags 172.16.1.16
