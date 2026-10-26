@@ -1,0 +1,99 @@
+input: flow_direction_swap.pcap
+
+localnet: 192.168.2.0/24
+
+requires: pro
+
+# Add a view interface (pcap interface ifid 0, view interface ifid 1)
+options:
+  - -i=view:all
+
+# Same as flow_direction_swap_01.yaml, with a view interface. There the
+# flows of the pcap interface have no hosts: a swap only exchanges the IP
+# addresses of the flow (see Flow::swap()), and the hosts of the view get the
+# client and server roles from the flows when they are propagated to the
+# view. Checked on the view (ifid 1):
+# - the client and the server of the active flows;
+# - the roles of the hosts: no client must be counted as server of a flow, no
+#   server as client, and only 192.168.2.1 must provide the DNS service.
+#   When the view visits a flow before its swap, it has to swap the client and
+#   the server hosts of the flow too, otherwise the roles are reversed and the
+#   DNS service is set on the client. The view mostly visits these flows after
+#   the swap here, so that case is covered only at times.
+# The flows dumped to ClickHouse are checked by flow_direction_swap_01.yaml
+# only: with a view, some flows are not dumped at times (unrelated issue).
+#
+# The client of each flow must be the host that started the communication
+# (192.168.2.x), and the server the DNS server (192.168.2.1:53) or the SSH
+# server (192.168.2.2:22), whatever the order the packets are captured, and
+# also when only the server packets are captured.
+#
+# Covered issues:
+# - A DNS flow starting with a reply was swapped twice: once on detection (on
+#   the RA bit instead of the QR bit), and once more by the DNS swap check run
+#   when the dissection ended, with the direction of the packet stored before
+#   the first swap (.10, .16).
+# - A swap is performed by the next packet of the flow, in either direction:
+#   when no packet followed the request, it was never performed and the flow
+#   was left reversed. This happens with flows with a single packet (.20,
+#   .21), and with swaps requested after the last packet, e.g. by the DNS swap
+#   check when the dissection is ended without a packet (.15). With two server
+#   packets the swap is performed by the second one (.22).
+# DNS
+#   192.168.2.10   reply (RA set) then query
+#   192.168.2.11   reply (RA not set) then query
+#   192.168.2.12   query then reply
+#   192.168.2.13   reply (RA set) only
+#   192.168.2.14   reply (RA not set) only
+#   192.168.2.15   reply with no records, query, reply with no records
+#   192.168.2.16   reply, query, reply
+#   192.168.2.17   query with RA set, then reply
+#   192.168.2.18   query only
+#
+# SSH (no SYN seen unless noted)
+#   192.168.2.20   RST|ACK from the server only
+#   192.168.2.21   SYN|ACK from the server only
+#   192.168.2.22   two ACK from the server only
+#   192.168.2.23   RST|ACK from the server, then an ACK from the client
+#   192.168.2.24   complete connection (SYN, SYN|ACK, ACK, FIN, FIN, ACK)
+
+runtime: |
+  host_data() {
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${1}"
+  }
+
+  # The flows are propagated to the view periodically: wait until the 14 flows
+  # have been accounted to the two servers (at most 15 seconds)
+  for i in $(seq 1 15); do
+    n=0
+    for h in 192.168.2.1 192.168.2.2; do
+      n=$((n + $(host_data ${h} | jq '.rsp["total_flows.as_server"] // 0' 2>/dev/null || echo 0)))
+    done
+    [ "${n}" -ge 14 ] && break
+    sleep 1
+  done
+
+  # Only the wrong roles in the active flows are printed (a client counted as
+  # server of a flow, a server counted as client), not the number of flows: due
+  # to a race between the swap of a flow and its propagation to the view, a host
+  # may be missing its role in a swapped flow (pre-existing, unrelated to the
+  # issues above). The total flows are not used, as they keep the role of a
+  # host before the swap (as with the interfaces that are not viewed)
+  check_server() {
+    host_data "${1}" | jq -c --arg host "${1}" 'if .rc == 0 then {host: $host, dns_server: (.rsp.services.dns == true), client_role: ((.rsp["active_flows.as_client"] // 0) > 0)} else {host: $host, rc: .rc} end'
+  }
+  check_client() {
+    host_data "${1}" | jq -c --arg host "${1}" 'if .rc == 0 then {host: $host, dns_server: (.rsp.services.dns == true), server_role: ((.rsp["active_flows.as_server"] // 0) > 0)} else {host: $host, rc: .rc} end'
+  }
+
+  # The servers
+  check_server 192.168.2.1
+  check_server 192.168.2.2
+
+  # The clients
+  for i in $(seq 10 18) $(seq 20 24); do
+    check_client "192.168.2.${i}"
+  done
+
+  # Client and server of the active flows of the view
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=1&perPage=100" | jq -c '.rsp.data[] | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, bytes: .bytes}'

@@ -1,0 +1,60 @@
+input: flow_direction_swap.pcap
+
+localnet: 192.168.2.0/24
+
+requires: pro
+
+clickhouse: true
+
+# The client of each flow, as dumped to ClickHouse, must be the host that
+# started the communication (192.168.2.x), and the server the DNS server
+# (192.168.2.1:53) or the SSH server (192.168.2.2:22), whatever the order the
+# packets are captured, and also when only the server packets are captured.
+#
+# Covered issues:
+# - A DNS flow starting with a reply was swapped twice: once on detection (on
+#   the RA bit instead of the QR bit), and once more by the DNS swap check run
+#   when the dissection ended, with the direction of the packet stored before
+#   the first swap (.10, .16).
+# - A swap is performed by the next packet of the flow, in either direction:
+#   when no packet followed the request, it was never performed and the flow
+#   was dumped reversed. This happens with flows with a single packet (.20,
+#   .21), and with swaps requested after the last packet, e.g. by the DNS swap
+#   check when the dissection is ended without a packet (.15). With two server
+#   packets the swap is performed by the second one (.22).
+# - The TCP flags counters (tcp_flags_analysis) of the client to server
+#   direction were lost when a TCP flow was swapped (.23).
+#
+# DNS
+#   192.168.2.10   reply (RA set) then query
+#   192.168.2.11   reply (RA not set) then query
+#   192.168.2.12   query then reply
+#   192.168.2.13   reply (RA set) only
+#   192.168.2.14   reply (RA not set) only
+#   192.168.2.15   reply with no records, query, reply with no records
+#   192.168.2.16   reply, query, reply
+#   192.168.2.17   query with RA set, then reply
+#   192.168.2.18   query only
+#
+# SSH (no SYN seen unless noted)
+#   192.168.2.20   RST|ACK from the server only
+#   192.168.2.21   SYN|ACK from the server only
+#   192.168.2.22   two ACK from the server only
+#   192.168.2.23   RST|ACK from the server, then an ACK from the client
+#   192.168.2.24   complete connection (SYN, SYN|ACK, ACK, FIN, FIN, ACK)
+
+post: |
+  # The ClickHouse DB of the test depends on the test slot, derived here from
+  # the HTTP port (rewritten by run-one.sh for parallel slots)
+  port=$(echo "localhost:3333" | cut -d: -f2)
+  if [ "${port}" = "3333" ]; then db="ntopngtests"; else db="ntopngtests_$((port - 3300))"; fi
+
+  # Flows are flushed to ClickHouse when the interface is shut down: wait for
+  # the 14 flows of the pcap (at most 30 seconds)
+  for i in $(seq 1 30); do
+    n=$(clickhouse-client -q "SELECT count() FROM ${db}.flows" < /dev/null 2>/dev/null)
+    [ "${n:-0}" -ge 14 ] && break
+    sleep 1
+  done
+
+  clickhouse-client -q "SELECT IPv4NumToString(IPV4_SRC_ADDR) AS cli_ip, IP_SRC_PORT AS cli_port, IPv4NumToString(IPV4_DST_ADDR) AS srv_ip, IP_DST_PORT AS srv_port, PROTOCOL, L7_PROTO, SRC2DST_PACKETS AS cli2srv_pkts, DST2SRC_PACKETS AS srv2cli_pkts, SRC2DST_BYTES AS cli2srv_bytes, DST2SRC_BYTES AS srv2cli_bytes, SRC2DST_TCP_FLAGS AS cli2srv_tcp_flags, DST2SRC_TCP_FLAGS AS srv2cli_tcp_flags, JSONExtractRaw(PROTOCOL_INFO_JSON, 'tcp_flags_analysis') AS tcp_flags_analysis FROM ${db}.flows ORDER BY cli_ip, srv_ip FORMAT JSONEachRow" < /dev/null
