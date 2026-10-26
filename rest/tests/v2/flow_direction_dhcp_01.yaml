@@ -1,0 +1,53 @@
+input: flow_direction_dhcp.pcap
+
+localnet: 192.168.3.0/24,fd00:3::/64
+
+requires: pro
+
+# NOTE: the expected output records the CURRENT behaviour, which is partly
+# wrong: the direction of DHCP/DHCPv6 flows is not checked, so the flows whose
+# first packet is a reply sent by the server (unicast OFFER/ACK, DHCPv6 REPLY,
+# RECONFIGURE, relay replies) are recorded with the server as client. Besides,
+# the relay agent 192.168.3.250 gets the DHCP service/tag (it sends from port
+# 67), while the DHCPv6 server fd00:3::1 gets none. This test is meant to be
+# useful for a future fix: its expected output is to be reviewed then.
+# NOTE: the Unexpected DHCP server check (and its test
+# alert_flow_risk_unexpected_dhcp) relies on the current, reversed, direction
+# of the server replies: a fix needs to update it too.
+#
+# Expected (correct) client of each flow: the DHCP client (or the relay agent,
+# for relayed messages); server: the DHCP server (192.168.3.1, fd00:3::1). A
+# reply sent to broadcast/multicast should not make the broadcast/multicast
+# address the client. The DHCP service and the DHCP Server tag should be on the
+# DHCP servers only.
+#
+# DHCP
+#   0.0.0.0        DISCOVER to broadcast
+#   192.168.3.1    OFFER to broadcast
+#   192.168.3.11   unicast ACK, then renew REQUEST
+#   192.168.3.12   renew REQUEST, then unicast ACK
+#   192.168.3.13   unicast ACK only
+#   192.168.3.14   INFORM to broadcast, then unicast ACK (another flow)
+#   192.168.3.250  relay agent: relayed request, then reply (port 67 to 67)
+#   192.168.3.251  relay agent: reply, then relayed request
+# DHCPv6
+#   fe80::30       SOLICIT to multicast
+#   fe80::31       REPLY, then RENEW
+#   fe80::32       RENEW, then REPLY
+#   fe80::33       REPLY only
+#   fe80::34       RECONFIGURE (sent by the server), then RENEW
+#   fd00:3::fa     relay agent: RELAY-REPL, then RELAY-FORW (port 547 to 547)
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # Client and server of the active flows
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=0&perPage=100" | jq -c '.rsp.data[] | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, l7: .protocol.l7}'
+
+  # DHCP service and DHCP Server tag (bit 2 of the tags bitmap) of the hosts
+  for h in 192.168.3.1 192.168.3.11 192.168.3.12 192.168.3.13 192.168.3.14 192.168.3.250 192.168.3.251 fd00:3::1 fe80::31 fe80::32 fe80::33 fe80::34 fd00:3::fa; do
+    tags=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/config.lua?ifid=0&host=${h}" | jq '.rsp.tags // 0')
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=${h}" | jq -c --arg host "${h}" --argjson tags "${tags:-0}" 'if .rc == 0 then {host: $host, dhcp_server: (.rsp.services.dhcp == true), dhcp_server_tag: ((($tags / 4) | floor) % 2 == 1)} else {host: $host, rc: .rc} end'
+  done
