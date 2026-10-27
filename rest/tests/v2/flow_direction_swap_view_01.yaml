@@ -62,17 +62,6 @@ runtime: |
     curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${1}"
   }
 
-  # The flows are propagated to the view periodically: wait until the 14 flows
-  # have been accounted to the two servers (at most 15 seconds)
-  for i in $(seq 1 15); do
-    n=0
-    for h in 192.168.2.1 192.168.2.2; do
-      n=$((n + $(host_data ${h} | jq '.rsp["total_flows.as_server"] // 0' 2>/dev/null || echo 0)))
-    done
-    [ "${n}" -ge 14 ] && break
-    sleep 1
-  done
-
   # Only the wrong roles in the active flows are printed (a client counted as
   # server of a flow, a server counted as client), not the number of flows: due
   # to a race between the swap of a flow and its propagation to the view, a host
