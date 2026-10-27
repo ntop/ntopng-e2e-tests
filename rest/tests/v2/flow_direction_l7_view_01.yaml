@@ -1,0 +1,61 @@
+input: flow_direction_l7.pcap
+
+localnet: 192.168.2.0/24
+
+requires: pro
+
+# Add a view interface (pcap interface ifid 0, view interface ifid 1)
+options:
+  - -i=view:all
+
+# Same as flow_direction_l7_01.yaml, with a view interface: the client and the
+# server of the active flows of the view (ifid 1), and the roles of the hosts
+# of the view (no client counted as server of a flow, no server as client).
+# The services are not checked here: on a view they are moved from the flows to
+# the hosts at a later visit of the view, that the test cannot wait for.
+#
+# NTP
+#   192.168.2.30   server reply (mode 4), then client request (mode 3)
+#   192.168.2.31   server reply only
+#   192.168.2.32   client request, then server reply
+#   192.168.2.33   symmetric mode packet (no decision), then server reply
+# ICMP
+#   192.168.2.40   echo reply, then echo request
+#   192.168.2.41   echo reply only
+#   192.168.2.42   echo request, then echo reply
+#   192.168.2.43   timestamp reply, then timestamp request
+# ICMPv6
+#   fd00::50       echo reply, then echo request
+#   fd00::51       echo request, then echo reply
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  host_data() {
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${1}"
+  }
+
+  # The flows are propagated to the view periodically: wait until the 10 flows
+  # have been accounted to the servers (at most 15 seconds)
+  for i in $(seq 1 15); do
+    n=0
+    for h in 192.168.2.1 192.168.2.2 fd00::2; do
+      n=$((n + $(host_data ${h} | jq '.rsp["active_flows.as_server"] // 0' 2>/dev/null || echo 0)))
+    done
+    [ "${n}" -ge 10 ] && break
+    sleep 1
+  done
+
+  # Client and server of the active flows of the view
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=1&perPage=100" | jq -c '.rsp.data[] | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, l7: .protocol.l7, bytes: .bytes}'
+
+  # Only the wrong roles in the active flows are printed (see
+  # flow_direction_swap_view_01.yaml)
+  for h in 192.168.2.1 192.168.2.2 fd00::2; do
+    host_data "${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, client_role: ((.rsp["active_flows.as_client"] // 0) > 0)} else {host: $host, rc: .rc} end'
+  done
+  for h in 192.168.2.30 192.168.2.31 192.168.2.32 192.168.2.33 192.168.2.40 192.168.2.41 192.168.2.42 192.168.2.43 fd00::50 fd00::51; do
+    host_data "${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, server_role: ((.rsp["active_flows.as_server"] // 0) > 0)} else {host: $host, rc: .rc} end'
+  done

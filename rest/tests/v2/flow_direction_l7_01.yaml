@@ -1,0 +1,49 @@
+input: flow_direction_l7.pcap
+
+localnet: 192.168.2.0/24
+
+requires: pro
+
+# The client of each NTP and ICMP flow must be the host sending the requests
+# (192.168.2.x, fd00::5x), and the server the NTP server (192.168.2.1:123) or
+# the host answering the pings (192.168.2.2, fd00::2), whatever the order the
+# packets are captured, and also when only the server packets are captured.
+# The direction is decided by the first packet that is a request or a reply.
+#
+# Covered issues:
+# - NTP flows starting with the server packet were never swapped: the nDPI
+#   NTP dissector keeps the dissection open after the first packet, and the
+#   swap was checked only when the detection completed on the first packet.
+#   The NTP service and the NTP Server tag were then set on the client (.30).
+# - ICMPv6 flows starting with an echo reply were never swapped: the echo
+#   reply type of ICMP (0) was checked instead of the ICMPv6 one (129).
+#
+# NTP
+#   192.168.2.30   server reply (mode 4), then client request (mode 3)
+#   192.168.2.31   server reply only
+#   192.168.2.32   client request, then server reply
+#   192.168.2.33   symmetric mode packet (no decision), then server reply
+# ICMP
+#   192.168.2.40   echo reply, then echo request
+#   192.168.2.41   echo reply only
+#   192.168.2.42   echo request, then echo reply
+#   192.168.2.43   timestamp reply, then timestamp request
+# ICMPv6
+#   fd00::50       echo reply, then echo request
+#   fd00::51       echo request, then echo reply
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # Client and server of the active flows
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=0&perPage=100" | jq -c '.rsp.data[] | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, l7: .protocol.l7, bytes: .bytes}'
+
+  # The NTP service, and the NTP Server tag (bit 1 of the tags bitmap), must be
+  # on the NTP server only (the service is set on the server of the
+  # bidirectional NTP flows when they end)
+  for h in 192.168.2.1 192.168.2.30 192.168.2.31 192.168.2.32 192.168.2.33; do
+    tags=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/config.lua?ifid=0&host=${h}" | jq '.rsp.tags // 0')
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=${h}" | jq -c --arg host "${h}" --argjson tags "${tags:-0}" '{host: $host, ntp_server: (if .rc == 0 then (.rsp.services.ntp == true) else "unknown" end), ntp_server_tag: ((($tags / 2) | floor) % 2 == 1)}'
+  done
