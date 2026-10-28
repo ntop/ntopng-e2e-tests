@@ -1,0 +1,34 @@
+input: dhcp_v4_cases.pcap
+
+localnet: 192.168.4.0/24
+
+options:
+  - -i=view:all
+
+requires: pro
+
+# Same as alert_unexpected_dhcp_server_02, with a view interface
+# (pcap interface ifid 0, view interface ifid 1): the alerts are read on
+# the view (the viewed interface has no alert store of its own).
+#
+# Unexpected DHCP server alert with 192.168.4.1 configured as DHCP server on
+# VLAN 10 only (192.168.4.1@10): its flows on VLAN 20 (ACK to .41) and without
+# VLAN must raise the alert too, the flow on VLAN 10 (ACK to .40) must not.
+# Same cases as alert_unexpected_dhcp_server_01 otherwise (e.g. no alert for
+# the RELEASE of .15 to 192.168.4.1, which is not replied).
+
+ignore:
+  - duration
+  - title
+  - epoch_end
+  - num_records_processed
+  - query_duration_msec
+
+pre: |
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"dhcp_list": "192.168.4.1@10"}' http://localhost:3333/lua/rest/v2/set/network/config.lua -o /dev/null
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "unexpected_dhcp"}' http://localhost:3333/lua/rest/v2/enable/check.lua -o /dev/null
+
+post: |
+  # The alerts: flow, description, roles and score
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 1, "status": "any", "length": 100}' http://localhost:3333/lua/rest/v2/get/flow/alert/list.lua | jq -c '[.rsp.records[] | {cli_ip: .cli_ip.value, cli_port: .cli_port.value, srv_ip: .srv_ip.value, srv_port: .srv_port.value, vlan: .vlan_id.value, alert: .alert_name, description: .description.descr, cli_role: .cli_role.value, srv_role: .srv_role.value, score: .score.value}] | sort_by(.cli_ip, .srv_ip, .vlan) | .[]'

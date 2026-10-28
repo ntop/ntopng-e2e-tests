@@ -22,3 +22,4 @@
 {"dhcp_server":false,"dhcp_server_tag":false,"host":"192.168.4.252"}
 {"dhcp_server":false,"dhcp_server_tag":false,"host":"192.168.4.253"}
 {"dhcp_server":true,"dhcp_server_tag":true,"host":"192.168.4.254"}
+{"dhcp_server":false,"dhcp_server_tag":false,"host":"255.255.255.255"}

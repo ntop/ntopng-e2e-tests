@@ -1,0 +1,37 @@
+input: dhcp_v6_cases.pcap
+
+localnet: fd00:6::/64
+
+options:
+  - -i=view:all
+
+requires: pro
+
+# Same as alert_unexpected_dhcpv6_server_01, with a view interface (pcap
+# interface ifid 0, view interface ifid 1): the flow checks run on the viewed
+# (pcap) interface, so the alerts are the same. Both the alerts and the score
+# of the hosts are read on the view (the viewed interface has no alert store
+# of its own: get/flow/alert/list.lua fails with ifid 0).
+
+ignore:
+  - duration
+  - title
+  - epoch_end
+  - num_records_processed
+  - query_duration_msec
+
+pre: |
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"dhcp_list": "fd00:6::1"}' http://localhost:3333/lua/rest/v2/set/network/config.lua -o /dev/null
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "unexpected_dhcp"}' http://localhost:3333/lua/rest/v2/enable/check.lua -o /dev/null
+
+runtime: |
+  # Score of the hosts of the view, as client and as server (who is blamed)
+  for h in fd00:6::1 fd00:6::2 fe80::20 fe80::21 fe80::22 fe80::23 fe80::24 \
+           fe80::32 fd00:6::fd fd00:6::fe fd00:6::fc; do
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, score_as_client: .rsp["score.as_client"], score_as_server: .rsp["score.as_server"]} else {host: $host, rc: .rc} end'
+  done
+
+post: |
+  # The alerts: flow, description, roles and score
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 1, "status": "any", "length": 100}' http://localhost:3333/lua/rest/v2/get/flow/alert/list.lua | jq -c '[.rsp.records[] | {cli_ip: .cli_ip.value, cli_port: .cli_port.value, srv_ip: .srv_ip.value, srv_port: .srv_port.value, vlan: .vlan_id.value, alert: .alert_name, description: .description.descr, cli_role: .cli_role.value, srv_role: .srv_role.value, score: .score.value}] | sort_by(.cli_ip, .srv_ip, .vlan) | .[]'

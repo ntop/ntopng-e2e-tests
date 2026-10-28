@@ -1,0 +1,34 @@
+input: dhcp_v6_cases.pcap
+
+localnet: fd00:6::/64
+
+options:
+  - -i=view:all
+
+requires: pro
+
+# Same as tags_dhcpv6_server_01, on the view interface (ifid 1): the DHCP
+# service of the hosts of dhcp_v6_cases.pcap (see flow_direction_dhcpv6_01 for
+# the flows).
+#
+# Expected: the service on the DHCPv6 servers fd00:6::1 (also on VLAN 10 and
+# 20) and fd00:6::2, and on the relay agent fd00:6::fc that delivers a reply
+# to a client; not on the clients, on the relay agents talking to the
+# servers (fd00:6::fa, fb, fd, fe) and on ff02::1:2 (the server of the
+# requests sent to multicast).
+# NOTE: the DHCP Server tag is not checked here: the tags are read with
+# get/host/config.lua, which ignores ifid (it does not select the interface)
+# and fails on the view, whose hosts are not on the viewed interface.
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # DHCP service of the hosts of the view
+  for h in fd00:6::1 fd00:6::1@10 fd00:6::1@20 fd00:6::2 \
+           fe80::11 fe80::12 fe80::13 fe80::14 fe80::15 fe80::16 fe80::17 \
+           fe80::20 fe80::21 fe80::22 fe80::23 fe80::24 fe80::32 fe80::40@10 fe80::41@20 \
+           fd00:6::fa fd00:6::fb fd00:6::fc fd00:6::fd fd00:6::fe ff02::1:2; do
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, dhcp_server: (.rsp.services.dhcp == true)} else {host: $host, rc: .rc} end'
+  done

@@ -1,0 +1,30 @@
+input: dhcp_v6_cases.pcap
+
+localnet: fd00:6::/64
+
+options:
+  - -i=view:all
+
+requires: pro
+
+# Same as flow_direction_dhcpv6_01, with a view interface (pcap interface
+# ifid 0, view interface ifid 1): the client and the server of the active
+# flows of the view, and the number of active flows of the hosts of the view
+# as client and as server (the flows swapped by the viewed interface must be
+# accounted with the swapped roles).
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # Client and server of the active flows of the view
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=1&perPage=100" | jq -c '[.rsp.data[] | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, vlan: .vlan, l7: .protocol.l7}] | sort_by(.cli_ip, .srv_ip, .vlan) | .[]'
+
+  # Active flows of the hosts of the view, as client and as server
+  for h in fd00:6::1 fd00:6::1@10 fd00:6::1@20 fd00:6::2 \
+           fe80::11 fe80::12 fe80::13 fe80::14 fe80::15 fe80::16 fe80::17 \
+           fe80::20 fe80::21 fe80::22 fe80::23 fe80::24 fe80::32 fe80::40@10 fe80::41@20 \
+           fd00:6::fa fd00:6::fb fd00:6::fc fd00:6::fd fd00:6::fe; do
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, as_client: (.rsp["active_flows.as_client"] // 0), as_server: (.rsp["active_flows.as_server"] // 0)} else {host: $host, rc: .rc} end'
+  done
