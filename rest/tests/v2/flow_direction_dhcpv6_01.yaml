@@ -1,0 +1,49 @@
+input: dhcp_v6_cases.pcap
+
+localnet: fd00:6::/64
+
+requires: pro
+
+# Client and server of DHCPv6 flows (dhcp_v6_cases.pcap, generated with
+# scapy: one flow per case, listed below).
+#
+# Expected client: the DHCPv6 client, or the relay agent for relayed messages
+# (the relay agent is the client of the DHCPv6 server); expected server: the
+# DHCPv6 server, or the relay agent when it delivers a reply to the client. A
+# message sent to multicast keeps its sender as client.
+# The direction is decided by the first packet (message type): the flows
+# marked "reply first" below start with a packet sent by the server (or by a
+# relay agent delivering a reply) and are swapped.
+#
+# Allowed server fd00:6::1
+#   fe80::10       SOLICIT to multicast (ff02::1:2)
+#   fe80::11       unicast ADVERTISE only                       (reply first)
+#   fe80::12       unicast REQUEST, then REPLY
+#   fe80::13       REPLY, then unicast RENEW                    (reply first)
+#   fe80::14       REPLY only                                   (reply first)
+#   fe80::15       unicast RELEASE only
+#   fe80::16       INFORMATION-REQUEST, then REPLY
+#   fe80::17       RECONFIGURE (sent by the server), then RENEW (reply first)
+# Relay agents of the allowed server (port 547 to 547)
+#   fd00:6::fa     RELAY-FORW, then RELAY-REPL
+#   fd00:6::fb     RELAY-REPL, then RELAY-FORW                  (reply first)
+#   fd00:6::fc     relay delivering a REPLY to the client fe80::32 (reply first)
+# Rogue server fd00:6::2
+#   fe80::20       unicast ADVERTISE only                       (reply first)
+#   fe80::21       unicast RENEW, then REPLY
+#   fe80::22       REPLY, then RENEW                            (reply first)
+#   fe80::24       unicast RENEW only (no reply)
+#   fd00:6::fd     relay: RELAY-FORW, then RELAY-REPL
+#   fd00:6::fe     relay: RELAY-REPL, then RELAY-FORW           (reply first)
+#   fe80::23       SOLICIT from a non-DHCPv6 port (45474)
+# Allowed server on VLANs
+#   fe80::40       REPLY only, VLAN 10                          (reply first)
+#   fe80::41       REPLY only, VLAN 20                          (reply first)
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # Client and server of the active flows
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=0&perPage=100" | jq -c '[.rsp.data[] | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, vlan: .vlan, l7: .protocol.l7}] | sort_by(.cli_ip, .srv_ip, .vlan) | .[]'

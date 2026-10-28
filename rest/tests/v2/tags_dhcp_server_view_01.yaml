@@ -13,9 +13,10 @@ requires: pro
 #
 # Expected: the service on the DHCP servers 192.168.4.1 (also on VLAN 10 and
 # 20) and 192.168.4.2, and on the relay agent 192.168.4.254 that delivers a
-# reply to a client; not on the clients and on the relay agents talking to
-# the servers (.250, .251, .252, .253): they use port 67 too, but the DHCP
-# server of the flow is decided by the requests and replies, not by the ports.
+# reply to a client; not on the clients, on the relay agents talking to the
+# servers (.250, .251, .252, .253): they use port 67 too, but the DHCP server
+# of the flow is decided by the requests and replies, not by the ports, and
+# on 255.255.255.255 (the server of the requests sent to broadcast).
 # NOTE: the DHCP Server tag is not checked here: the tags are read with
 # get/host/config.lua, which ignores ifid (it does not select the interface)
 # and fails on the view, whose hosts are not on the viewed interface.
@@ -29,6 +30,6 @@ runtime: |
   for h in 192.168.4.1 192.168.4.1@10 192.168.4.1@20 192.168.4.2 \
            192.168.4.11 192.168.4.12 192.168.4.13 192.168.4.14 192.168.4.15 192.168.4.16 192.168.4.17 \
            192.168.4.20 192.168.4.21 192.168.4.22 192.168.4.23 192.168.4.24 192.168.4.32 192.168.4.40@10 192.168.4.41@20 \
-           192.168.4.250 192.168.4.251 192.168.4.252 192.168.4.253 192.168.4.254; do
+           192.168.4.250 192.168.4.251 192.168.4.252 192.168.4.253 192.168.4.254 255.255.255.255; do
     curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, dhcp_server: (.rsp.services.dhcp == true)} else {host: $host, rc: .rc} end'
   done

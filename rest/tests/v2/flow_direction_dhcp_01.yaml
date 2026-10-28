@@ -4,15 +4,11 @@ localnet: 192.168.3.0/24,fd00:3::/64
 
 requires: pro
 
-# NOTE: the direction of DHCP (v4) flows is decided by the first packet
-# (BOOTREQUEST or BOOTREPLY), see flow_direction_dhcp_02. The expected output
-# of the DHCPv6 flows records the CURRENT behaviour, which is partly wrong: the
-# direction of DHCPv6 flows is not checked, so the flows whose first packet is
-# a reply sent by the server (REPLY, RECONFIGURE, relay replies) are recorded
-# with the server as client, and the DHCPv6 server fd00:3::1 gets no DHCP
-# service/tag.
+# The direction of DHCP and DHCPv6 flows is decided by the first packet
+# (BOOTREQUEST or BOOTREPLY, DHCPv6 message type), see flow_direction_dhcp_02
+# and flow_direction_dhcpv6_01.
 #
-# Expected (correct) client of each flow: the DHCP client (or the relay agent,
+# Expected client of each flow: the DHCP client (or the relay agent,
 # for relayed messages); server: the DHCP server (192.168.3.1, fd00:3::1). A
 # reply sent to broadcast/multicast should not make the broadcast/multicast
 # address the client. The DHCP service and the DHCP Server tag should be on the
