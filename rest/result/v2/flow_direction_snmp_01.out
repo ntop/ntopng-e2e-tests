@@ -14,6 +14,9 @@
 {"cli_ip":"192.168.8.22","cli_port":161,"l7":"SNMP","srv_ip":"192.168.8.1","srv_port":162}
 {"cli_ip":"192.168.8.23","cli_port":40023,"l7":"SNMP","srv_ip":"192.168.8.1","srv_port":162}
 {"cli_ip":"192.168.8.24","cli_port":40024,"l7":"SNMP","srv_ip":"192.168.8.1","srv_port":162}
+{"cli_ip":"192.168.8.26","cli_port":40026,"l7":"SNMP","srv_ip":"192.168.8.1","srv_port":161}
+{"cli_ip":"192.168.8.27","cli_port":40027,"l7":"SNMP","srv_ip":"192.168.8.1","srv_port":161}
+{"cli_ip":"192.168.8.28","cli_port":40028,"l7":"SNMP","srv_ip":"192.168.8.1","srv_port":162}
 {"host":"192.168.8.1","server_ports":[162]}
 {"host":"192.168.8.10","server_ports":[161]}
 {"host":"192.168.8.11","server_ports":[161]}
@@ -31,3 +34,6 @@
 {"host":"192.168.8.23","server_ports":[]}
 {"host":"192.168.8.24","server_ports":[]}
 {"host":"192.168.8.25","server_ports":[161]}
+{"host":"192.168.8.26","server_ports":[]}
+{"host":"192.168.8.27","server_ports":[]}
+{"host":"192.168.8.28","server_ports":[]}
