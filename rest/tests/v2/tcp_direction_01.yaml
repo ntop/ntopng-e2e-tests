@@ -1,0 +1,141 @@
+input: tcp_direction_cases.pcap
+
+localnet: 192.168.0.0/16
+
+requires: pro
+
+# Client and server of TCP flows (tcp_direction_cases.pcap, generated with
+# scapy: one flow per case, listed below), and the server ports learned by
+# the hosts.
+#
+# Flow i: client 192.168.9.i, server 192.168.10.i (port 5555; 2222 for the SSH
+# flows; 587 for the last one, a replica of an SMTP flow seen in production).
+# Expected: the client is always 192.168.9.i, whatever the order the packets
+# are captured in and the order of the ports. Mid-stream flows (no handshake
+# captured) cannot be told apart from their packets: their expected client is
+# still recorded here, to show the guess.
+# NOTE: the expected output records the CURRENT behaviour (see client_ok).
+#
+#   1   192.168.9.1:40001 -> 192.168.10.1:5555  no stray; SYN, SYN-ACK, ACK; client port > server port
+#   2   192.168.9.2:40002 -> 192.168.10.2:5555  stray client ACK; SYN, SYN-ACK, ACK; client port > server port
+#   3   192.168.9.3:40003 -> 192.168.10.3:5555  stray client RST; SYN, SYN-ACK, ACK; client port > server port
+#   4   192.168.9.4:40004 -> 192.168.10.4:5555  stray client FIN-ACK; SYN, SYN-ACK, ACK; client port > server port
+#   5   192.168.9.5:40005 -> 192.168.10.5:5555  stray server ACK; SYN, SYN-ACK, ACK; client port > server port
+#   6   192.168.9.6:40006 -> 192.168.10.6:5555  stray server RST; SYN, SYN-ACK, ACK; client port > server port
+#   7   192.168.9.7:40007 -> 192.168.10.7:5555  stray server FIN-ACK; SYN, SYN-ACK, ACK; client port > server port
+#   8   192.168.9.8:40008 -> 192.168.10.8:5555  no stray; SYN-ACK before SYN; client port > server port
+#   9   192.168.9.9:40009 -> 192.168.10.9:5555  stray client ACK; SYN-ACK before SYN; client port > server port
+#   10  192.168.9.10:40010 -> 192.168.10.10:5555  stray client RST; SYN-ACK before SYN; client port > server port
+#   11  192.168.9.11:40011 -> 192.168.10.11:5555  stray client FIN-ACK; SYN-ACK before SYN; client port > server port
+#   12  192.168.9.12:40012 -> 192.168.10.12:5555  stray server ACK; SYN-ACK before SYN; client port > server port
+#   13  192.168.9.13:40013 -> 192.168.10.13:5555  stray server RST; SYN-ACK before SYN; client port > server port
+#   14  192.168.9.14:40014 -> 192.168.10.14:5555  stray server FIN-ACK; SYN-ACK before SYN; client port > server port
+#   15  192.168.9.15:40015 -> 192.168.10.15:5555  no stray; SYN-ACK, ACK, SYN last; client port > server port
+#   16  192.168.9.16:40016 -> 192.168.10.16:5555  stray client ACK; SYN-ACK, ACK, SYN last; client port > server port
+#   17  192.168.9.17:40017 -> 192.168.10.17:5555  stray client RST; SYN-ACK, ACK, SYN last; client port > server port
+#   18  192.168.9.18:40018 -> 192.168.10.18:5555  stray client FIN-ACK; SYN-ACK, ACK, SYN last; client port > server port
+#   19  192.168.9.19:40019 -> 192.168.10.19:5555  stray server ACK; SYN-ACK, ACK, SYN last; client port > server port
+#   20  192.168.9.20:40020 -> 192.168.10.20:5555  stray server RST; SYN-ACK, ACK, SYN last; client port > server port
+#   21  192.168.9.21:40021 -> 192.168.10.21:5555  stray server FIN-ACK; SYN-ACK, ACK, SYN last; client port > server port
+#   22  192.168.9.22:40022 -> 192.168.10.22:5555  no stray; SYN missed; client port > server port
+#   23  192.168.9.23:40023 -> 192.168.10.23:5555  stray client ACK; SYN missed; client port > server port
+#   24  192.168.9.24:40024 -> 192.168.10.24:5555  stray client RST; SYN missed; client port > server port
+#   25  192.168.9.25:40025 -> 192.168.10.25:5555  stray client FIN-ACK; SYN missed; client port > server port
+#   26  192.168.9.26:40026 -> 192.168.10.26:5555  stray server ACK; SYN missed; client port > server port
+#   27  192.168.9.27:40027 -> 192.168.10.27:5555  stray server RST; SYN missed; client port > server port
+#   28  192.168.9.28:40028 -> 192.168.10.28:5555  stray server FIN-ACK; SYN missed; client port > server port
+#   29  192.168.9.29:40029 -> 192.168.10.29:5555  no stray; mid-stream, client first; client port > server port
+#   30  192.168.9.30:40030 -> 192.168.10.30:5555  stray client ACK; mid-stream, client first; client port > server port
+#   31  192.168.9.31:40031 -> 192.168.10.31:5555  stray client RST; mid-stream, client first; client port > server port
+#   32  192.168.9.32:40032 -> 192.168.10.32:5555  stray client FIN-ACK; mid-stream, client first; client port > server port
+#   33  192.168.9.33:40033 -> 192.168.10.33:5555  stray server ACK; mid-stream, client first; client port > server port
+#   34  192.168.9.34:40034 -> 192.168.10.34:5555  stray server RST; mid-stream, client first; client port > server port
+#   35  192.168.9.35:40035 -> 192.168.10.35:5555  stray server FIN-ACK; mid-stream, client first; client port > server port
+#   36  192.168.9.36:40036 -> 192.168.10.36:5555  no stray; mid-stream, server first; client port > server port
+#   37  192.168.9.37:40037 -> 192.168.10.37:5555  stray client ACK; mid-stream, server first; client port > server port
+#   38  192.168.9.38:40038 -> 192.168.10.38:5555  stray client RST; mid-stream, server first; client port > server port
+#   39  192.168.9.39:40039 -> 192.168.10.39:5555  stray client FIN-ACK; mid-stream, server first; client port > server port
+#   40  192.168.9.40:40040 -> 192.168.10.40:5555  stray server ACK; mid-stream, server first; client port > server port
+#   41  192.168.9.41:40041 -> 192.168.10.41:5555  stray server RST; mid-stream, server first; client port > server port
+#   42  192.168.9.42:40042 -> 192.168.10.42:5555  stray server FIN-ACK; mid-stream, server first; client port > server port
+#   43  192.168.9.43:1043 -> 192.168.10.43:5555  no stray; SYN, SYN-ACK, ACK; client port < server port
+#   44  192.168.9.44:1044 -> 192.168.10.44:5555  stray client ACK; SYN, SYN-ACK, ACK; client port < server port
+#   45  192.168.9.45:1045 -> 192.168.10.45:5555  stray client RST; SYN, SYN-ACK, ACK; client port < server port
+#   46  192.168.9.46:1046 -> 192.168.10.46:5555  stray client FIN-ACK; SYN, SYN-ACK, ACK; client port < server port
+#   47  192.168.9.47:1047 -> 192.168.10.47:5555  stray server ACK; SYN, SYN-ACK, ACK; client port < server port
+#   48  192.168.9.48:1048 -> 192.168.10.48:5555  stray server RST; SYN, SYN-ACK, ACK; client port < server port
+#   49  192.168.9.49:1049 -> 192.168.10.49:5555  stray server FIN-ACK; SYN, SYN-ACK, ACK; client port < server port
+#   50  192.168.9.50:1050 -> 192.168.10.50:5555  no stray; SYN-ACK before SYN; client port < server port
+#   51  192.168.9.51:1051 -> 192.168.10.51:5555  stray client ACK; SYN-ACK before SYN; client port < server port
+#   52  192.168.9.52:1052 -> 192.168.10.52:5555  stray client RST; SYN-ACK before SYN; client port < server port
+#   53  192.168.9.53:1053 -> 192.168.10.53:5555  stray client FIN-ACK; SYN-ACK before SYN; client port < server port
+#   54  192.168.9.54:1054 -> 192.168.10.54:5555  stray server ACK; SYN-ACK before SYN; client port < server port
+#   55  192.168.9.55:1055 -> 192.168.10.55:5555  stray server RST; SYN-ACK before SYN; client port < server port
+#   56  192.168.9.56:1056 -> 192.168.10.56:5555  stray server FIN-ACK; SYN-ACK before SYN; client port < server port
+#   57  192.168.9.57:1057 -> 192.168.10.57:5555  no stray; SYN-ACK, ACK, SYN last; client port < server port
+#   58  192.168.9.58:1058 -> 192.168.10.58:5555  stray client ACK; SYN-ACK, ACK, SYN last; client port < server port
+#   59  192.168.9.59:1059 -> 192.168.10.59:5555  stray client RST; SYN-ACK, ACK, SYN last; client port < server port
+#   60  192.168.9.60:1060 -> 192.168.10.60:5555  stray client FIN-ACK; SYN-ACK, ACK, SYN last; client port < server port
+#   61  192.168.9.61:1061 -> 192.168.10.61:5555  stray server ACK; SYN-ACK, ACK, SYN last; client port < server port
+#   62  192.168.9.62:1062 -> 192.168.10.62:5555  stray server RST; SYN-ACK, ACK, SYN last; client port < server port
+#   63  192.168.9.63:1063 -> 192.168.10.63:5555  stray server FIN-ACK; SYN-ACK, ACK, SYN last; client port < server port
+#   64  192.168.9.64:1064 -> 192.168.10.64:5555  no stray; SYN missed; client port < server port
+#   65  192.168.9.65:1065 -> 192.168.10.65:5555  stray client ACK; SYN missed; client port < server port
+#   66  192.168.9.66:1066 -> 192.168.10.66:5555  stray client RST; SYN missed; client port < server port
+#   67  192.168.9.67:1067 -> 192.168.10.67:5555  stray client FIN-ACK; SYN missed; client port < server port
+#   68  192.168.9.68:1068 -> 192.168.10.68:5555  stray server ACK; SYN missed; client port < server port
+#   69  192.168.9.69:1069 -> 192.168.10.69:5555  stray server RST; SYN missed; client port < server port
+#   70  192.168.9.70:1070 -> 192.168.10.70:5555  stray server FIN-ACK; SYN missed; client port < server port
+#   71  192.168.9.71:1071 -> 192.168.10.71:5555  no stray; mid-stream, client first; client port < server port
+#   72  192.168.9.72:1072 -> 192.168.10.72:5555  stray client ACK; mid-stream, client first; client port < server port
+#   73  192.168.9.73:1073 -> 192.168.10.73:5555  stray client RST; mid-stream, client first; client port < server port
+#   74  192.168.9.74:1074 -> 192.168.10.74:5555  stray client FIN-ACK; mid-stream, client first; client port < server port
+#   75  192.168.9.75:1075 -> 192.168.10.75:5555  stray server ACK; mid-stream, client first; client port < server port
+#   76  192.168.9.76:1076 -> 192.168.10.76:5555  stray server RST; mid-stream, client first; client port < server port
+#   77  192.168.9.77:1077 -> 192.168.10.77:5555  stray server FIN-ACK; mid-stream, client first; client port < server port
+#   78  192.168.9.78:1078 -> 192.168.10.78:5555  no stray; mid-stream, server first; client port < server port
+#   79  192.168.9.79:1079 -> 192.168.10.79:5555  stray client ACK; mid-stream, server first; client port < server port
+#   80  192.168.9.80:1080 -> 192.168.10.80:5555  stray client RST; mid-stream, server first; client port < server port
+#   81  192.168.9.81:1081 -> 192.168.10.81:5555  stray client FIN-ACK; mid-stream, server first; client port < server port
+#   82  192.168.9.82:1082 -> 192.168.10.82:5555  stray server ACK; mid-stream, server first; client port < server port
+#   83  192.168.9.83:1083 -> 192.168.10.83:5555  stray server RST; mid-stream, server first; client port < server port
+#   84  192.168.9.84:1084 -> 192.168.10.84:5555  stray server FIN-ACK; mid-stream, server first; client port < server port
+#   85  192.168.9.85:40085 -> 192.168.10.85:5555  connection refused (SYN, RST); client port > server port
+#   86  192.168.9.86:40086 -> 192.168.10.86:5555  RST only (from the server); client port > server port
+#   87  192.168.9.87:40087 -> 192.168.10.87:5555  SYN retransmitted; client port > server port
+#   88  192.168.9.88:40088 -> 192.168.10.88:5555  SYN-ACK retransmitted; client port > server port
+#   89  192.168.9.89:40089 -> 192.168.10.89:5555  simultaneous open (SYN from both); client port > server port
+#   90  192.168.9.90:40090 -> 192.168.10.90:5555  5-tuple reused: a whole connection, then a new one; client port > server port
+#   91  192.168.9.91:1091 -> 192.168.10.91:5555  connection refused (SYN, RST); client port < server port
+#   92  192.168.9.92:1092 -> 192.168.10.92:5555  RST only (from the server); client port < server port
+#   93  192.168.9.93:1093 -> 192.168.10.93:5555  SYN retransmitted; client port < server port
+#   94  192.168.9.94:1094 -> 192.168.10.94:5555  SYN-ACK retransmitted; client port < server port
+#   95  192.168.9.95:1095 -> 192.168.10.95:5555  simultaneous open (SYN from both); client port < server port
+#   96  192.168.9.96:1096 -> 192.168.10.96:5555  5-tuple reused: a whole connection, then a new one; client port < server port
+#   97  192.168.9.97:40097 -> 192.168.10.97:2222  SSH, SYN, SYN-ACK, ACK; client port > server port
+#   98  192.168.9.98:40098 -> 192.168.10.98:2222  SSH, SYN missed; client port > server port
+#   99  192.168.9.99:40099 -> 192.168.10.99:2222  SSH, mid-stream, server first; client port > server port
+#   100 192.168.9.100:40100 -> 192.168.10.100:2222  SSH, mid-stream, client first; client port > server port
+#   101 192.168.9.101:40101 -> 192.168.10.101:2222  SSH, stray server FIN-ACK, then the handshake; client port > server port
+#   102 192.168.9.102:1102 -> 192.168.10.102:2222  SSH, SYN, SYN-ACK, ACK; client port < server port
+#   103 192.168.9.103:1103 -> 192.168.10.103:2222  SSH, SYN missed; client port < server port
+#   104 192.168.9.104:1104 -> 192.168.10.104:2222  SSH, mid-stream, server first; client port < server port
+#   105 192.168.9.105:1105 -> 192.168.10.105:2222  SSH, mid-stream, client first; client port < server port
+#   106 192.168.9.106:1106 -> 192.168.10.106:2222  SSH, stray server FIN-ACK, then the handshake; client port < server port
+#   107 192.168.9.107:515 -> 192.168.10.107:587  SMTP 515 -> 587, stray server FIN-ACK, then the handshake (screenshot)
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # Client and server of the active flows, by flow number (i): the client
+  # must be 192.168.9.i
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=0&perPage=500" | jq -c '[.rsp.data[] | {i: ((if (.client.ip | startswith("192.168.9.")) then .client.ip else .server.ip end) | split(".")[3] | tonumber), cli: "\(.client.ip):\(.client.port)", srv: "\(.server.ip):\(.server.port)", client_ok: (.client.ip | startswith("192.168.9."))}] | sort_by(.i, .cli) | .[]'
+
+  # Server ports learned by the client and by the server of each flow
+  for i in $(seq 1 107); do
+    c=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/open_ports.lua?ifid=0&host=192.168.9.${i}" | jq -c '[.rsp[]?.key | tonumber] | sort')
+    s=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/open_ports.lua?ifid=0&host=192.168.10.${i}" | jq -c '[.rsp[]?.key | tonumber] | sort')
+    echo "{\"i\": ${i}, \"client_server_ports\": ${c:-null}, \"server_server_ports\": ${s:-null}}"
+  done
