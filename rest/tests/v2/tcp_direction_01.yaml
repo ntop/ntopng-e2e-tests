@@ -9,12 +9,21 @@ requires: pro
 # the hosts.
 #
 # Flow i: client 192.168.9.i, server 192.168.10.i (port 5555; 2222 for the SSH
-# flows; 587 for the last one, a replica of an SMTP flow seen in production).
+# flows; 587 for flow 107, a replica of an SMTP flow seen in production, and for
+# flows 128-131; 8443 for the TLS flows; 80 for flows 132-133).
 # Expected: the client is always 192.168.9.i, whatever the order the packets
 # are captured in and the order of the ports. Mid-stream flows (no handshake
 # captured) cannot be told apart from their packets: their expected client is
 # still recorded here, to show the guess.
-# NOTE: the expected output records the CURRENT behaviour (see client_ok).
+# The direction is decided by the first SYN (sender = client) or SYN-ACK
+# (sender = server) seen, whatever came before it. Flows with neither (no
+# handshake captured) are only guessed by the ports (the lower port is the
+# server): with the client port lower than the server port they stay
+# reversed (client_ok false), unless only one of the ports is a default port
+# of the protocol detected by nDPI (the server, e.g. SMTP on 587, flows
+# 128-130; not flow 131, from port 25, another SMTP default port).
+# The direction is final once the protocol is detected on a flow that carried
+# payload: a SYN or SYN-ACK seen later does not change it (flows 132-133).
 #
 #   1   192.168.9.1:40001 -> 192.168.10.1:5555  no stray; SYN, SYN-ACK, ACK; client port > server port
 #   2   192.168.9.2:40002 -> 192.168.10.2:5555  stray client ACK; SYN, SYN-ACK, ACK; client port > server port
@@ -123,6 +132,32 @@ requires: pro
 #   105 192.168.9.105:1105 -> 192.168.10.105:2222  SSH, mid-stream, client first; client port < server port
 #   106 192.168.9.106:1106 -> 192.168.10.106:2222  SSH, stray server FIN-ACK, then the handshake; client port < server port
 #   107 192.168.9.107:515 -> 192.168.10.107:587  SMTP 515 -> 587, stray server FIN-ACK, then the handshake (screenshot)
+#   108 192.168.9.108:40108 -> 192.168.10.108:8443  TLS, no handshake, ClientHello first; client port > server port
+#   109 192.168.9.109:40109 -> 192.168.10.109:8443  TLS, no handshake, ServerHello first; client port > server port
+#   110 192.168.9.110:40110 -> 192.168.10.110:8443  TLS, no handshake, ClientHello only; client port > server port
+#   111 192.168.9.111:40111 -> 192.168.10.111:8443  TLS, no handshake, ServerHello only; client port > server port
+#   112 192.168.9.112:40112 -> 192.168.10.112:8443  TLS, no handshake, application data only, client first; client port > server port
+#   113 192.168.9.113:40113 -> 192.168.10.113:8443  TLS, no handshake, application data only, server first; client port > server port
+#   114 192.168.9.114:1114 -> 192.168.10.114:8443  TLS, no handshake, ClientHello first; client port < server port
+#   115 192.168.9.115:1115 -> 192.168.10.115:8443  TLS, no handshake, ServerHello first; client port < server port
+#   116 192.168.9.116:1116 -> 192.168.10.116:8443  TLS, no handshake, ClientHello only; client port < server port
+#   117 192.168.9.117:1117 -> 192.168.10.117:8443  TLS, no handshake, ServerHello only; client port < server port
+#   118 192.168.9.118:1118 -> 192.168.10.118:8443  TLS, no handshake, application data only, client first; client port < server port
+#   119 192.168.9.119:1119 -> 192.168.10.119:8443  TLS, no handshake, application data only, server first; client port < server port
+#   120 192.168.9.120:40120 -> 192.168.10.120:2222  SSH, no handshake, server banner only; client port > server port
+#   121 192.168.9.121:40121 -> 192.168.10.121:2222  SSH, no handshake, client banner only; client port > server port
+#   122 192.168.9.122:40122 -> 192.168.10.122:2222  SSH, no handshake, binary packets only, client first; client port > server port
+#   123 192.168.9.123:40123 -> 192.168.10.123:2222  SSH, no handshake, binary packets only, server first; client port > server port
+#   124 192.168.9.124:1124 -> 192.168.10.124:2222  SSH, no handshake, server banner only; client port < server port
+#   125 192.168.9.125:1125 -> 192.168.10.125:2222  SSH, no handshake, client banner only; client port < server port
+#   126 192.168.9.126:1126 -> 192.168.10.126:2222  SSH, no handshake, binary packets only, client first; client port < server port
+#   127 192.168.9.127:1127 -> 192.168.10.127:2222  SSH, no handshake, binary packets only, server first; client port < server port
+#   128 192.168.9.128:515 -> 192.168.10.128:587  SMTP 515 -> 587, mid-stream, client first
+#   129 192.168.9.129:515 -> 192.168.10.129:587  SMTP 515 -> 587, mid-stream, server first
+#   130 192.168.9.130:40130 -> 192.168.10.130:587  SMTP -> 587, mid-stream, server first, client port > server port
+#   131 192.168.9.131:25 -> 192.168.10.131:587  SMTP 25 -> 587, mid-stream, client first (both default ports)
+#   132 192.168.9.132:40132 -> 192.168.10.132:80  HTTP mid-stream, then a late SYN-ACK from the client
+#   133 192.168.9.133:40133 -> 192.168.10.133:80  HTTP mid-stream, then a late SYN from the server
 
 pre: |
   # Disable everything not related to this test
@@ -134,7 +169,7 @@ runtime: |
   curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=0&perPage=500" | jq -c '[.rsp.data[] | {i: ((if (.client.ip | startswith("192.168.9.")) then .client.ip else .server.ip end) | split(".")[3] | tonumber), cli: "\(.client.ip):\(.client.port)", srv: "\(.server.ip):\(.server.port)", client_ok: (.client.ip | startswith("192.168.9."))}] | sort_by(.i, .cli) | .[]'
 
   # Server ports learned by the client and by the server of each flow
-  for i in $(seq 1 107); do
+  for i in $(seq 1 133); do
     c=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/open_ports.lua?ifid=0&host=192.168.9.${i}" | jq -c '[.rsp[]?.key | tonumber] | sort')
     s=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/open_ports.lua?ifid=0&host=192.168.10.${i}" | jq -c '[.rsp[]?.key | tonumber] | sort')
     echo "{\"i\": ${i}, \"client_server_ports\": ${c:-null}, \"server_server_ports\": ${s:-null}}"
