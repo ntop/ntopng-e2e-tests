@@ -4,16 +4,13 @@ localnet: 192.168.3.0/24,fd00:3::/64
 
 requires: pro
 
-# NOTE: the expected output records the CURRENT behaviour, which is partly
-# wrong: the direction of DHCP/DHCPv6 flows is not checked, so the flows whose
-# first packet is a reply sent by the server (unicast OFFER/ACK, DHCPv6 REPLY,
-# RECONFIGURE, relay replies) are recorded with the server as client. Besides,
-# the relay agent 192.168.3.250 gets the DHCP service/tag (it sends from port
-# 67), while the DHCPv6 server fd00:3::1 gets none. This test is meant to be
-# useful for a future fix: its expected output is to be reviewed then.
-# NOTE: the Unexpected DHCP server check (and its test
-# alert_flow_risk_unexpected_dhcp) relies on the current, reversed, direction
-# of the server replies: a fix needs to update it too.
+# NOTE: the direction of DHCP (v4) flows is decided by the first packet
+# (BOOTREQUEST or BOOTREPLY), see flow_direction_dhcp_02. The expected output
+# of the DHCPv6 flows records the CURRENT behaviour, which is partly wrong: the
+# direction of DHCPv6 flows is not checked, so the flows whose first packet is
+# a reply sent by the server (REPLY, RECONFIGURE, relay replies) are recorded
+# with the server as client, and the DHCPv6 server fd00:3::1 gets no DHCP
+# service/tag.
 #
 # Expected (correct) client of each flow: the DHCP client (or the relay agent,
 # for relayed messages); server: the DHCP server (192.168.3.1, fd00:3::1). A

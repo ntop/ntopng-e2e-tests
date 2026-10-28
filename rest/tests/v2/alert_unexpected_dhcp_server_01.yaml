@@ -1,0 +1,44 @@
+input: dhcp_v4_cases.pcap
+
+localnet: 192.168.4.0/24
+
+# Unexpected DHCP server alert (check unexpected_dhcp) on the flows of
+# dhcp_v4_cases.pcap (see flow_direction_dhcp_02), with 192.168.4.1 as the
+# only configured DHCP server (no VLAN: allowed on every VLAN).
+#
+# The DHCP server of a flow is its server, or its client for the replies sent
+# to broadcast (not swapped). A host is an unexpected DHCP server only when it
+# replies: a request with no reply raises no alert (e.g. a client renewing
+# with an old server that no longer answers).
+#
+# Expected: one alert per flow where the rogue 192.168.4.2 replies, whatever
+# the order of the packets and also behind a relay: OFFER to broadcast, ACK
+# only (.20), renew then ACK (.21), OFFER then REQUEST (.22), relayed by .251
+# and .253; and one for the relay agent .254 (not configured) delivering a
+# reply to a client. The DHCP server is named in the description and blamed
+# (attacker, most of the score). No alert for the requests with no reply
+# (renew only .24, DISCOVER from port 45474 .23) and for the flows of
+# 192.168.4.1, relayed or not, on any VLAN.
+
+ignore:
+  - duration
+  - title
+  - epoch_end
+  - num_records_processed
+  - query_duration_msec
+
+pre: |
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"dhcp_list": "192.168.4.1"}' http://localhost:3333/lua/rest/v2/set/network/config.lua -o /dev/null
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "unexpected_dhcp"}' http://localhost:3333/lua/rest/v2/enable/check.lua -o /dev/null
+
+runtime: |
+  # Score of the hosts, as client and as server (who is blamed)
+  for h in 192.168.4.1 192.168.4.2 192.168.4.20 192.168.4.21 192.168.4.22 192.168.4.23 192.168.4.24 \
+           192.168.4.32 192.168.4.251 192.168.4.253 192.168.4.254; do
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, score_as_client: .rsp["score.as_client"], score_as_server: .rsp["score.as_server"]} else {host: $host, rc: .rc} end'
+  done
+
+post: |
+  # The alerts: flow, description, roles and score
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "status": "any", "length": 100}' http://localhost:3333/lua/rest/v2/get/flow/alert/list.lua | jq -c '[.rsp.records[] | {cli_ip: .cli_ip.value, cli_port: .cli_port.value, srv_ip: .srv_ip.value, srv_port: .srv_port.value, vlan: .vlan_id.value, alert: .alert_name, description: .description.descr, cli_role: .cli_role.value, srv_role: .srv_role.value, score: .score.value}] | sort_by(.cli_ip, .srv_ip, .vlan) | .[]'
