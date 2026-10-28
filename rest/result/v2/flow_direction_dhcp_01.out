@@ -1,9 +1,9 @@
 {"cli_ip":"192.168.3.12","cli_port":68,"l7":"DHCP","srv_ip":"192.168.3.1","srv_port":67}
-{"cli_ip":"192.168.3.1","cli_port":67,"l7":"DHCP","srv_ip":"192.168.3.11","srv_port":68}
-{"cli_ip":"192.168.3.1","cli_port":67,"l7":"DHCP","srv_ip":"192.168.3.251","srv_port":67}
+{"cli_ip":"192.168.3.11","cli_port":68,"l7":"DHCP","srv_ip":"192.168.3.1","srv_port":67}
+{"cli_ip":"192.168.3.251","cli_port":67,"l7":"DHCP","srv_ip":"192.168.3.1","srv_port":67}
 {"cli_ip":"192.168.3.250","cli_port":67,"l7":"DHCP","srv_ip":"192.168.3.1","srv_port":67}
-{"cli_ip":"192.168.3.1","cli_port":67,"l7":"DHCP","srv_ip":"192.168.3.14","srv_port":68}
-{"cli_ip":"192.168.3.1","cli_port":67,"l7":"DHCP","srv_ip":"192.168.3.13","srv_port":68}
+{"cli_ip":"192.168.3.14","cli_port":68,"l7":"DHCP","srv_ip":"192.168.3.1","srv_port":67}
+{"cli_ip":"192.168.3.13","cli_port":68,"l7":"DHCP","srv_ip":"192.168.3.1","srv_port":67}
 {"cli_ip":"192.168.3.14","cli_port":68,"l7":"DHCP","srv_ip":"255.255.255.255","srv_port":67}
 {"cli_ip":"192.168.3.1","cli_port":67,"l7":"DHCP","srv_ip":"255.255.255.255","srv_port":68}
 {"cli_ip":"0.0.0.0","cli_port":68,"l7":"DHCP","srv_ip":"255.255.255.255","srv_port":67}
@@ -18,7 +18,7 @@
 {"dhcp_server":false,"dhcp_server_tag":false,"host":"192.168.3.12"}
 {"dhcp_server":false,"dhcp_server_tag":false,"host":"192.168.3.13"}
 {"dhcp_server":false,"dhcp_server_tag":false,"host":"192.168.3.14"}
-{"dhcp_server":true,"dhcp_server_tag":true,"host":"192.168.3.250"}
+{"dhcp_server":false,"dhcp_server_tag":false,"host":"192.168.3.250"}
 {"dhcp_server":false,"dhcp_server_tag":false,"host":"192.168.3.251"}
 {"dhcp_server":false,"dhcp_server_tag":false,"host":"fd00:3::1"}
 {"dhcp_server":false,"dhcp_server_tag":false,"host":"fe80::31"}

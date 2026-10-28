@@ -1,0 +1,36 @@
+input: dhcp_v4_cases.pcap
+
+localnet: 192.168.4.0/24
+
+options:
+  - -i=view:all
+
+requires: pro
+
+# Same as flow_direction_dhcp_02, with a view interface (pcap interface ifid
+# 0, view interface ifid 1): the client and the server of the active flows of
+# the view, and the number of active flows of the hosts of the view as client
+# and as server (the flows swapped by the viewed interface must be accounted
+# with the swapped roles).
+#
+# Expected: same flows as flow_direction_dhcp_02; the DHCP servers
+# 192.168.4.1 and 192.168.4.2 are clients only of the replies sent to
+# broadcast (one flow each), the relay agent 192.168.4.254 is server of the
+# flow to .32, the other hosts are clients only (the relay agents .250-.253
+# are clients of the DHCP servers).
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # Client and server of the active flows of the view
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=1&perPage=100" | jq -c '[.rsp.data[] | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, vlan: .vlan, l7: .protocol.l7}] | sort_by(.cli_ip, .srv_ip, .vlan) | .[]'
+
+  # Active flows of the hosts of the view, as client and as server
+  for h in 192.168.4.1 192.168.4.1@10 192.168.4.1@20 192.168.4.2 \
+           192.168.4.11 192.168.4.12 192.168.4.13 192.168.4.14 192.168.4.15 192.168.4.16 192.168.4.17 \
+           192.168.4.20 192.168.4.21 192.168.4.22 192.168.4.23 192.168.4.24 192.168.4.32 192.168.4.40@10 192.168.4.41@20 \
+           192.168.4.250 192.168.4.251 192.168.4.252 192.168.4.253 192.168.4.254; do
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, as_client: (.rsp["active_flows.as_client"] // 0), as_server: (.rsp["active_flows.as_server"] // 0)} else {host: $host, rc: .rc} end'
+  done

@@ -1,0 +1,52 @@
+input: dhcp_v4_cases.pcap
+
+localnet: 192.168.4.0/24
+
+requires: pro
+
+# Client and server of DHCPv4 flows (dhcp_v4_cases.pcap, generated with
+# scapy: one flow per case, listed below).
+#
+# Expected client: the DHCP client, or the relay agent for relayed
+# messages (the relay agent is the client of the DHCP server); expected
+# server: the DHCP server, or the relay agent when it delivers a reply to the
+# client. A reply sent to broadcast keeps its sender as client (a broadcast
+# address is never the client).
+# The direction is decided by the first packet (BOOTREQUEST or BOOTREPLY):
+# the flows marked "reply first" below start with a packet sent by the server
+# and are swapped.
+#
+# Allowed server 192.168.4.1
+#   0.0.0.0        DISCOVER to broadcast
+#   192.168.4.1    OFFER to broadcast
+#   192.168.4.11   unicast ACK, then renew REQUEST              (reply first)
+#   192.168.4.12   renew REQUEST, then unicast ACK
+#   192.168.4.13   unicast ACK only                             (reply first)
+#   192.168.4.14   unicast NAK only                             (reply first)
+#   192.168.4.15   RELEASE only
+#   192.168.4.16   INFORM, then ACK
+#   192.168.4.17   unicast OFFER only                           (reply first)
+# Relay agents of the allowed server (port 67 to 67)
+#   192.168.4.250  relayed REQUEST, then reply
+#   192.168.4.252  reply, then relayed REQUEST                  (reply first)
+#   192.168.4.254  relay delivering an ACK to the client .32    (reply first)
+# Rogue server 192.168.4.2
+#   192.168.4.2    OFFER to broadcast (for .19)
+#   192.168.4.20   unicast ACK only                             (reply first)
+#   192.168.4.21   renew REQUEST, then unicast ACK
+#   192.168.4.22   unicast OFFER, then REQUEST                  (reply first)
+#   192.168.4.24   renew REQUEST only (no reply)
+#   192.168.4.251  relay: relayed REQUEST, then reply
+#   192.168.4.253  relay: reply, then relayed REQUEST           (reply first)
+#   192.168.4.23   DISCOVER from a non-DHCP port (45474)
+# Allowed server on VLANs
+#   192.168.4.40   unicast ACK only, VLAN 10                    (reply first)
+#   192.168.4.41   unicast ACK only, VLAN 20                    (reply first)
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # Client and server of the active flows
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=0&perPage=100" | jq -c '[.rsp.data[] | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, vlan: .vlan, l7: .protocol.l7}] | sort_by(.cli_ip, .srv_ip, .vlan) | .[]'

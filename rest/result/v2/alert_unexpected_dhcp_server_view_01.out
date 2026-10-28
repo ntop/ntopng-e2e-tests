@@ -1,0 +1,18 @@
+{"host":"192.168.4.1","score_as_client":0,"score_as_server":0}
+{"host":"192.168.4.2","score_as_client":90,"score_as_server":450}
+{"host":"192.168.4.20","score_as_client":10,"score_as_server":0}
+{"host":"192.168.4.21","score_as_client":10,"score_as_server":0}
+{"host":"192.168.4.22","score_as_client":10,"score_as_server":0}
+{"host":"192.168.4.23","score_as_client":0,"score_as_server":0}
+{"host":"192.168.4.24","score_as_client":0,"score_as_server":0}
+{"host":"192.168.4.32","score_as_client":10,"score_as_server":0}
+{"host":"192.168.4.251","score_as_client":10,"score_as_server":0}
+{"host":"192.168.4.253","score_as_client":10,"score_as_server":0}
+{"host":"192.168.4.254","score_as_client":0,"score_as_server":90}
+{"alert":"Unexpected DHCP server found","cli_ip":"192.168.4.2","cli_port":"67","cli_role":"attacker","description":"Unexpected DHCP server found: 192.168.4.2","score":100,"srv_ip":"255.255.255.255","srv_port":"68","srv_role":null,"vlan":0}
+{"alert":"Unexpected DHCP server found","cli_ip":"192.168.4.20","cli_port":"68","cli_role":null,"description":"Unexpected DHCP server found: 192.168.4.2","score":100,"srv_ip":"192.168.4.2","srv_port":"67","srv_role":"attacker","vlan":0}
+{"alert":"Unexpected DHCP server found","cli_ip":"192.168.4.21","cli_port":"68","cli_role":null,"description":"Unexpected DHCP server found: 192.168.4.2","score":100,"srv_ip":"192.168.4.2","srv_port":"67","srv_role":"attacker","vlan":0}
+{"alert":"Unexpected DHCP server found","cli_ip":"192.168.4.22","cli_port":"68","cli_role":null,"description":"Unexpected DHCP server found: 192.168.4.2","score":100,"srv_ip":"192.168.4.2","srv_port":"67","srv_role":"attacker","vlan":0}
+{"alert":"Unexpected DHCP server found","cli_ip":"192.168.4.251","cli_port":"67","cli_role":null,"description":"Unexpected DHCP server found: 192.168.4.2","score":100,"srv_ip":"192.168.4.2","srv_port":"67","srv_role":"attacker","vlan":0}
+{"alert":"Unexpected DHCP server found","cli_ip":"192.168.4.253","cli_port":"67","cli_role":null,"description":"Unexpected DHCP server found: 192.168.4.2","score":100,"srv_ip":"192.168.4.2","srv_port":"67","srv_role":"attacker","vlan":0}
+{"alert":"Unexpected DHCP server found","cli_ip":"192.168.4.32","cli_port":"68","cli_role":null,"description":"Unexpected DHCP server found: 192.168.4.254","score":100,"srv_ip":"192.168.4.254","srv_port":"67","srv_role":"attacker","vlan":0}

@@ -1,0 +1,38 @@
+input: dhcp_v4_cases.pcap
+
+localnet: 192.168.4.0/24
+
+requires: pro
+
+# The DHCP service and the "DHCP Server" built-in tag (tag 2) of the hosts of
+# dhcp_v4_cases.pcap (see flow_direction_dhcp_02 for the flows).
+#
+# The DHCP service is detected on the host acting as DHCP server; the tag is
+# set by the service or by the configured DHCP servers (Network
+# Configuration): 192.168.4.15, a DHCP client, is configured as DHCP server to
+# cover the second case (tag, no service).
+#
+# Expected:
+# - service and tag on the DHCP servers 192.168.4.1 (also on VLAN 10 and 20)
+#   and 192.168.4.2 (the rogue server is a DHCP server too), and on the relay
+#   agent 192.168.4.254 that delivers a reply to a client;
+# - no service and no tag on the clients and on the relay agents talking to
+#   the servers (.250, .251, .252, .253);
+# - tag without service on 192.168.4.15 (configured).
+# The relay agents talking to the servers use port 67 too: the DHCP server of
+# the flow is decided by the requests and replies, not by the ports.
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"dhcp_list": "192.168.4.15"}' http://localhost:3333/lua/rest/v2/set/network/config.lua -o /dev/null
+
+runtime: |
+  # DHCP service and DHCP Server tag (bit 2 of the tags bitmap) of the hosts
+  for h in 192.168.4.1 192.168.4.1@10 192.168.4.1@20 192.168.4.2 \
+           192.168.4.11 192.168.4.12 192.168.4.13 192.168.4.14 192.168.4.15 192.168.4.16 192.168.4.17 \
+           192.168.4.20 192.168.4.21 192.168.4.22 192.168.4.23 192.168.4.24 192.168.4.32 192.168.4.40@10 192.168.4.41@20 \
+           192.168.4.250 192.168.4.251 192.168.4.252 192.168.4.253 192.168.4.254; do
+    tags=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/config.lua?ifid=0&host=${h}" | jq '.rsp.tags // 0')
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=${h}" | jq -c --arg host "${h}" --argjson tags "${tags:-0}" 'if .rc == 0 then {host: $host, dhcp_server: (.rsp.services.dhcp == true), dhcp_server_tag: ((($tags / 4) | floor) % 2 == 1)} else {host: $host, rc: .rc} end'
+  done
