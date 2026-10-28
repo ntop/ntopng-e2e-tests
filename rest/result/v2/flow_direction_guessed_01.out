@@ -1,0 +1,4 @@
+{"cli":"192.168.7.12:68","confidence":"Guess","l7":"DHCP","srv":"192.168.7.1:67"}
+{"cli":"fd00:7::12:40012","confidence":"Guess","l7":"DHCPV6","srv":"fd00:7::1:547"}
+{"cli":"192.168.7.10:40010","confidence":"Guess","l7":"DNS","srv":"192.168.7.1:53"}
+{"cli":"192.168.7.11:40011","confidence":"Guess","l7":"NTP","srv":"192.168.7.1:123"}

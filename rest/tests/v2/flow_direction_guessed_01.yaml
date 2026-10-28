@@ -1,0 +1,28 @@
+input: l7_direction_guessed.pcap
+
+localnet: 192.168.7.0/24,fd00:7::/64
+
+# The direction of DNS, NTP, DHCP and DHCPv6 flows is decided by the payload of
+# their first packet that tells request from reply (see flow_direction_l7_01,
+# flow_direction_dhcp_02, flow_direction_dhcpv6_01): only when nDPI has
+# detected the protocol by DPI, not when it has guessed it (e.g. by port).
+#
+# Each flow has 40 packets sent by the client to a DNS/NTP/DHCP/DHCPv6 port,
+# whose payload is not that protocol: nDPI guesses the protocol by port while
+# processing them. Their "direction" byte looks like a reply, so reading the
+# payload as that protocol would swap the flow.
+#
+#   192.168.7.10   UDP 53,  byte 2 = 0x80 (DNS QR bit: reply)
+#   192.168.7.11   UDP 123, byte 0 = 0x24 (NTP mode 4: server)
+#   192.168.7.12   UDP 68 -> 67, byte 0 = 2 (DHCP BOOTREPLY)
+#   fd00:7::12     UDP 40012 -> 547, byte 0 = 7 (DHCPv6 REPLY)
+#
+# Expected: the senders are the clients of the flows (no swap).
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # Client, server, protocol and confidence of the active flows
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active_list.lua?ifid=0&length=100" | jq -c '[.rsp[] | {cli: "\(.client.ip):\(.client.port)", srv: "\(.server.ip):\(.server.port)", l7: .application.name, confidence: .application.confidence}] | sort_by(.l7) | .[]'
