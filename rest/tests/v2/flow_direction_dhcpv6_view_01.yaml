@@ -25,6 +25,7 @@ runtime: |
   for h in fd00:6::1 fd00:6::1@10 fd00:6::1@20 fd00:6::2 \
            fe80::11 fe80::12 fe80::13 fe80::14 fe80::15 fe80::16 fe80::17 \
            fe80::20 fe80::21 fe80::22 fe80::23 fe80::24 fe80::32 fe80::40@10 fe80::41@20 \
-           fd00:6::fa fd00:6::fb fd00:6::fc fd00:6::fd fd00:6::fe; do
+           fd00:6::fa fd00:6::fb fd00:6::fc fd00:6::fd fd00:6::fe \
+           fd00:6::f0 fd00:6::f1 fd00:6::f2 fe80::50 fe80::51 fe80::52; do
     curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, as_client: (.rsp["active_flows.as_client"] // 0), as_server: (.rsp["active_flows.as_server"] // 0)} else {host: $host, rc: .rc} end'
   done

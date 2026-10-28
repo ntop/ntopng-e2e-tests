@@ -17,12 +17,20 @@ requires: pro
 #   The NTP service and the NTP Server tag were then set on the client (.30).
 # - ICMPv6 flows starting with an echo reply were never swapped: the echo
 #   reply type of ICMP (0) was checked instead of the ICMPv6 one (129).
+# - NTP control (mode 6) and private (mode 7, e.g. monlist) messages were not
+#   decided: they are decided by their R (response) bit.
 #
 # NTP
 #   192.168.2.30   server reply (mode 4), then client request (mode 3)
 #   192.168.2.31   server reply only
 #   192.168.2.32   client request, then server reply
 #   192.168.2.33   symmetric mode packet (no decision), then server reply
+#   192.168.2.34   mode 7 (private) response, then request
+#   192.168.2.35   mode 7 request, then response
+#   192.168.2.36   mode 6 (control) request, then response
+#   192.168.2.37   mode 6 response only: not detected as NTP by nDPI (its
+#                  second byte, the R bit and the opcode, is not a valid
+#                  stratum), so the direction is not decided (stays reversed)
 # ICMP
 #   192.168.2.40   echo reply, then echo request
 #   192.168.2.41   echo reply only
@@ -43,7 +51,7 @@ runtime: |
   # The NTP service, and the NTP Server tag (bit 1 of the tags bitmap), must be
   # on the NTP server only (the service is set on the server of the
   # bidirectional NTP flows when they end)
-  for h in 192.168.2.1 192.168.2.30 192.168.2.31 192.168.2.32 192.168.2.33; do
+  for h in 192.168.2.1 192.168.2.30 192.168.2.31 192.168.2.32 192.168.2.33 192.168.2.34 192.168.2.35 192.168.2.36 192.168.2.37; do
     tags=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/config.lua?ifid=0&host=${h}" | jq '.rsp.tags // 0')
     curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=${h}" | jq -c --arg host "${h}" --argjson tags "${tags:-0}" '{host: $host, ntp_server: (if .rc == 0 then (.rsp.services.ntp == true) else "unknown" end), ntp_server_tag: ((($tags / 2) | floor) % 2 == 1)}'
   done

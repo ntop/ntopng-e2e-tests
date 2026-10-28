@@ -22,6 +22,6 @@ runtime: |
   curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=1&perPage=100" | jq -c '[.rsp.data[] | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, l7: .protocol.l7}] | sort_by(.cli_ip, .srv_ip, .cli_port) | .[]'
 
   # Active flows of the hosts of the view, as client and as server
-  for h in 192.168.8.1 192.168.8.10 192.168.8.11 192.168.8.12 192.168.8.13 192.168.8.14 192.168.8.15 192.168.8.16 192.168.8.17 192.168.8.18 192.168.8.19 192.168.8.20 192.168.8.21; do
+  for h in 192.168.8.1 192.168.8.10 192.168.8.11 192.168.8.12 192.168.8.13 192.168.8.14 192.168.8.15 192.168.8.16 192.168.8.17 192.168.8.18 192.168.8.19 192.168.8.20 192.168.8.21 192.168.8.22 192.168.8.23 192.168.8.24 192.168.8.25; do
     curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, as_client: (.rsp["active_flows.as_client"] // 0), as_server: (.rsp["active_flows.as_server"] // 0)} else {host: $host, rc: .rc} end'
   done
