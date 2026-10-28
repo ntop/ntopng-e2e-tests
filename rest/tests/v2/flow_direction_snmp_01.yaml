@@ -14,8 +14,9 @@ requires: pro
 # ports are learned from the bidirectional flows: 161 by the polled agents, 162
 # by the manager, never the ephemeral ports of the manager.
 # The direction of SNMP flows is decided by the first packet: by the PDU type
-# for SNMPv1/v2c; by the reportable flag of the header for SNMPv3 (its PDU is
-# usually encrypted): set in the requests, clear in the replies and in the
+# for SNMPv1/v2c and for SNMPv3 when not encrypted (also when the traps are
+# sent to port 161, flows .26-.27); by the reportable flag of the header for
+# SNMPv3 encrypted: set in the requests, clear in the replies and in the
 # traps, which are sent to port 162. The flows marked "reply first" below
 # start with a reply (Response, Report) and are swapped.
 #
@@ -35,6 +36,9 @@ requires: pro
 #   192.168.8.23   SNMPv3 Inform sent to 162, then its Response
 #   192.168.8.24   SNMPv3 Response of an Inform only (from 162) (reply first)
 #   192.168.8.25   SNMPv3 encrypted (authPriv) Response only    (reply first)
+#   192.168.8.26   SNMPv3 SNMPv2-Trap (noAuthNoPriv) sent to 161
+#   192.168.8.27   SNMPv3 SNMPv2-Trap (authNoPriv) sent to 161
+#   192.168.8.28   SNMPv3 encrypted (authPriv) trap sent to 162
 
 pre: |
   # Disable everything not related to this test
@@ -45,6 +49,6 @@ runtime: |
   curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=0&perPage=100" | jq -c '[.rsp.data[] | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, l7: .protocol.l7}] | sort_by(.cli_ip, .srv_ip, .cli_port) | .[]'
 
   # Server ports learned by the hosts
-  for h in 192.168.8.1 192.168.8.10 192.168.8.11 192.168.8.12 192.168.8.13 192.168.8.14 192.168.8.15 192.168.8.16 192.168.8.17 192.168.8.18 192.168.8.19 192.168.8.20 192.168.8.21 192.168.8.22 192.168.8.23 192.168.8.24 192.168.8.25; do
+  for h in 192.168.8.1 192.168.8.10 192.168.8.11 192.168.8.12 192.168.8.13 192.168.8.14 192.168.8.15 192.168.8.16 192.168.8.17 192.168.8.18 192.168.8.19 192.168.8.20 192.168.8.21 192.168.8.22 192.168.8.23 192.168.8.24 192.168.8.25 192.168.8.26 192.168.8.27 192.168.8.28; do
     curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/open_ports.lua?ifid=0&host=${h}" | jq -c --arg host "${h}" '{host: $host, server_ports: ([.rsp[]?.key | tonumber] | sort)}'
   done

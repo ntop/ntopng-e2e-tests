@@ -14,7 +14,10 @@
 {"cli_ip":"192.168.8.22","cli_port":161,"l7":"SNMP","srv_ip":"192.168.8.1","srv_port":162}
 {"cli_ip":"192.168.8.23","cli_port":40023,"l7":"SNMP","srv_ip":"192.168.8.1","srv_port":162}
 {"cli_ip":"192.168.8.24","cli_port":40024,"l7":"SNMP","srv_ip":"192.168.8.1","srv_port":162}
-{"as_client":9,"as_server":7,"host":"192.168.8.1"}
+{"cli_ip":"192.168.8.26","cli_port":40026,"l7":"SNMP","srv_ip":"192.168.8.1","srv_port":161}
+{"cli_ip":"192.168.8.27","cli_port":40027,"l7":"SNMP","srv_ip":"192.168.8.1","srv_port":161}
+{"cli_ip":"192.168.8.28","cli_port":40028,"l7":"SNMP","srv_ip":"192.168.8.1","srv_port":162}
+{"as_client":9,"as_server":10,"host":"192.168.8.1"}
 {"as_client":0,"as_server":1,"host":"192.168.8.10"}
 {"as_client":0,"as_server":1,"host":"192.168.8.11"}
 {"as_client":0,"as_server":1,"host":"192.168.8.12"}
@@ -31,3 +34,6 @@
 {"as_client":1,"as_server":0,"host":"192.168.8.23"}
 {"as_client":1,"as_server":0,"host":"192.168.8.24"}
 {"as_client":0,"as_server":1,"host":"192.168.8.25"}
+{"as_client":1,"as_server":0,"host":"192.168.8.26"}
+{"as_client":1,"as_server":0,"host":"192.168.8.27"}
+{"as_client":1,"as_server":0,"host":"192.168.8.28"}
