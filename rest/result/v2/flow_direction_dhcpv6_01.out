@@ -1,3 +1,6 @@
+{"cli_ip":"fd00:6::f0","cli_port":547,"l7":"DHCPV6","srv_ip":"fd00:6::1","srv_port":547,"vlan":0}
+{"cli_ip":"fd00:6::f1","cli_port":547,"l7":"DHCPV6","srv_ip":"fd00:6::1","srv_port":547,"vlan":0}
+{"cli_ip":"fd00:6::f2","cli_port":547,"l7":"DHCPV6","srv_ip":"fd00:6::1","srv_port":547,"vlan":0}
 {"cli_ip":"fd00:6::fa","cli_port":547,"l7":"DHCPV6","srv_ip":"fd00:6::1","srv_port":547,"vlan":0}
 {"cli_ip":"fd00:6::fb","cli_port":547,"l7":"DHCPV6","srv_ip":"fd00:6::1","srv_port":547,"vlan":0}
 {"cli_ip":"fd00:6::fd","cli_port":547,"l7":"DHCPV6","srv_ip":"fd00:6::2","srv_port":547,"vlan":0}
@@ -18,3 +21,6 @@
 {"cli_ip":"fe80::32","cli_port":546,"l7":"DHCPV6","srv_ip":"fd00:6::fc","srv_port":547,"vlan":0}
 {"cli_ip":"fe80::40","cli_port":546,"l7":"DHCPV6","srv_ip":"fd00:6::1","srv_port":547,"vlan":10}
 {"cli_ip":"fe80::41","cli_port":546,"l7":"DHCPV6","srv_ip":"fd00:6::1","srv_port":547,"vlan":20}
+{"cli_ip":"fe80::50","cli_port":546,"l7":"DHCPV6","srv_ip":"fd00:6::1","srv_port":547,"vlan":0}
+{"cli_ip":"fe80::51","cli_port":546,"l7":"DHCPV6","srv_ip":"fd00:6::1","srv_port":547,"vlan":0}
+{"cli_ip":"fe80::52","cli_port":546,"l7":"DHCPV6","srv_ip":"fd00:6::1","srv_port":547,"vlan":0}

@@ -39,6 +39,13 @@ requires: pro
 # Allowed server on VLANs
 #   fe80::40       REPLY only, VLAN 10                          (reply first)
 #   fe80::41       REPLY only, VLAN 20                          (reply first)
+# Other message types (allowed server)
+#   fd00:6::f0     LEASEQUERY-REPLY, then LEASEQUERY            (reply first)
+#   fd00:6::f1     LEASEQUERY, then LEASEQUERY-REPLY
+#   fd00:6::f2     RECONFIGURE-REPLY, then RECONFIGURE-REQUEST  (reply first)
+#   fe80::50       DHCPV4-RESPONSE, then DHCPV4-QUERY           (reply first)
+#   fe80::51       ADDR-REG-INFORM, then ADDR-REG-REPLY
+#   fe80::52       ADDR-REG-REPLY only                          (reply first)
 
 pre: |
   # Disable everything not related to this test

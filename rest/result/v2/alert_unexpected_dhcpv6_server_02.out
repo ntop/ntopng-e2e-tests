@@ -1,4 +1,7 @@
-{"num_alerts":15}
+{"num_alerts":21}
+{"alert":"Unexpected DHCP server found","cli_ip":"fd00:6::f0","cli_port":"547","cli_role":null,"description":"Unexpected DHCP server found: fd00:6::1","score":100,"srv_ip":"fd00:6::1","srv_port":"547","srv_role":"attacker","vlan":0}
+{"alert":"Unexpected DHCP server found","cli_ip":"fd00:6::f1","cli_port":"547","cli_role":null,"description":"Unexpected DHCP server found: fd00:6::1","score":100,"srv_ip":"fd00:6::1","srv_port":"547","srv_role":"attacker","vlan":0}
+{"alert":"Unexpected DHCP server found","cli_ip":"fd00:6::f2","cli_port":"547","cli_role":null,"description":"Unexpected DHCP server found: fd00:6::1","score":100,"srv_ip":"fd00:6::1","srv_port":"547","srv_role":"attacker","vlan":0}
 {"alert":"Unexpected DHCP server found","cli_ip":"fd00:6::fa","cli_port":"547","cli_role":null,"description":"Unexpected DHCP server found: fd00:6::1","score":100,"srv_ip":"fd00:6::1","srv_port":"547","srv_role":"attacker","vlan":0}
 {"alert":"Unexpected DHCP server found","cli_ip":"fd00:6::fb","cli_port":"547","cli_role":null,"description":"Unexpected DHCP server found: fd00:6::1","score":100,"srv_ip":"fd00:6::1","srv_port":"547","srv_role":"attacker","vlan":0}
 {"alert":"Unexpected DHCP server found","cli_ip":"fd00:6::fd","cli_port":"547","cli_role":null,"description":"Unexpected DHCP server found: fd00:6::2","score":100,"srv_ip":"fd00:6::2","srv_port":"547","srv_role":"attacker","vlan":0}
@@ -14,3 +17,6 @@
 {"alert":"Unexpected DHCP server found","cli_ip":"fe80::22","cli_port":"546","cli_role":null,"description":"Unexpected DHCP server found: fd00:6::2","score":100,"srv_ip":"fd00:6::2","srv_port":"547","srv_role":"attacker","vlan":0}
 {"alert":"Unexpected DHCP server found","cli_ip":"fe80::32","cli_port":"546","cli_role":null,"description":"Unexpected DHCP server found: fd00:6::fc","score":100,"srv_ip":"fd00:6::fc","srv_port":"547","srv_role":"attacker","vlan":0}
 {"alert":"Unexpected DHCP server found","cli_ip":"fe80::41","cli_port":"546","cli_role":null,"description":"Unexpected DHCP server found: fd00:6::1@20","score":100,"srv_ip":"fd00:6::1","srv_port":"547","srv_role":"attacker","vlan":20}
+{"alert":"Unexpected DHCP server found","cli_ip":"fe80::50","cli_port":"546","cli_role":null,"description":"Unexpected DHCP server found: fd00:6::1","score":100,"srv_ip":"fd00:6::1","srv_port":"547","srv_role":"attacker","vlan":0}
+{"alert":"Unexpected DHCP server found","cli_ip":"fe80::51","cli_port":"546","cli_role":null,"description":"Unexpected DHCP server found: fd00:6::1","score":100,"srv_ip":"fd00:6::1","srv_port":"547","srv_role":"attacker","vlan":0}
+{"alert":"Unexpected DHCP server found","cli_ip":"fe80::52","cli_port":"546","cli_role":null,"description":"Unexpected DHCP server found: fd00:6::1","score":100,"srv_ip":"fd00:6::1","srv_port":"547","srv_role":"attacker","vlan":0}

@@ -13,10 +13,11 @@ requires: pro
 # the traps and informs (the receiver, port 162, is the server). The server
 # ports are learned from the bidirectional flows: 161 by the polled agents, 162
 # by the manager, never the ephemeral ports of the manager.
-# The direction of SNMPv1/v2c flows is decided by the PDU type of the first
-# packet: the flows marked "reply first" below start with a reply (Response,
-# Report) and are swapped. SNMPv3 flows are not decided (their PDU is usually
-# encrypted): the sender of the first packet is the client.
+# The direction of SNMP flows is decided by the first packet: by the PDU type
+# for SNMPv1/v2c; by the reportable flag of the header for SNMPv3 (its PDU is
+# usually encrypted): set in the requests, clear in the replies and in the
+# traps, which are sent to port 162. The flows marked "reply first" below
+# start with a reply (Response, Report) and are swapped.
 #
 #   192.168.8.10   GetRequest, then Response (v2c)
 #   192.168.8.11   Response only (v2c)                          (reply first)
@@ -28,8 +29,12 @@ requires: pro
 #   192.168.8.17   Response of an Inform only (from 162)        (reply first)
 #   192.168.8.18   Report only (v2c framing)                    (reply first)
 #   192.168.8.19   SNMPv3 GetRequest, then Response
-#   192.168.8.20   SNMPv3 Response only (stays reversed: SNMPv3 is not decided)
+#   192.168.8.20   SNMPv3 Response only                         (reply first)
 #   192.168.8.21   Response only, community of 200 bytes        (reply first)
+#   192.168.8.22   SNMPv3 SNMPv2-Trap sent to 162, from port 161
+#   192.168.8.23   SNMPv3 Inform sent to 162, then its Response
+#   192.168.8.24   SNMPv3 Response of an Inform only (from 162) (reply first)
+#   192.168.8.25   SNMPv3 encrypted (authPriv) Response only    (reply first)
 
 pre: |
   # Disable everything not related to this test
@@ -40,6 +45,6 @@ runtime: |
   curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=0&perPage=100" | jq -c '[.rsp.data[] | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, l7: .protocol.l7}] | sort_by(.cli_ip, .srv_ip, .cli_port) | .[]'
 
   # Server ports learned by the hosts
-  for h in 192.168.8.1 192.168.8.10 192.168.8.11 192.168.8.12 192.168.8.13 192.168.8.14 192.168.8.15 192.168.8.16 192.168.8.17 192.168.8.18 192.168.8.19 192.168.8.20 192.168.8.21; do
+  for h in 192.168.8.1 192.168.8.10 192.168.8.11 192.168.8.12 192.168.8.13 192.168.8.14 192.168.8.15 192.168.8.16 192.168.8.17 192.168.8.18 192.168.8.19 192.168.8.20 192.168.8.21 192.168.8.22 192.168.8.23 192.168.8.24 192.168.8.25; do
     curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/open_ports.lua?ifid=0&host=${h}" | jq -c --arg host "${h}" '{host: $host, server_ports: ([.rsp[]?.key | tonumber] | sort)}'
   done

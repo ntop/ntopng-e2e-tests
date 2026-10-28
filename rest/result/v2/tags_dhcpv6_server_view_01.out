@@ -22,4 +22,10 @@
 {"dhcp_server":true,"host":"fd00:6::fc"}
 {"dhcp_server":false,"host":"fd00:6::fd"}
 {"dhcp_server":false,"host":"fd00:6::fe"}
+{"dhcp_server":false,"host":"fd00:6::f0"}
+{"dhcp_server":false,"host":"fd00:6::f1"}
+{"dhcp_server":false,"host":"fd00:6::f2"}
+{"dhcp_server":false,"host":"fe80::50"}
+{"dhcp_server":false,"host":"fe80::51"}
+{"dhcp_server":false,"host":"fe80::52"}
 {"dhcp_server":false,"host":"ff02::1:2"}
