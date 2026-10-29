@@ -9,6 +9,9 @@ requires: pro
 # the host answering the pings (192.168.2.2, fd00::2), whatever the order the
 # packets are captured, and also when only the server packets are captured.
 # The direction is decided by the first packet that is a request or a reply.
+# The messages of SIP and QUIC do not tell it: once the protocol is detected
+# by DPI, the side using one of its default ports (SIP 5060, QUIC 443) is the
+# server (SIP server 192.168.2.3, QUIC server 192.168.2.4).
 #
 # Covered issues:
 # - NTP flows starting with the server packet were never swapped: the nDPI
@@ -19,6 +22,8 @@ requires: pro
 #   reply type of ICMP (0) was checked instead of the ICMPv6 one (129).
 # - NTP control (mode 6) and private (mode 7, e.g. monlist) messages were not
 #   decided: they are decided by their R (response) bit.
+# - UDP flows of protocols without requests and replies recognized (e.g. SIP,
+#   QUIC) starting with a server packet stayed reversed (.60, .61, .65).
 #
 # NTP
 #   192.168.2.30   server reply (mode 4), then client request (mode 3)
@@ -39,6 +44,17 @@ requires: pro
 # ICMPv6
 #   fd00::50       echo reply, then echo request
 #   fd00::51       echo request, then echo reply
+# SIP (server 192.168.2.3:5060)
+#   192.168.2.60   response, then request
+#   192.168.2.61   response only
+#   192.168.2.62   request, then response
+#   192.168.2.63   not SIP, from port 5060 (guessed by the port, not by DPI):
+#                  not decided (stays reversed)
+# QUIC (server 192.168.2.4:443)
+#   192.168.2.64   client Initial, then a server packet
+#   192.168.2.65   server packet, then the client Initial
+#   192.168.2.66   server packets only (guessed by the port, not by DPI):
+#                  not decided (stays reversed)
 
 pre: |
   # Disable everything not related to this test
