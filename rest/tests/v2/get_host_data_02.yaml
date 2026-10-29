@@ -12,6 +12,14 @@ ignore: # duration and last seen depend on the current system time, whereas firs
   - bytes
   - packets
   - num_flows
+  # HTTP request/response rates: computed by the periodic updates on the time
+  # of the packets read, they depend on the timing of the pcap replay
+  - '"[1-5]xx":'
+  - '"get":'
+  - '"head":'
+  - '"other":'
+  - '"post":'
+  - '"put":'
 
 pre: |
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"config": [{"key": "dns_list", "value": "10.10.10.10"}]}' http://localhost:3333/lua/rest/v2/set/network/config.lua
