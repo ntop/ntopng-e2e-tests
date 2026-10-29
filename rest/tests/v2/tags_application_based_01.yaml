@@ -19,6 +19,14 @@ ignore:
   - bps
   - pps
   - country
+  # HTTP request/response rates: computed by the periodic updates on the time
+  # of the packets read, they depend on the timing of the pcap replay
+  - '"[1-5]xx":'
+  - '"get":'
+  - '"head":'
+  - '"other":'
+  - '"post":'
+  - '"put":'
 
 pre: |
   # Disable everything not related to this test, to keep the output minimal
