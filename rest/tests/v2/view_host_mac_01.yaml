@@ -1,0 +1,24 @@
+input: host_os_change.pcap
+
+localnet: 172.16.1.0/24
+
+requires: pro
+
+# Add a view interface (pcap interface ifid 0, view interface ifid 1)
+options:
+  - -i=view:all
+
+# A host of the view must have the MAC of its flows.
+#
+# When a flow of a viewed interface raises an alert, the alert exclusions of
+# the hosts of the view are checked (Flow::setAlertsMap), and that creates the
+# hosts of the view not yet there, without MAC; the view used to leave them
+# without MAC (the MAC shown by the host was only a copy, the MAC filter did not
+# find it, and the asset of the host had no MAC). Here the client (172.16.1.137)
+# raises a flow alert (risk) before the view creates it.
+#
+# NOTE: the checks are left enabled, as the alert is needed.
+
+runtime: |
+  # Hosts of the view with the MAC of the client
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/active.lua?ifid=1&mac=00:02:FB:34:B4:FA" | jq -c '{rc_str, hosts: [.rsp.data[] | {ip, mac}]}'
