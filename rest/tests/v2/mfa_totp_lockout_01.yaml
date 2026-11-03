@@ -1,0 +1,95 @@
+# TOTP (MFA) login: attempts limit (ANT-2026-3CVKWV8V).
+#
+# An unprivileged user 'alice' is added by the administrator and enables TOTP
+# through the same two requests of the GUI MFA tab (generate_secret, then
+# enable with a code). Then, as somebody who knows alice's password:
+#
+# - the password alone gives the MFA verification page, no session
+# - 3 wrong codes, then the right one: a session (and the counter is reset)
+# - 5 wrong codes: the 5th locks the MFA step, the pending token is dropped
+#   (reusing it gives session-expired)
+# - while locked, even the right code (on a new token) is refused, and so is
+#   the Lua path (ntop.validateTOTP(), used by change_user_mfa.lua enable)
+#
+# The TOTP codes are computed here from the secret (RFC 6238, SHA1, 30 s,
+# 6 digits). Wrong codes are chosen outside the +-2 window, so that a 30 s
+# boundary can't make them valid. Only reasons and flags are printed: no code,
+# token or secret, so the output does not depend on time.
+#
+# NOTE: the tests run with --disable-login=1, so every request is handled as
+# an administrator's and change_user_mfa.lua disable does not ask for a code:
+# the Lua path is checked with enable, which always does.
+#
+# NOTE: alice's requests to change_user_mfa.lua use the Basic header, which at
+# the moment does not check the second factor. If that gets fixed, this setup
+# must use a session (or the API token) instead.
+
+post: |
+  B=http://localhost:3333
+  PW=Alice_pw_1234
+
+  # $1 = secret, $2 = "valid" (current code) or "wrong" (a code outside +-2)
+  totp() {
+    python3 -I -c '
+  import sys, hmac, hashlib, struct, time, base64
+  s = sys.argv[1]; k = base64.b32decode(s + "=" * (-len(s) % 8))
+  def code(c):
+      h = hmac.new(k, struct.pack(">Q", c), hashlib.sha1).digest(); o = h[-1] & 15
+      return (struct.unpack(">I", h[o:o + 4])[0] & 0x7fffffff) % 1000000
+  now = int(time.time() // 30)
+  if sys.argv[2] == "valid":
+      print("%06d" % code(now))
+  else:
+      near = {code(now + d) for d in range(-2, 3)}
+      c = int(sys.argv[3])
+      while c in near: c = (c + 1) % 1000000
+      print("%06d" % c)
+  ' "$@"
+  }
+
+  # Password step: prints the pending token (empty if none)
+  login() {
+    curl -s -o /dev/null -w '%{redirect_url}' --data-urlencode user=alice --data-urlencode "password=${PW}" "${B}/authorize.html" \
+      | sed -n 's/.*[?&]token=\([0-9a-f]*\).*/\1/p'
+  }
+
+  # MFA step: $1 = step label, $2 = token, $3 = code
+  mfa() {
+    local hdr loc reason session
+    hdr=$(curl -s -o /dev/null -D - --data-urlencode "token=$2" --data-urlencode "totp_code=$3" "${B}/mfa_authorize.html" | tr -d '\r')
+    loc=$(echo "${hdr}" | sed -n 's/^Location: //Ip')
+    reason=$(echo "${loc}" | sed -n 's/.*[?&]reason=\([a-z-]*\).*/\1/p')
+    if echo "${hdr}" | grep -qi '^Set-Cookie: session_'; then session=true; else session=false; fi
+    jq -nc --arg step "$1" --arg page "${loc%%\?*}" --arg reason "${reason:-none}" --argjson session ${session} \
+      '{step: $step, page: $page, reason: $reason, session: $session}'
+  }
+
+  # Setup: the administrator adds alice, alice enables TOTP
+  curl -s -u admin:admin -d username=alice -d "full_name=Alice" -d "password=${PW}" -d "confirm_password=${PW}" \
+    -d user_role=unprivileged -d allowed_networks=0.0.0.0/0,::/0 -d allowed_interface= -d add_user_language=en \
+    "${B}/lua/rest/v2/add/ntopng/user.lua" | jq -c '{step: "add_user", rc: .rc}'
+  SECRET=$(curl -s -u "alice:${PW}" -d action=generate_secret -d username=alice "${B}/lua/admin/change_user_mfa.lua" | jq -r '.secret // empty')
+  jq -nc --argjson ok $([ -n "${SECRET}" ] && echo true || echo false) '{step: "generate_secret", ok: $ok}'
+  curl -s -u "alice:${PW}" -d action=enable -d username=alice -d "totp=$(totp "${SECRET}" valid)" "${B}/lua/admin/change_user_mfa.lua" \
+    | jq -c '{step: "enable", result: .result, message: .message}'
+
+  # The password alone does not give a session
+  T=$(login)
+  jq -nc --argjson ok $([ -n "${T}" ] && echo true || echo false) '{step: "password_gives_token", ok: $ok}'
+
+  # 3 wrong codes, then the right one: logged in (the counter is reset)
+  for i in 1 2 3; do mfa "wrong_$i" "${T}" "$(totp "${SECRET}" wrong ${i}0000${i})"; done
+  mfa "right_after_3_wrong" "${T}" "$(totp "${SECRET}" valid)"
+
+  # 5 wrong codes: the 5th locks the MFA step and drops the pending token
+  T=$(login)
+  for i in 1 2 3 4 5; do mfa "lock_wrong_$i" "${T}" "$(totp "${SECRET}" wrong ${i}2345${i})"; done
+  mfa "locked_old_token" "${T}" "$(totp "${SECRET}" valid)"
+
+  # While locked the right code is refused, on a new token too
+  T=$(login)
+  mfa "locked_right_code" "${T}" "$(totp "${SECRET}" valid)"
+
+  # ... and through the Lua path
+  curl -s -u "alice:${PW}" -d action=enable -d username=alice -d "totp=$(totp "${SECRET}" valid)" "${B}/lua/admin/change_user_mfa.lua" \
+    | jq -c '{step: "locked_lua_enable", result: .result, message: .message}'
