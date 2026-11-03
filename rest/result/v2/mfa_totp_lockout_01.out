@@ -1,0 +1,16 @@
+{"rc":0,"step":"add_user"}
+{"ok":true,"step":"generate_secret"}
+{"message":"MFA enabled","result":0,"step":"enable"}
+{"ok":true,"step":"password_gives_token"}
+{"page":"/lua/mfa_verify.lua","reason":"wrong-code","session":false,"step":"wrong_1"}
+{"page":"/lua/mfa_verify.lua","reason":"wrong-code","session":false,"step":"wrong_2"}
+{"page":"/lua/mfa_verify.lua","reason":"wrong-code","session":false,"step":"wrong_3"}
+{"page":"/","reason":"none","session":true,"step":"right_after_3_wrong"}
+{"page":"/lua/mfa_verify.lua","reason":"wrong-code","session":false,"step":"lock_wrong_1"}
+{"page":"/lua/mfa_verify.lua","reason":"wrong-code","session":false,"step":"lock_wrong_2"}
+{"page":"/lua/mfa_verify.lua","reason":"wrong-code","session":false,"step":"lock_wrong_3"}
+{"page":"/lua/mfa_verify.lua","reason":"wrong-code","session":false,"step":"lock_wrong_4"}
+{"page":"/lua/login.lua","reason":"mfa-locked","session":false,"step":"lock_wrong_5"}
+{"page":"/lua/login.lua","reason":"session-expired","session":false,"step":"locked_old_token"}
+{"page":"/lua/login.lua","reason":"mfa-locked","session":false,"step":"locked_right_code"}
+{"message":"Invalid TOTP code","result":-1,"step":"locked_lua_enable"}
