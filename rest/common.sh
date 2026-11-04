@@ -45,6 +45,9 @@ fi
 ntopng_slot_setup() {
     local slot="${1:-0}"
 
+    # Exported: test scripts (run by ntopng) may read or seed Redis keys
+    export NTOPNG_TEST_REDIS
+
     if [ "${slot}" -le 0 ]; then
         NTOPNG_TEST_DATADIR="${TESTS_PATH}/data"
         NTOPNG_TEST_REDIS="2"

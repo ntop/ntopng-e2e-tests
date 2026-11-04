@@ -1,0 +1,105 @@
+# Deleted users and their leftovers (ANT-2026-X4KCH5CR).
+#
+# Login is enabled for this test ('login: true'). Users enable TOTP with
+# their own API token, minted before (as the GUI MFA tab does: generate_secret,
+# then enable with a code).
+#
+# 1. A login waiting for the TOTP code is not completed once the user has
+#    been deleted.
+# 2. A login waiting for the TOTP code, started with the old password, is not
+#    completed once an administrator has reset the password.
+# 3. A new user with the name of a deleted one does not inherit its
+#    permissions or second factor. The leftovers are seeded in Redis, as
+#    older versions left them when deleting a user. 'eve', created by the
+#    identical request, is the control.
+#
+# Only results, pages and flags are printed: no code, token or secret.
+
+login: true
+
+post: |
+  B=http://localhost:3333
+  APW="${NTOPNG_TEST_ADMIN_PASSWORD}"
+  PW=User_pw_1234
+  R() { redis-cli -n "${NTOPNG_TEST_REDIS}" "$@" > /dev/null; }
+
+  # $1 = secret: prints the current TOTP code (RFC 6238, SHA1, 30 s, 6 digits)
+  totp() {
+    python3 -I -c '
+  import sys, hmac, hashlib, struct, time, base64
+  s = sys.argv[1]; k = base64.b32decode(s + "=" * (-len(s) % 8))
+  h = hmac.new(k, struct.pack(">Q", int(time.time() // 30)), hashlib.sha1).digest(); o = h[-1] & 15
+  print("%06d" % ((struct.unpack(">I", h[o:o + 4])[0] & 0x7fffffff) % 1000000))
+  ' "$@"
+  }
+
+  # $1 = user: the administrator adds an unprivileged user
+  add_user() {
+    curl -s -u "admin:${APW}" -d "username=$1" -d "full_name=$1" -d "password=${PW}" -d "confirm_password=${PW}" \
+      -d user_role=unprivileged -d allowed_networks=0.0.0.0/0,::/0 -d allowed_interface= -d add_user_language=en \
+      "${B}/lua/rest/v2/add/ntopng/user.lua" | jq -c --arg u "$1" '{step: ("add_user_" + $u), rc: .rc}'
+  }
+
+  # $1 = user: the user enables TOTP; the secret goes to the file $2
+  enable_totp() {
+    local token secret
+    token=$(curl -s -u "$1:${PW}" -d "username=$1" "${B}/lua/rest/v2/create/ntopng/api_token.lua" | jq -r '.rsp.api_token // empty')
+    secret=$(curl -s -H "Authorization: Token ${token}" -d action=generate_secret -d "username=$1" "${B}/lua/admin/change_user_mfa.lua" | jq -r '.secret // empty')
+    curl -s -H "Authorization: Token ${token}" -d action=enable -d "username=$1" -d "totp=$(totp "${secret}")" "${B}/lua/admin/change_user_mfa.lua" \
+      | jq -c --arg u "$1" '{step: ("enable_totp_" + $u), result: .result}'
+    echo "${secret}" > "$2"
+  }
+
+  # Login form: $1 = step label, $2 = user, $3 = password. Prints the page;
+  # the pending token, if any, goes to the file $4
+  login() {
+    local loc
+    loc=$(curl -s -o /dev/null -w '%{redirect_url}' --data-urlencode "user=$2" --data-urlencode "password=$3" "${B}/authorize.html")
+    [ -n "$4" ] && echo "${loc}" | sed -n 's/.*[?&]token=\([0-9a-f]*\).*/\1/p' > "$4"
+    loc=$(echo "${loc%%\?*}" | sed 's#^[a-z]*://[^/]*##')
+    jq -nc --arg step "$1" --arg page "${loc}" '{step: $step, page: $page}'
+  }
+
+  # MFA step: $1 = step label, $2 = token, $3 = code
+  mfa() {
+    local hdr loc reason session
+    hdr=$(curl -s -o /dev/null -D - --data-urlencode "token=$2" --data-urlencode "totp_code=$3" "${B}/mfa_authorize.html" | tr -d '\r')
+    loc=$(echo "${hdr}" | sed -n 's/^Location: //Ip')
+    reason=$(echo "${loc}" | sed -n 's/.*[?&]reason=\([a-z-]*\).*/\1/p')
+    loc=$(echo "${loc%%\?*}" | sed 's#^[a-z]*://[^/]*##')
+    if echo "${hdr}" | grep -qi '^Set-Cookie: session_'; then session=true; else session=false; fi
+    jq -nc --arg step "$1" --arg page "${loc}" --arg reason "${reason:-none}" --argjson session ${session} \
+      '{step: $step, page: $page, reason: $reason, session: $session}'
+  }
+
+  TMP=$(mktemp)
+
+  # 1. bob's login waits for the code, the administrator deletes bob
+  add_user bob
+  enable_totp bob "${TMP}.bob"
+  login "bob_form" bob "${PW}" "${TMP}"
+  curl -s -u "admin:${APW}" -d username=bob "${B}/lua/rest/v2/delete/ntopng/user.lua" | jq -c '{step: "delete_bob", rc: .rc}'
+  mfa "bob_code_after_delete" "$(cat "${TMP}")" "$(totp "$(cat "${TMP}.bob")")"
+
+  # 2. carol's login waits for the code, the administrator resets her password
+  add_user carol
+  enable_totp carol "${TMP}.carol"
+  login "carol_form" carol "${PW}" "${TMP}"
+  curl -s -u "admin:${APW}" -d username=carol -d old_password= -d new_password=Carol_new_pw_1 -d confirm_password=Carol_new_pw_1 \
+    "${B}/lua/admin/password_reset.lua" | jq -c '{step: "reset_carol_password", result: (.result // .rc)}'
+  mfa "carol_code_after_reset" "$(cat "${TMP}")" "$(totp "$(cat "${TMP}.carol")")"
+  login "carol_form_new_password" carol Carol_new_pw_1
+
+  # 3. Leftovers of a 'dave' deleted by an older version, then dave and eve
+  #    are added by identical requests (no alerts permission, no MFA)
+  R mset ntopng.user.dave.allow_alerts 1 ntopng.user.dave.allow_historical_flow 1 \
+    ntopng.user.dave.totp_enabled 1 ntopng.user.dave.totp_secret JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP \
+    ntopng.user.dave.webauthn_cred_count 1 ntopng.user.dave.webauthn_cred_0 'AAAA|00|00|0|Old passkey'
+  add_user dave
+  add_user eve
+  for u in dave eve; do
+    login "${u}_form" "${u}" "${PW}"
+    curl -s -u "${u}:${PW}" "${B}/lua/rest/v2/get/flow/alert/list.lua?ifid=0" | jq -c --arg u "${u}" '{step: ("flow_alerts_" + $u), rc_str: .rc_str}'
+  done
+
+  rm -f "${TMP}" "${TMP}.bob" "${TMP}.carol"

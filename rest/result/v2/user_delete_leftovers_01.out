@@ -1,0 +1,17 @@
+{"rc":0,"step":"add_user_bob"}
+{"result":0,"step":"enable_totp_bob"}
+{"page":"/lua/mfa_verify.lua","step":"bob_form"}
+{"rc":0,"step":"delete_bob"}
+{"page":"/lua/login.lua","reason":"session-expired","session":false,"step":"bob_code_after_delete"}
+{"rc":0,"step":"add_user_carol"}
+{"result":0,"step":"enable_totp_carol"}
+{"page":"/lua/mfa_verify.lua","step":"carol_form"}
+{"result":0,"step":"reset_carol_password"}
+{"page":"/lua/login.lua","reason":"session-expired","session":false,"step":"carol_code_after_reset"}
+{"page":"/lua/mfa_verify.lua","step":"carol_form_new_password"}
+{"rc":0,"step":"add_user_dave"}
+{"rc":0,"step":"add_user_eve"}
+{"page":"/","step":"dave_form"}
+{"rc_str":"NOT_GRANTED","step":"flow_alerts_dave"}
+{"page":"/","step":"eve_form"}
+{"rc_str":"NOT_GRANTED","step":"flow_alerts_eve"}
