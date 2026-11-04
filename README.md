@@ -78,6 +78,7 @@ the below sections:
 - post: a bash script with commands to be executed after the pcap has been processed by ntopng and generating some json output (using the Rest API)
 - ignore: fields from the output to be ignored when comparing the output with the old file (this is usually used to ignore time, date or other fields that can change over time)
 - options: a list of extra options for the ntopng configuration file
+- login: true to run ntopng with the user login enabled (by default the tests run with --disable-login=1, so every request is handled as the administrator's and credentials are never checked). The 'admin' password is then the one in $NTOPNG_TEST_ADMIN_PASSWORD (see rest/common.sh)
 
 Example:
 

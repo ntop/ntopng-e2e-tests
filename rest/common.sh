@@ -15,6 +15,10 @@ TESTS_PATH="${TESTS_PATH:-${PWD}}"
 NTOPNG_ROOT="${NTOPNG_ROOT:-../../..}"
 NTOPNG_BIN="${NTOPNG_BIN:-./ntopng}"
 
+# Password of 'admin' in the tests with 'login: true' (exported: the test
+# scripts are run by ntopng and read it from the environment)
+export NTOPNG_TEST_ADMIN_PASSWORD="E2e_Admin_pw_1"
+
 RUN_FROM_PACKAGES="${RUN_FROM_PACKAGES:-false}"
 DEBUG_LEVEL="${DEBUG_LEVEL:-0}"
 KEEP_RUNNING="${KEEP_RUNNING:-0}"
@@ -168,7 +172,20 @@ ntopng_init_conf() {
     if [ "${KEEP_RUNNING}" -eq "0" ]; then
         echo "--shutdown-when-done" >> ${NTOPNG_TEST_CONF}
     fi
-    echo "--disable-login=1" >> ${NTOPNG_TEST_CONF}
+    if [ "${NTOPNG_TEST_LOGIN}" = "true" ]; then
+        # Login enabled (test option 'login: true'): seed the admin account
+        # with a non-default password, otherwise every page redirects to the
+        # change-password form. ntopng keeps an existing admin password.
+        local md5
+        md5=$(echo -n "${NTOPNG_TEST_ADMIN_PASSWORD}" | md5sum | cut -d' ' -f1)
+        redis-cli -n "${NTOPNG_TEST_REDIS}" mset \
+            ntopng.user.admin.password "${md5}" \
+            ntopng.user.admin.full_name "ntopng Administrator" \
+            ntopng.user.admin.group administrator \
+            ntopng.user.admin.allowed_nets "0.0.0.0/0,::/0" > /dev/null
+    else
+        echo "--disable-login=1" >> ${NTOPNG_TEST_CONF}
+    fi
     echo "--dont-change-user" >> ${NTOPNG_TEST_CONF}
     echo "--pid=${NTOPNG_TEST_PID}" >> ${NTOPNG_TEST_CONF}
     echo "--dns-mode=2" >> ${NTOPNG_TEST_CONF}
