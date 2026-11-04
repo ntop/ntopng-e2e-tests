@@ -1,0 +1,85 @@
+# Passkey registration while TOTP is enabled (ANT-2026-XK525I42).
+#
+# A passkey takes precedence over TOTP at login, so registering one while
+# TOTP is enabled would replace the second factor without the current code.
+# change_user_webauthn.lua must refuse the registration actions while TOTP is
+# enabled (the owner first disables TOTP, which asks for the current code to
+# a non-administrator), as change_user_mfa.lua refuses generate_secret.
+#
+# Login is enabled for this test ('login: true'). alice's requests use her
+# API token, minted before she enables TOTP: a client authenticated as alice
+# without her authenticator (the password alone is not accepted once TOTP is
+# on).
+#
+# - admin adds 'alice' and 'bob' (unprivileged), alice gets an API token and
+#   enables TOTP, as the GUI MFA tab does (generate_secret, enable)
+# - control: the login form asks alice for the TOTP code; disable without a
+#   code and a new generate_secret are refused
+# - alice's passkey registration requests are refused (no challenge), no
+#   passkey is listed and the login form still asks for the TOTP code
+# - bob (no second factor) still gets a registration challenge
+#
+# Only results, messages, pages and flags are printed: no code, token,
+# secret or challenge.
+
+login: true
+
+post: |
+  B=http://localhost:3333
+  APW="${NTOPNG_TEST_ADMIN_PASSWORD}"
+  PW=Alice_pw_1234
+  BPW=Bob_pw_1234
+  MFA="${B}/lua/admin/change_user_mfa.lua"
+  WA="${B}/lua/admin/change_user_webauthn.lua"
+
+  # $1 = secret: prints the current TOTP code (RFC 6238, SHA1, 30 s, 6 digits)
+  totp() {
+    python3 -I -c '
+  import sys, hmac, hashlib, struct, time, base64
+  s = sys.argv[1]; k = base64.b32decode(s + "=" * (-len(s) % 8))
+  h = hmac.new(k, struct.pack(">Q", int(time.time() // 30)), hashlib.sha1).digest(); o = h[-1] & 15
+  print("%06d" % ((struct.unpack(">I", h[o:o + 4])[0] & 0x7fffffff) % 1000000))
+  ' "$@"
+  }
+
+  # $1 = step label, then curl arguments: prints result, message and whether
+  # a challenge came back
+  call() {
+    local step="$1"; shift
+    curl -s "$@" | jq -c --arg step "${step}" \
+      '{step: $step, result: .result, message: (.message // "none"), challenge: (.challenge != null)}'
+  }
+
+  # Login form, password only: $1 = step label
+  login() {
+    local loc
+    loc=$(curl -s -o /dev/null -w '%{redirect_url}' --data-urlencode user=alice --data-urlencode "password=${PW}" "${B}/authorize.html")
+    loc=$(echo "${loc%%\?*}" | sed 's#^[a-z]*://[^/]*##')
+    jq -nc --arg step "$1" --arg page "${loc}" '{step: $step, page: $page}'
+  }
+
+  # Setup
+  for u in alice:${PW} bob:${BPW}; do
+    curl -s -u "admin:${APW}" -d "username=${u%%:*}" -d "full_name=${u%%:*}" -d "password=${u#*:}" -d "confirm_password=${u#*:}" \
+      -d user_role=unprivileged -d allowed_networks=0.0.0.0/0,::/0 -d allowed_interface= -d add_user_language=en \
+      "${B}/lua/rest/v2/add/ntopng/user.lua" | jq -c --arg u "${u%%:*}" '{step: ("add_user_" + $u), rc: .rc}'
+  done
+  TOKEN=$(curl -s -u "alice:${PW}" -d username=alice "${B}/lua/rest/v2/create/ntopng/api_token.lua" | jq -r '.rsp.api_token // empty')
+  AUTH="Authorization: Token ${TOKEN}"
+  SECRET=$(curl -s -H "${AUTH}" -d action=generate_secret -d username=alice "${MFA}" | jq -r '.secret // empty')
+  jq -nc --argjson ok $([ -n "${SECRET}" ] && echo true || echo false) '{step: "alice_generate_secret", ok: $ok}'
+  call "alice_enable_totp" -H "${AUTH}" -d action=enable -d username=alice -d "totp=$(totp "${SECRET}")" "${MFA}"
+
+  # Control: TOTP is in force for alice
+  login "alice_form"
+  call "alice_disable_without_code" -H "${AUTH}" -d action=disable -d username=alice "${MFA}"
+  call "alice_generate_secret_again" -H "${AUTH}" -d action=generate_secret -d username=alice "${MFA}"
+
+  # Passkey registration while TOTP is enabled: refused
+  call "alice_passkey_options" -H "${AUTH}" -d action=get_registration_options -d username=alice "${WA}"
+  call "alice_passkey_complete" -H "${AUTH}" -d action=complete_registration -d username=alice "${WA}"
+  curl -s -H "${AUTH}" -d action=list -d username=alice "${WA}" | jq -c '{step: "alice_passkey_list", result: .result, count: (.credentials | length)}'
+  login "alice_form_after"
+
+  # bob has no second factor: he can start a passkey registration
+  call "bob_passkey_options" -u "bob:${BPW}" -d action=get_registration_options -d username=bob "${WA}"
