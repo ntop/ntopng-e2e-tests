@@ -1,0 +1,34 @@
+# Issues (Enterprise XXL+): the flow alerts of the same type and host are grouped into one issue
+input: tcp-flood.pcap
+
+localnet: 192.168.1.0/24
+
+requires: pro
+
+ignore:
+  - issue_id
+  - first_seen
+  - last_seen
+  - resolved_at
+  - duration
+  - tstamp
+  - suppressed_until
+  - alerts_url
+
+pre: |
+  # Issues are off by default (Preferences > Alerts > Issues)
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"pref_section": "alerts", "pref_key": "toggle_issues", "pref_value": "1"}' http://localhost:3333/lua/rest/v2/set/ntopng/preferences.lua > /dev/null
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "tcp_no_data_exchanged"}' http://localhost:3333/lua/rest/v2/enable/check.lua
+
+post: |
+  # Signal-only updates are written at most once a minute: wait until none is pending
+  for i in $(seq 1 90); do
+    [ "$(curl -s -u admin:admin "http://localhost:3333/lua/pro/rest/v2/get/issue/stats.lua" | jq '.rsp.num_dirty')" = "0" ] && break
+    sleep 1
+  done
+  # Flow issues only: system issues (e.g. list downloads) depend on the Internet connectivity
+  curl -s -u admin:admin "http://localhost:3333/lua/pro/rest/v2/get/issue/list.lua?view=problems&entity_id=4&sort=signal_count&order=desc&length=50"
+  ID=$(curl -s -u admin:admin "http://localhost:3333/lua/pro/rest/v2/get/issue/list.lua?view=problems&entity_id=4&sort=signal_count&order=desc&length=1" | jq '.rsp[0].issue_id')
+  # Which alerts are returned among those with the same time may change: check their type only
+  curl -s -u admin:admin "http://localhost:3333/lua/pro/rest/v2/get/issue/signals.lua?issue_id=${ID}&length=3" | jq -c '{rc: .rc, signals: (.rsp | length), alerts: ([.rsp[].alert_name] | unique), servers: ([.rsp[].srv_ip] | unique)}' 
