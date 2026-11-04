@@ -1,0 +1,12 @@
+{"rc":0,"step":"add_user_alice"}
+{"rc":0,"step":"add_user_bob"}
+{"ok":true,"step":"alice_generate_secret"}
+{"challenge":false,"message":"MFA enabled","result":0,"step":"alice_enable_totp"}
+{"page":"/lua/mfa_verify.lua","step":"alice_form"}
+{"challenge":false,"message":"Invalid TOTP code","result":-1,"step":"alice_disable_without_code"}
+{"challenge":false,"message":"MFA is already enabled: disable it first","result":-1,"step":"alice_generate_secret_again"}
+{"challenge":false,"message":"Passkey cannot be registered while MFA is enabled","result":-1,"step":"alice_passkey_options"}
+{"challenge":false,"message":"Passkey cannot be registered while MFA is enabled","result":-1,"step":"alice_passkey_complete"}
+{"count":0,"result":0,"step":"alice_passkey_list"}
+{"page":"/lua/mfa_verify.lua","step":"alice_form_after"}
+{"challenge":true,"message":"none","result":0,"step":"bob_passkey_options"}

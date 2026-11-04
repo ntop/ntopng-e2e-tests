@@ -20,9 +20,10 @@
 # an administrator's and change_user_mfa.lua disable does not ask for a code:
 # the Lua path is checked with enable, which always does.
 #
-# NOTE: alice's requests to change_user_mfa.lua use the Basic header, which at
-# the moment does not check the second factor. If that gets fixed, this setup
-# must use a session (or the API token) instead.
+# NOTE: alice's requests to change_user_mfa.lua use the Basic header: as login
+# is disabled, the header is never checked. The password-only checks of an
+# MFA user (Basic header, cookies) are in mfa_password_bypass_01, which runs
+# with login enabled.
 
 post: |
   B=http://localhost:3333

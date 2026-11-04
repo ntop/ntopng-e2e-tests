@@ -38,6 +38,10 @@ echo "[>] Running test '${TEST}'${PROGRESS:+ (${PROGRESS})}"
 # Cleanup ntopng
 ntopng_cleanup
 
+# Login is disabled unless the test sets 'login: true'
+NTOPNG_TEST_LOGIN=$(shyaml -q get-value login < "tests/${TEST}.yaml" | tr 'A-Z' 'a-z')
+[ "${NTOPNG_TEST_LOGIN}" = "1" ] && NTOPNG_TEST_LOGIN=true
+
 # Init ntopng configuration
 ntopng_init_conf
 
