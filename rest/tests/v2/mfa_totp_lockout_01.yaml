@@ -12,7 +12,9 @@
 #   the Lua path (ntop.validateTOTP(), used by change_user_mfa.lua enable)
 #
 # The TOTP codes are computed here from the secret (RFC 6238, SHA1, 30 s,
-# 6 digits). Wrong codes are chosen outside the +-2 window, so that a 30 s
+# 6 digits). A code is accepted once, and then only the codes of later steps
+# (see mfa_totp_replay_01): the right codes after the enable one are those
+# of the next step, and the locked checks wait for a step not accepted yet. Wrong codes are chosen outside the +-2 window, so that a 30 s
 # boundary can't make them valid. Only reasons and flags are printed: no code,
 # token or secret, so the output does not depend on time.
 #
@@ -29,7 +31,8 @@ post: |
   B=http://localhost:3333
   PW=Alice_pw_1234
 
-  # $1 = secret, $2 = "valid" (current code) or "wrong" (a code outside +-2)
+  # $1 = secret, $2 = "valid" (current code), "next" (code of the next step)
+  # or "wrong" (a code outside +-2)
   totp() {
     python3 -I -c '
   import sys, hmac, hashlib, struct, time, base64
@@ -40,6 +43,8 @@ post: |
   now = int(time.time() // 30)
   if sys.argv[2] == "valid":
       print("%06d" % code(now))
+  elif sys.argv[2] == "next":
+      print("%06d" % code(now + 1))
   else:
       near = {code(now + d) for d in range(-2, 3)}
       c = int(sys.argv[3])
@@ -78,19 +83,24 @@ post: |
   T=$(login)
   jq -nc --argjson ok $([ -n "${T}" ] && echo true || echo false) '{step: "password_gives_token", ok: $ok}'
 
-  # 3 wrong codes, then the right one: logged in (the counter is reset)
+  # 3 wrong codes, then the right one: logged in (the counter is reset). The
+  # code of the enable step is not accepted again: the next step's one is
   for i in 1 2 3; do mfa "wrong_$i" "${T}" "$(totp "${SECRET}" wrong ${i}0000${i})"; done
-  mfa "right_after_3_wrong" "${T}" "$(totp "${SECRET}" valid)"
+  mfa "right_after_3_wrong" "${T}" "$(totp "${SECRET}" next)"
+  USED=$(( $(date +%s) / 30 + 1 ))
 
-  # 5 wrong codes: the 5th locks the MFA step and drops the pending token
+  # 5 wrong codes: the 5th locks the MFA step and drops the pending token.
+  # The right codes below are of a step not accepted yet (after USED), so
+  # that only the lock refuses them
+  while [ $(( $(date +%s) / 30 )) -lt ${USED} ]; do sleep 1; done
   T=$(login)
   for i in 1 2 3 4 5; do mfa "lock_wrong_$i" "${T}" "$(totp "${SECRET}" wrong ${i}2345${i})"; done
-  mfa "locked_old_token" "${T}" "$(totp "${SECRET}" valid)"
+  mfa "locked_old_token" "${T}" "$(totp "${SECRET}" next)"
 
   # While locked the right code is refused, on a new token too
   T=$(login)
-  mfa "locked_right_code" "${T}" "$(totp "${SECRET}" valid)"
+  mfa "locked_right_code" "${T}" "$(totp "${SECRET}" next)"
 
   # ... and through the Lua path
-  curl -s -u "alice:${PW}" -d action=enable -d username=alice -d "totp=$(totp "${SECRET}" valid)" "${B}/lua/admin/change_user_mfa.lua" \
+  curl -s -u "alice:${PW}" -d action=enable -d username=alice -d "totp=$(totp "${SECRET}" next)" "${B}/lua/admin/change_user_mfa.lua" \
     | jq -c '{step: "locked_lua_enable", result: .result, message: .message}'

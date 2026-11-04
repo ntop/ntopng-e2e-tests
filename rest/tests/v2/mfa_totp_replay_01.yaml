@@ -1,0 +1,120 @@
+# TOTP (MFA) codes are accepted once (ANT-2026-3F1HXJXQ).
+#
+# A code is valid for up to 90 s (current step, +-1 for clock skew). Once a
+# code has been accepted, it is refused for the rest of its validity, and so
+# are the codes of older steps (RFC 6238, section 5.2): only the codes of
+# later steps are accepted. This holds for the MFA login step and for
+# ntop.validateTOTP(), used by change_user_mfa.lua.
+#
+# Login is enabled for this test ('login: true'). alice enables TOTP with her
+# API token, minted before (as the GUI MFA tab does: generate_secret, then
+# enable with a code). With N the step when the checks start:
+#
+# - alice enables TOTP with the code of step N+1 (accepted: +1 window)
+# - login form, then the code of step N: refused, older than the last one
+#   accepted (never used before), then the enable code: refused (reused)
+# - at step N+1, the code of step N+2: logged in
+# - the same code on a new login and to disable TOTP: refused, TOTP still on
+# - the administrator disables TOTP and generates a new secret: the code of
+#   the new secret for the current step is accepted (the steps accepted
+#   belong to the old secret)
+#
+# The test starts with at least 15 s left in step N and waits once for the
+# start of step N+1, so that each code is inside its window. Only results,
+# pages, reasons and flags are printed: no code, token or secret.
+
+login: true
+
+post: |
+  B=http://localhost:3333
+  APW="${NTOPNG_TEST_ADMIN_PASSWORD}"
+  PW=Alice_pw_1234
+  MFA="${B}/lua/admin/change_user_mfa.lua"
+
+  # Prints the current TOTP step (30 s)
+  step() { echo $(( $(date +%s) / 30 )); }
+
+  # $1 = secret, $2 = step: prints the code of the step (RFC 6238, SHA1,
+  # 6 digits)
+  totp() {
+    python3 -I -c '
+  import sys, hmac, hashlib, struct, base64
+  s = sys.argv[1]; k = base64.b32decode(s + "=" * (-len(s) % 8))
+  h = hmac.new(k, struct.pack(">Q", int(sys.argv[2])), hashlib.sha1).digest(); o = h[-1] & 15
+  print("%06d" % ((struct.unpack(">I", h[o:o + 4])[0] & 0x7fffffff) % 1000000))
+  ' "$@"
+  }
+
+  # Sleeps until the step $1 has started
+  wait_step() { while [ "$(step)" -lt "$1" ]; do sleep 1; done; }
+
+  # $1 = step label, then curl arguments: prints result and message
+  call() {
+    local step="$1"; shift
+    curl -s "$@" | jq -c --arg step "${step}" '{step: $step, result: .result, message: (.message // "none")}'
+  }
+
+  # Login form, password only: $1 = step label. Prints the page; the pending
+  # token, if any, goes to the file $2
+  login() {
+    local loc
+    loc=$(curl -s -o /dev/null -w '%{redirect_url}' --data-urlencode user=alice --data-urlencode "password=${PW}" "${B}/authorize.html")
+    [ -n "$2" ] && echo "${loc}" | sed -n 's/.*[?&]token=\([0-9a-f]*\).*/\1/p' > "$2"
+    loc=$(echo "${loc%%\?*}" | sed 's#^[a-z]*://[^/]*##')
+    jq -nc --arg step "$1" --arg page "${loc}" '{step: $step, page: $page}'
+  }
+
+  # MFA step: $1 = step label, $2 = token, $3 = code
+  mfa() {
+    local hdr loc reason session
+    hdr=$(curl -s -o /dev/null -D - --data-urlencode "token=$2" --data-urlencode "totp_code=$3" "${B}/mfa_authorize.html" | tr -d '\r')
+    loc=$(echo "${hdr}" | sed -n 's/^Location: //Ip')
+    reason=$(echo "${loc}" | sed -n 's/.*[?&]reason=\([a-z-]*\).*/\1/p')
+    loc=$(echo "${loc%%\?*}" | sed 's#^[a-z]*://[^/]*##')
+    if echo "${hdr}" | grep -qi '^Set-Cookie: session_'; then session=true; else session=false; fi
+    jq -nc --arg step "$1" --arg page "${loc}" --arg reason "${reason:-none}" --argjson session ${session} \
+      '{step: $step, page: $page, reason: $reason, session: $session}'
+  }
+
+  TMP=$(mktemp)
+
+  # Setup: the administrator adds alice, alice gets an API token and a secret
+  curl -s -u "admin:${APW}" -d username=alice -d full_name=alice -d "password=${PW}" -d "confirm_password=${PW}" \
+    -d user_role=unprivileged -d allowed_networks=0.0.0.0/0,::/0 -d allowed_interface= -d add_user_language=en \
+    "${B}/lua/rest/v2/add/ntopng/user.lua" | jq -c '{step: "add_user", rc: .rc}'
+  TOKEN=$(curl -s -u "alice:${PW}" -d username=alice "${B}/lua/rest/v2/create/ntopng/api_token.lua" | jq -r '.rsp.api_token // empty')
+  AUTH="Authorization: Token ${TOKEN}"
+  SECRET=$(curl -s -H "${AUTH}" -d action=generate_secret -d username=alice "${MFA}" | jq -r '.secret // empty')
+  jq -nc --argjson ok $([ -n "${SECRET}" ] && echo true || echo false) '{step: "generate_secret", ok: $ok}'
+
+  # At least 15 s left in step N
+  [ $(( $(date +%s) % 30 )) -gt 15 ] && wait_step $(( $(step) + 1 ))
+  N=$(step)
+
+  # alice enables TOTP with the code of step N+1
+  call "enable_next_step" -H "${AUTH}" -d action=enable -d username=alice -d "totp=$(totp "${SECRET}" $((N + 1)))" "${MFA}"
+
+  # Login: the code of step N (older than the last accepted) and the enable
+  # code are refused
+  login "form" "${TMP}"
+  T=$(cat "${TMP}")
+  mfa "older_step_code" "${T}" "$(totp "${SECRET}" ${N})"
+  mfa "reused_enable_code" "${T}" "$(totp "${SECRET}" $((N + 1)))"
+
+  # At step N+1, the code of step N+2 logs in
+  wait_step $((N + 1))
+  mfa "later_step_code" "${T}" "$(totp "${SECRET}" $((N + 2)))"
+
+  # The same code again: refused on a new login and to disable TOTP
+  login "form_again" "${TMP}"
+  mfa "reused_login_code" "$(cat "${TMP}")" "$(totp "${SECRET}" $((N + 2)))"
+  call "reused_code_disable" -H "${AUTH}" -d action=disable -d username=alice -d "totp=$(totp "${SECRET}" $((N + 2)))" "${MFA}"
+  login "form_after_disable"
+
+  # A new secret: its code for the current step is accepted
+  call "admin_disable" -u "admin:${APW}" -d action=disable -d username=alice "${MFA}"
+  SECRET2=$(curl -s -u "admin:${APW}" -d action=generate_secret -d username=alice "${MFA}" | jq -r '.secret // empty')
+  jq -nc --argjson ok $([ -n "${SECRET2}" ] && echo true || echo false) '{step: "new_secret", ok: $ok}'
+  call "new_secret_enable" -u "admin:${APW}" -d action=enable -d username=alice -d "totp=$(totp "${SECRET2}" $(step))" "${MFA}"
+
+  rm -f "${TMP}"

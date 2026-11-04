@@ -13,6 +13,10 @@
 #    older versions left them when deleting a user. 'eve', created by the
 #    identical request, is the control.
 #
+# The codes sent after the deletion or the password reset are of the next
+# step: the enable code is not accepted twice (see mfa_totp_replay_01), so
+# only the deletion or the reset can refuse them.
+#
 # Only results, pages and flags are printed: no code, token or secret.
 
 login: true
@@ -23,12 +27,14 @@ post: |
   PW=User_pw_1234
   R() { redis-cli -n "${NTOPNG_TEST_REDIS}" "$@" > /dev/null; }
 
-  # $1 = secret: prints the current TOTP code (RFC 6238, SHA1, 30 s, 6 digits)
+  # $1 = secret, $2 = steps after the current one (default 0): prints the
+  # TOTP code (RFC 6238, SHA1, 30 s, 6 digits)
   totp() {
     python3 -I -c '
   import sys, hmac, hashlib, struct, time, base64
   s = sys.argv[1]; k = base64.b32decode(s + "=" * (-len(s) % 8))
-  h = hmac.new(k, struct.pack(">Q", int(time.time() // 30)), hashlib.sha1).digest(); o = h[-1] & 15
+  c = int(time.time() // 30) + (int(sys.argv[2]) if len(sys.argv) > 2 else 0)
+  h = hmac.new(k, struct.pack(">Q", c), hashlib.sha1).digest(); o = h[-1] & 15
   print("%06d" % ((struct.unpack(">I", h[o:o + 4])[0] & 0x7fffffff) % 1000000))
   ' "$@"
   }
@@ -79,7 +85,7 @@ post: |
   enable_totp bob "${TMP}.bob"
   login "bob_form" bob "${PW}" "${TMP}"
   curl -s -u "admin:${APW}" -d username=bob "${B}/lua/rest/v2/delete/ntopng/user.lua" | jq -c '{step: "delete_bob", rc: .rc}'
-  mfa "bob_code_after_delete" "$(cat "${TMP}")" "$(totp "$(cat "${TMP}.bob")")"
+  mfa "bob_code_after_delete" "$(cat "${TMP}")" "$(totp "$(cat "${TMP}.bob")" 1)"
 
   # 2. carol's login waits for the code, the administrator resets her password
   add_user carol
@@ -87,7 +93,7 @@ post: |
   login "carol_form" carol "${PW}" "${TMP}"
   curl -s -u "admin:${APW}" -d username=carol -d old_password= -d new_password=Carol_new_pw_1 -d confirm_password=Carol_new_pw_1 \
     "${B}/lua/admin/password_reset.lua" | jq -c '{step: "reset_carol_password", result: (.result // .rc)}'
-  mfa "carol_code_after_reset" "$(cat "${TMP}")" "$(totp "$(cat "${TMP}.carol")")"
+  mfa "carol_code_after_reset" "$(cat "${TMP}")" "$(totp "$(cat "${TMP}.carol")" 1)"
   login "carol_form_new_password" carol Carol_new_pw_1
 
   # 3. Leftovers of a 'dave' deleted by an older version, then dave and eve
