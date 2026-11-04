@@ -1,0 +1,14 @@
+{"rc":0,"step":"add_user"}
+{"ok":true,"step":"generate_secret"}
+{"message":"MFA enabled","result":0,"step":"enable_next_step"}
+{"page":"/lua/mfa_verify.lua","step":"form"}
+{"page":"/lua/mfa_verify.lua","reason":"wrong-code","session":false,"step":"older_step_code"}
+{"page":"/lua/mfa_verify.lua","reason":"wrong-code","session":false,"step":"reused_enable_code"}
+{"page":"/","reason":"none","session":true,"step":"later_step_code"}
+{"page":"/lua/mfa_verify.lua","step":"form_again"}
+{"page":"/lua/mfa_verify.lua","reason":"wrong-code","session":false,"step":"reused_login_code"}
+{"message":"Invalid TOTP code","result":-1,"step":"reused_code_disable"}
+{"page":"/lua/mfa_verify.lua","step":"form_after_disable"}
+{"message":"MFA disabled","result":0,"step":"admin_disable"}
+{"ok":true,"step":"new_secret"}
+{"message":"MFA enabled","result":0,"step":"new_secret_enable"}
