@@ -24,7 +24,7 @@ pre: |
 post: |
   # Signal-only updates are written at most once a minute: wait until none is pending
   for i in $(seq 1 90); do
-    [ "$(curl -s -u admin:admin "http://localhost:3333/lua/pro/rest/v2/get/issue/stats.lua" | jq '.rsp.num_dirty')" = "0" ] && break
+    [ "$(curl -s -u admin:admin "http://localhost:3333/lua/pro/rest/v2/get/issue/stats.lua" | jq '.rsp.num_unsaved')" = "0" ] && break
     sleep 1
   done
   # Flow issues only: system issues (e.g. list downloads) depend on the Internet connectivity

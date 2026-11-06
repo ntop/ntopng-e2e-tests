@@ -1,0 +1,44 @@
+# Issues (Enterprise XXL+): the issues inherit the tags of their alerts (union), shown and filtered by tag
+input: tcp-flood.pcap
+
+localnet: 192.168.1.0/24
+
+requires: pro
+
+pre: |
+  # Issues are off by default (Preferences > Alerts > Issues)
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"pref_section": "alerts", "pref_key": "toggle_issues", "pref_value": "1"}' http://localhost:3333/lua/rest/v2/set/ntopng/preferences.lua > /dev/null
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua > /dev/null
+  # tcp_no_data_exchanged: flows of tagged protocols; the others: flows not tagged
+  for C in tcp_no_data_exchanged ndpi_unsafe_protocol ndpi_desktop_or_file_sharing_session; do
+    curl -s -u admin:admin -H "Content-Type: application/json" -d "{\"ifid\": 0, \"check_subdir\": \"flow\", \"script_key\": \"$C\"}" http://localhost:3333/lua/rest/v2/enable/check.lua > /dev/null
+  done
+  # The flows of the Unknown, HTTP and TLS protocols get the tags 33 and 62
+  for T in 33 62; do
+    curl -s -u admin:admin -H "Content-Type: application/json" -d "{\"tags\": [{\"tag_id\": $T, \"tag_name\": \"Tag$T\", \"color\": \"#ff0000\", \"description\": \"\", \"tag_protocols\": \"0,7,91\", \"tag_risks\": \"\", \"tag_ttl\": 0}]}" http://localhost:3333/lua/rest/v2/edit/tag/tag.lua > /dev/null
+  done
+  sleep 3
+
+post: |
+  B="http://localhost:3333/lua/pro/rest/v2/get/issue"
+  # Signal-only updates are written at most once a minute: wait until none is pending
+  for i in $(seq 1 90); do
+    [ "$(curl -s -u admin:admin "${B}/stats.lua" | jq '.rsp.num_unsaved')" = "0" ] && break
+    sleep 1
+  done
+  # Tags of each issue
+  curl -s -u admin:admin "${B}/list.lua?view=problems&entity_id=4&sort=signal_count&order=desc&length=50" | jq -c '{rc: .rc, total: .recordsTotal, issues: ([.rsp[] | {entity: .entity.value, alert: .alert.id, signals: .signal_count, tags: [.tags[] | {id, name, color}]}] | sort_by(.entity, .alert))}'
+  # Tag facet
+  curl -s -u admin:admin "${B}/facets.lua?view=problems&entity_id=4" | jq -c '{rc: .rc, tag: [.rsp[] | select(.id == "tag") | .items[]]}'
+  # Filter by tag: one of the tags, a tag no issue has, both tags (issues with any of them)
+  # Invalid: out of range (no issue), not a number and SQL (refused by the validator, so not filtered)
+  for T in 33 40 33,62 99 abc "33)%20OR%20(1=1"; do
+    curl -s -u admin:admin "${B}/list.lua?view=problems&entity_id=4&tag=${T}&length=50" | jq -c "{tag: \"${T}\", rc: .rc, total: .recordsFiltered}"
+  done
+  # Issue details (from the issue manager)
+  ID=$(curl -s -u admin:admin "${B}/list.lua?view=problems&entity_id=4&tag=62&sort=signal_count&order=desc&length=1" | jq '.rsp[0].issue_id')
+  curl -s -u admin:admin "${B}/details.lua?issue_id=${ID}" | jq -c '{rc: .rc, tags: [.rsp.tags[]?.name]}'
+  # Search by issue ID (also as #ID): the issue is listed; a non-matching text lists nothing
+  for S in "${ID}" "%23${ID}" "%23nomatch"; do
+    curl -s -u admin:admin "${B}/list.lua?view=problems&map_search=${S}&length=50" | jq -c "{search: \"${S}\" | sub(\"${ID}\"; \"ID\"), rc: .rc, found: ([.rsp[].issue_id] | index(${ID}) != null)}"
+  done
