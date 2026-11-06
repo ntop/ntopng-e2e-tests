@@ -1,0 +1,12 @@
+{"issues":[{"alert":56,"entity":"140.82.121.4@0","signals":1,"tags":[{"color":"#ff0000","id":33,"name":"Tag33"},{"color":"#ff0000","id":62,"name":"Tag62"}]},{"alert":56,"entity":"151.101.242.49@0","signals":1,"tags":[{"color":"#ff0000","id":33,"name":"Tag33"},{"color":"#ff0000","id":62,"name":"Tag62"}]},{"alert":56,"entity":"185.199.110.133@0","signals":1,"tags":[{"color":"#ff0000","id":33,"name":"Tag33"},{"color":"#ff0000","id":62,"name":"Tag62"}]},{"alert":56,"entity":"192.168.1.51@0","signals":5252,"tags":[{"color":"#ff0000","id":33,"name":"Tag33"},{"color":"#ff0000","id":62,"name":"Tag62"}]},{"alert":78,"entity":"192.168.1.51@0","signals":1,"tags":[]},{"alert":52,"entity":"192.168.1.58@0","signals":4,"tags":[]},{"alert":56,"entity":"52.21.251.129@0","signals":1,"tags":[{"color":"#ff0000","id":33,"name":"Tag33"},{"color":"#ff0000","id":62,"name":"Tag62"}]}],"rc":0,"total":7}
+{"rc":0,"tag":[{"count":5,"label":"Tag33","value":"33"},{"count":5,"label":"Tag62","value":"62"}]}
+{"rc":0,"tag":"33","total":5}
+{"rc":0,"tag":"40","total":0}
+{"rc":0,"tag":"33,62","total":5}
+{"rc":0,"tag":"99","total":0}
+{"rc":0,"tag":"abc","total":7}
+{"rc":0,"tag":"33)%20OR%20(1=1","total":7}
+{"rc":0,"tags":["Tag33","Tag62"]}
+{"found":true,"rc":0,"search":"ID"}
+{"found":true,"rc":0,"search":"%23ID"}
+{"found":false,"rc":0,"search":"%23nomatch"}
