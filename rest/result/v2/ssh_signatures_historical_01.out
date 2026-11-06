@@ -1,0 +1,3 @@
+{"cli":"127.0.0.1:58496","srv":"127.0.0.1:8000","ssh":{"client_hash_hassh":"C11B200866CF918393E62EA25D851D90","client_signature":"SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.11","server_hash_hassh":"CA6DD86B2D9A44E4A3F1A55C53E6B0FA","server_signature":"SSH-2.0-APACHE-SSHD-2.5.0"}}
+{"cli":"172.16.238.1:58395","srv":"172.16.238.168:22","ssh":{"client_hash_hassh":"21B457A327CE7A2D4FCE5EF2C42400BD","client_signature":"SSH-2.0-OpenSSH_5.6","server_hash_hassh":"B1C6C0D56317555B85C7005A3DE29325","server_signature":"SSH-2.0-OpenSSH_5.3"}}
+{"cli":"177.225.151.243:1240","srv":"147.83.42.187:22","ssh":{"client_signature":"SSH-2.0-libssh2_1.0","server_hash_hassh":"CE3C327F37EA2EC21F317FBC3FD1EA43","server_signature":"SSH-2.0-OpenSSH_6.0p1 Debian-3ubuntu1"}}

@@ -1,0 +1,22 @@
+input: ssh_signatures.pcap
+
+requires: pro
+
+clickhouse: true
+
+# SSH metadata of the flows dumped to ClickHouse (PROTOCOL_INFO_JSON): the
+# client signature (banner), the server signature and the HASSH fingerprints.
+# The client signature was not serialized, and the server signature only when
+# the client one was set (an "if" left without its statement).
+# Same pcap as the nDPI test ssh.pcap.
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+post: |
+  # Flows are flushed to ClickHouse when the interface is shut down, wait a bit
+  sleep 5
+
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "select_clause": "IPV4_SRC_ADDR,IP_SRC_PORT,IPV4_DST_ADDR,IP_DST_PORT,PROTOCOL_INFO_JSON", "where_clause": "L7_PROTO=92", "begin_time_clause": 0, "end_time_clause": 2000000000, "maxhits_clause": 1000, "order_by_clause": "IPV4_SRC_ADDR,IP_SRC_PORT"}' http://localhost:3333/lua/pro/rest/v2/get/db/flows.lua | \
+    jq -c '.rsp[] | {cli: "\(.IPV4_SRC_ADDR):\(.IP_SRC_PORT)", srv: "\(.IPV4_DST_ADDR):\(.IP_DST_PORT)", ssh: ((.PROTOCOL_INFO_JSON | fromjson? // {}) | .proto.ssh)}'
