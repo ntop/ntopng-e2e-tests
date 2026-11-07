@@ -1,0 +1,40 @@
+input: flow_direction_swap.pcap
+
+localnet: 192.168.2.0/24
+
+requires: pro
+
+clickhouse: true
+
+# Add a view interface (pcap interface ifid 0, view interface ifid 1)
+options:
+  - -i=view:all
+
+# Same as flow_direction_swap_01.yaml, with a view interface: the flows
+# dumped to ClickHouse (by the viewed interface, with the interface id of
+# the view) must be the same, with the same client and server.
+#
+# Covered issues:
+# - The dump done when the processing of the pcap file is completed raced
+#   with the first visit of the view: the flow is dumped with the hosts of the
+#   view, not set yet, so the dump was dropped and the flow was missing.
+# - The hosts of the view are swapped only at its next visit after a swap of
+#   the flow: a flow dumped in between had the addresses of the hosts
+#   reversed with respect to its ports and traffic.
+# Both are races: this test can pass also without the fixes.
+
+post: |
+  # The ClickHouse DB of the test depends on the test slot, derived here from
+  # the HTTP port (rewritten by run-one.sh for parallel slots)
+  port=$(echo "localhost:3333" | cut -d: -f2)
+  if [ "${port}" = "3333" ]; then db="ntopngtests"; else db="ntopngtests_$((port - 3300))"; fi
+
+  # Flows are flushed to ClickHouse when the interface is shut down: wait for
+  # the 14 flows of the pcap (at most 30 seconds)
+  for i in $(seq 1 30); do
+    n=$(clickhouse-client -q "SELECT count() FROM ${db}.flows" < /dev/null 2>/dev/null)
+    [ "${n:-0}" -ge 14 ] && break
+    sleep 1
+  done
+
+  clickhouse-client -q "SELECT IPv4NumToString(IPV4_SRC_ADDR) AS cli_ip, IP_SRC_PORT AS cli_port, IPv4NumToString(IPV4_DST_ADDR) AS srv_ip, IP_DST_PORT AS srv_port, PROTOCOL, L7_PROTO, SRC2DST_PACKETS AS cli2srv_pkts, DST2SRC_PACKETS AS srv2cli_pkts, SRC2DST_BYTES AS cli2srv_bytes, DST2SRC_BYTES AS srv2cli_bytes, SRC2DST_TCP_FLAGS AS cli2srv_tcp_flags, DST2SRC_TCP_FLAGS AS srv2cli_tcp_flags, JSONExtractRaw(PROTOCOL_INFO_JSON, 'tcp_flags_analysis') AS tcp_flags_analysis, INTERFACE_ID FROM ${db}.flows ORDER BY cli_ip, srv_ip FORMAT JSONEachRow" < /dev/null
