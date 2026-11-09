@@ -8,6 +8,8 @@ requires: pro
 pre: |
   # Issues are off by default (Preferences > Alerts > Issues)
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"pref_section": "alerts", "pref_key": "toggle_issues", "pref_value": "1"}' http://localhost:3333/lua/rest/v2/set/ntopng/preferences.lua > /dev/null
+  # The alerts of the pcap are Notice: below the default Issues Minimum Severity (Warning)
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"pref_section": "alerts", "pref_key": "issues_min_severity", "pref_value": "3"}' http://localhost:3333/lua/rest/v2/set/ntopng/preferences.lua > /dev/null
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua > /dev/null
   # tcp_no_data_exchanged: flows of tagged protocols; the others: flows not tagged
   for C in tcp_no_data_exchanged ndpi_unsafe_protocol ndpi_desktop_or_file_sharing_session; do
@@ -39,6 +41,7 @@ post: |
   ID=$(curl -s -u admin:admin "${B}/list.lua?view=problems&entity_id=4&tag=62&sort=signal_count&order=desc&length=1" | jq '.rsp[0].issue_id')
   curl -s -u admin:admin "${B}/details.lua?issue_id=${ID}" | jq -c '{rc: .rc, tags: [.rsp.tags[]?.name]}'
   # Search by issue ID (also as #ID): the issue is listed; a non-matching text lists nothing
-  for S in "${ID}" "%23${ID}" "%23nomatch"; do
-    curl -s -u admin:admin "${B}/list.lua?view=problems&map_search=${S}&length=50" | jq -c "{search: \"${S}\" | sub(\"${ID}\"; \"ID\"), rc: .rc, found: ([.rsp[].issue_id] | index(${ID}) != null)}"
+  for S in "ID" "%23ID" "%23nomatch"; do
+    Q=${S/ID/${ID}}
+    curl -s -u admin:admin "${B}/list.lua?view=problems&map_search=${Q}&length=50" | jq -c "{search: \"${S}\", rc: .rc, found: ([.rsp[].issue_id] | index(${ID}) != null)}"
   done

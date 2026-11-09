@@ -6,6 +6,7 @@ localnet: 192.168.1.0/24
 requires: pro
 
 ignore:
+  - auto_resolve_at
   - issue_id
   - first_seen
   - last_seen
@@ -20,6 +21,8 @@ ignore:
 pre: |
   # Issues are off by default (Preferences > Alerts > Issues)
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"pref_section": "alerts", "pref_key": "toggle_issues", "pref_value": "1"}' http://localhost:3333/lua/rest/v2/set/ntopng/preferences.lua > /dev/null
+  # The alerts of the pcap are Notice: below the default Issues Minimum Severity (Warning)
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"pref_section": "alerts", "pref_key": "issues_min_severity", "pref_value": "3"}' http://localhost:3333/lua/rest/v2/set/ntopng/preferences.lua > /dev/null
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "flow", "script_key": "tcp_no_data_exchanged"}' http://localhost:3333/lua/rest/v2/enable/check.lua
 
@@ -39,3 +42,8 @@ post: |
   curl -s -u admin:admin -H "Content-Type: application/json" -d "{\"issue_id\": 999999}" ${B}/edit/issue/acknowledge.lua
   curl -s -u admin:admin "${B}/get/issue/details.lua?issue_id=${ID}"
   curl -s -u admin:admin "${B}/get/issue/events.lua?issue_id=${ID}"
+  # Resolve All: the reopened issue is suppressed (hidden by default), invalid view, then with the suppressed ones
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"view": "problems", "entity_id": "4"}' ${B}/edit/issue/resolve_all.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"view": "history", "entity_id": "4"}' ${B}/edit/issue/resolve_all.lua
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"view": "problems", "entity_id": "4", "suppressed": "0,1"}' ${B}/edit/issue/resolve_all.lua
+  curl -s -u admin:admin "${B}/get/issue/list.lua?view=problems&entity_id=4&suppressed=0,1&length=10" | jq -c '{rc: .rc, open: .recordsTotal}'
