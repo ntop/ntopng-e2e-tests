@@ -1,0 +1,19 @@
+{"rc":"OK","tag40_available":1,"tags":[]}
+{"rc":"OK","tags":[]}
+{"rc":"OK","tag_ids":"40"}
+{"rc":"OK","tag_ids":"none"}
+{"rc":"OK","tag40_available":1,"tags":[40]}
+{"rc":"OK","tags":[{"color":"#ff0000","id":40,"name":"Tag40"}]}
+{"rc":"OK","tags":[]}
+{"rc":"INVALID_ARGUMENTS","tag_ids":"64"}
+{"rc":"OK","tag_ids":"abc"}
+{"rc":"OK","tag_ids":"40) OR (1=1"}
+{"rc":"OK","tag40_available":1,"tags":[40]}
+{"rc":"OK","tags":[{"color":"#ff0000","id":40,"name":"Tag40"}]}
+{"rc":"OK","tag_ids":"40,41"}
+{"delete_tag":"OK"}
+{"rc":"OK","tag40_available":1,"tags":[41]}
+{"rc":"OK","tags":[{"color":"#000000","id":41,"name":"Customizable_Tag_41"}]}
+{"rc":"OK","tag_ids":""}
+{"rc":"OK","tag40_available":1,"tags":[]}
+{"rc":"OK","tags":[]}

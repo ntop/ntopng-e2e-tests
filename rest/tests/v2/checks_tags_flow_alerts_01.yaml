@@ -1,0 +1,22 @@
+# Tags of the checks: added to the flow alerts (union of the tags of the checks of the alerts of the flow)
+input: tcp-flood.pcap
+
+localnet: 192.168.1.0/24
+
+ignore:
+
+pre: |
+  for T in 40 41; do
+    curl -s -u admin:admin -H "Content-Type: application/json" -d "{\"tags\": [{\"tag_id\": $T, \"tag_name\": \"Tag$T\", \"color\": \"#ff0000\", \"description\": \"\", \"tag_protocols\": \"\", \"tag_risks\": \"\", \"tag_ttl\": 0}]}" http://localhost:3333/lua/rest/v2/edit/tag/tag.lua > /dev/null
+  done
+  # connection_failed (alert 75): tag 40, ndpi_unsafe_protocol (alert 52): tag 41,
+  # ndpi_desktop_or_file_sharing_session (alert 78): no tags. The hooks configuration is kept
+  for C in connection_failed:40 ndpi_unsafe_protocol:41; do
+    HOOKS=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/checks/check_config.lua?check_subdir=flow&script_key=${C%:*}" | jq -c '.rsp.hooks | map_values({enabled, script_conf})')
+    jq -n --arg k "${C%:*}" --arg j "${HOOKS}" --arg t "${C#*:}" '{check_subdir: "flow", script_key: $k, JSON: $j, tag_ids: $t}' | curl -s -u admin:admin -H "Content-Type: application/json" -d @- http://localhost:3333/lua/rest/v2/set/checks/check_config.lua > /dev/null
+  done
+  sleep 3
+
+post: |
+  # Alerts by type and tags (the tag filter is not tested: SQLite CAST of the hex tags_map is always 0)
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/alert/list.lua?ifid=0&status=any&length=1000" | jq -c '[.rsp.records[] | {alert: .alert_id.value, tags: ([.tags[]?.id] | sort)}] | group_by(.) | map(.[0] + {count: length})'

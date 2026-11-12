@@ -1,0 +1,42 @@
+# Tags of the checks: set, read (check config and checks list), validated, removed when the tag is deleted
+input: test_01.pcap
+
+ignore:
+
+pre: |
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"tags": [{"tag_id": 40, "tag_name": "Tag40", "color": "#ff0000", "description": "", "tag_protocols": "", "tag_risks": "", "tag_ttl": 0}]}' http://localhost:3333/lua/rest/v2/edit/tag/tag.lua > /dev/null
+
+runtime: |
+  G="http://localhost:3333/lua/rest/v2/get/checks"
+  S="http://localhost:3333/lua/rest/v2/set/checks/check_config.lua"
+  HOOKS='{\"all\": {\"enabled\": true, \"script_conf\": {}}}'
+  # $1: tag_ids (none when missing)
+  set_tags() {
+    TAG_IDS=""
+    [ $# -gt 0 ] && TAG_IDS=", \"tag_ids\": \"$1\""
+    curl -s -u admin:admin -H "Content-Type: application/json" -d "{\"check_subdir\": \"flow\", \"script_key\": \"blacklisted\", \"JSON\": \"${HOOKS}\" ${TAG_IDS}}" ${S} | jq -c --arg t "${1-none}" '{tag_ids: $t, rc: .rc_str}'
+  }
+  get_tags() {
+    curl -s -u admin:admin "${G}/check_config.lua?check_subdir=flow&script_key=blacklisted" | jq -c '{rc: .rc_str, tags: .rsp.tags, tag40_available: ([.rsp.available_tags[] | select(.id == 40)] | length)}'
+    curl -s -u admin:admin "${G}/list.lua?check_subdir=flow" | jq -c '{rc: .rc_str, tags: [.rsp[] | select(.key == "blacklisted") | .tags[]]}'
+  }
+  # No tags by default
+  get_tags
+  # Set: an existing tag; then no tag_ids (the tags are kept)
+  set_tags 40
+  set_tags
+  get_tags
+  # Factory defaults: no tags
+  curl -s -u admin:admin "${G}/check_config.lua?check_subdir=flow&script_key=blacklisted&factory=true" | jq -c '{rc: .rc_str, tags: .rsp.tags}'
+  # Invalid: out of range (refused); not a number and SQL (dropped by the validator: tags kept)
+  set_tags 64
+  set_tags abc
+  set_tags '40) OR (1=1'
+  get_tags
+  # Deleting the tag removes it from the check
+  set_tags 40,41
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"tag_id": "40"}' http://localhost:3333/lua/rest/v2/delete/tag/tag.lua | jq -c '{delete_tag: .rc_str}'
+  get_tags
+  # Empty: no tags
+  set_tags ''
+  get_tags

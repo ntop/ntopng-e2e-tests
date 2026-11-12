@@ -1,0 +1,42 @@
+# Tags of the checks: added to the issues. Flow issues get the tags of the check of their type
+# only (not the ones of the other alerts of the same flow); alerts from Lua checks carry them too
+input: tcp-flood.pcap
+
+localnet: 192.168.1.0/24
+
+requires: pro
+
+ignore:
+
+pre: |
+  P="http://localhost:3333/lua/rest/v2/set/ntopng/preferences.lua"
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"pref_section": "alerts", "pref_key": "toggle_issues", "pref_value": "1"}' ${P} > /dev/null
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"pref_section": "alerts", "pref_key": "issues_min_severity", "pref_value": "3"}' ${P} > /dev/null
+  for T in 40 41 63; do
+    curl -s -u admin:admin -H "Content-Type: application/json" -d "{\"tags\": [{\"tag_id\": $T, \"tag_name\": \"Tag$T\", \"color\": \"#ff0000\", \"description\": \"\", \"tag_protocols\": \"\", \"tag_risks\": \"\", \"tag_ttl\": 0}]}" http://localhost:3333/lua/rest/v2/edit/tag/tag.lua > /dev/null
+  done
+  # Flow checks connection_failed (alert 75, tag 40) and ndpi_unsafe_protocol (alert 52, tag 41):
+  # both on the same flow. Lua host check external_host_script (tag 63: bit 63)
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "check_subdir": "host", "script_key": "external_host_script"}' http://localhost:3333/lua/rest/v2/enable/check.lua > /dev/null
+  for C in flow:connection_failed:40 flow:ndpi_unsafe_protocol:41 host:external_host_script:63; do
+    IFS=: read SUBDIR KEY TAG <<< "${C}"
+    HOOKS=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/checks/check_config.lua?check_subdir=${SUBDIR}&script_key=${KEY}" | jq -c '.rsp.hooks | map_values({enabled, script_conf})')
+    jq -n --arg s "${SUBDIR}" --arg k "${KEY}" --arg j "${HOOKS}" --arg t "${TAG}" '{check_subdir: $s, script_key: $k, JSON: $j, tag_ids: $t}' | curl -s -u admin:admin -H "Content-Type: application/json" -d @- http://localhost:3333/lua/rest/v2/set/checks/check_config.lua > /dev/null
+  done
+  sleep 3
+
+post: |
+  B="http://localhost:3333/lua/pro/rest/v2/get/issue"
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "host": "192.168.1.51", "vlan": 0, "score": 100, "info": "Check tags test"}' http://localhost:3333/lua/rest/v2/trigger/host/alert.lua | jq -c '{trigger: .rc_str}'
+  # Signal-only updates are written at most once a minute: wait until none is pending
+  sleep 2
+  for i in $(seq 1 90); do
+    [ "$(curl -s -u admin:admin "${B}/stats.lua" | jq '.rsp.num_unsaved')" = "0" ] && break
+    sleep 1
+  done
+  # Tags of the issues, by alert type
+  curl -s -u admin:admin "${B}/list.lua?view=problems&length=200" | jq -c '[.rsp[] | {alert: .alert.id, tags: [.tags[].id]}] | group_by(.) | map(.[0] + {count: length})'
+  # Filter by tag
+  for T in 40 41 63; do
+    curl -s -u admin:admin "${B}/list.lua?view=problems&tag=${T}&length=200" | jq -c "{tag: ${T}, rc: .rc, alerts: ([.rsp[].alert.id] | unique)}"
+  done

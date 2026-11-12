@@ -1,0 +1,5 @@
+{"trigger":"OK"}
+[{"alert":26,"count":1,"tags":[]},{"alert":27,"count":1,"tags":[63]},{"alert":52,"count":1,"tags":[41]},{"alert":56,"count":5,"tags":[]},{"alert":75,"count":1,"tags":[40]},{"alert":78,"count":1,"tags":[]}]
+{"alerts":[75],"rc":0,"tag":40}
+{"alerts":[52],"rc":0,"tag":41}
+{"alerts":[27],"rc":0,"tag":63}
