@@ -2,28 +2,11 @@ input: test_01.pcap
 
 localnet: 192.168.1.0/24
 
-ignore: # duration and last seen depend on the current system time, whereas first seen must not change
-  - duration
-  - seen.last
-  - throughput_bps
-  - throughput_pps
-  - throughput_trend_bps
-  - throughput_trend_pps
-  - bytes
-  - packets
-  - num_flows
-  # HTTP request/response rates: computed by the periodic updates on the time
-  # of the packets read, they depend on the timing of the pcap replay
-  - '"[1-5]xx":'
-  - '"get":'
-  - '"head":'
-  - '"other":'
-  - '"post":'
-  - '"put":'
-
 pre: |
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"host" : "192.168.1.93", "custom_name": "Charles"}' http://localhost:3333/lua/rest/v2/set/host/alias.lua
 
 runtime: |
-  curl -s -u admin:admin   "http://localhost:3333/lua/host_stats.lua?ifid=0&host=192.168.1.93"
+  # The alias is the label of the host (host details page), and the alias of its configuration
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/overview.lua?ifid=0&host=192.168.1.93" | jq -c '{rc: .rc_str, label: .rsp.host.label}'
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/config.lua?ifid=0&host=192.168.1.93" | jq -c '{rc: .rc_str, alias: .rsp.alias}'
