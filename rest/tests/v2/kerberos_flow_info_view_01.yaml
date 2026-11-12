@@ -1,0 +1,51 @@
+input: kerberos_flows.pcap
+
+localnet: 10.20.0.0/24
+
+requires: pro
+
+# Add a view interface (pcap interface ifid 0, view interface ifid 1)
+options:
+  - -i=view:all
+
+# Same as kerberos_flow_info_01.yaml, checked on the view (ifid 1): the
+# Kerberos metadata of the live flows (from nDPI): the flow info is the client
+# principal ("user@realm", "host$@realm" for a machine), plus the error of a
+# KRB-ERROR reply; the live flow details report only the client principal
+# (and which of its names nDPI truncated), delegation (S4U) yes/no and the
+# reply (OK, error code, or none).
+#
+# Synthetic (KDC 10.20.0.1)
+#   10.20.0.10  AS-REQ enterprise name "Alice@corp.com", realm "CORP" ->
+#               AS-REP "alice", "CORP.LOCAL": the names of the reply are used
+#   10.20.0.11  AS-REQ "bob" -> KRB-ERROR 24 (wrong password)
+#   10.20.0.12  machine account "WS1$": ws1$@corp.local
+#   10.20.0.13  service principal "nfs/server.corp.local": no client name
+#   10.20.0.14  "host/WS5.corp.local": the machine ws5$@corp.local
+#   10.20.0.15  UTF-8 user name "José.Müller"
+#   10.20.0.16  user name of 120 bytes: truncated (flag set)
+#   10.20.0.17  user name with HTML characters "<b>Eve</b>": kept as it is
+#   10.20.0.18  AS-REQ "carol" without a reply: the names of the request
+#   10.20.0.19  TCP, TGS-REP of 48000 bytes in 33 segments (big PAC)
+# Real traces (Wireshark SampleCaptures, also in the nDPI tests)
+#   10.1.12.2      AS-REP with the long realm of the reply (denydc.com), and
+#                  KRB-ERROR 14 keeping the short realm of the request
+#   192.168.47.222 S4U2Self TGS exchanges, KRB-ERROR 25 (pre-auth required)
+#                  and 68 (wrong realm)
+#   10.5.2.2       S4U2Proxy (constrained delegation) TGS exchanges, one
+#                  answered by KRB-ERROR 13
+#   10.5.12.12     AS and TGS exchanges of administrator@denydc.com
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active_list.lua?ifid=1&start=0&length=100" | \
+    jq -c '.rsp[] | {cli: "\(.client.ip):\(.client.port)", srv: "\(.server.ip):\(.server.port)", l7: .application.name, info: .info, key: .key, hash_id: .hash_id}' | \
+    while read -r flow; do
+      key=$(echo "${flow}" | jq -r .key)
+      hash_id=$(echo "${flow}" | jq -r .hash_id)
+      curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/live/flow_details.lua?ifid=1&flow_key=${key}&flow_hash_id=${hash_id}" | \
+        jq -c --argjson flow "${flow}" '{cli: $flow.cli, srv: $flow.srv, l7: $flow.l7, info: $flow.info, kerberos: .rsp.kerberos}'
+    done | jq -s -c 'sort_by(.cli) | .[]'

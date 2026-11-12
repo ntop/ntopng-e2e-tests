@@ -1,0 +1,7 @@
+{"ip":"10.21.0.1","kerberos_name":null,"name":"","usernames":[]}
+{"ip":"10.21.0.10","kerberos_name":null,"name":"","usernames":["u1@corp.local (Kerberos)","u2@corp.local (Kerberos)","u3@corp.local (Kerberos)"]}
+{"ip":"10.21.0.11","kerberos_name":null,"name":"","usernames":["u3@corp.local (Kerberos)","u4@corp.local (Kerberos)","u5@corp.local (Kerberos)"]}
+{"ip":"10.21.0.12","kerberos_name":null,"name":"","usernames":["u2@corp.local (Kerberos)","u4@corp.local (Kerberos)","u5@corp.local (Kerberos)"]}
+{"ip":"10.21.0.13","kerberos_name":"ws8$@corp.local","name":"ws8","usernames":[]}
+{"ip":"10.21.0.14","kerberos_name":"ws7$@corp.local","name":"ws7","usernames":[]}
+{"ip":"10.21.0.15","kerberos_name":"ws9$@corp.local","name":"ws9","usernames":["u1@corp.local (Kerberos)","u2@corp.local (Kerberos)"]}

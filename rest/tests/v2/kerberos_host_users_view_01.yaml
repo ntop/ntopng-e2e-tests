@@ -1,0 +1,51 @@
+input: kerberos_flows.pcap
+
+localnet: 10.20.0.0/24,10.1.12.0/24,10.5.0.0/16,192.168.47.0/24
+
+requires: pro
+
+# Add a view interface (pcap interface ifid 0, view interface ifid 1)
+options:
+  - -i=view:all
+
+# Same as kerberos_host_users_01.yaml, checked on the view (ifid 1), that has
+# its own hosts.
+# Kerberos client bound to the local hosts (in memory only): the machine
+# account (names.kerberos, also the name of the host when it has no other
+# name) and the users (usernames of the host, up to 3). Only reliable data is
+# bound: an OK reply, no S4U (the client name is the impersonated user), no
+# truncated names. The client is the host that is not the KDC (port 88). Same
+# pcap as kerberos_flow_info_01.
+#
+# Synthetic (KDC 10.20.0.1)
+#   10.20.0.10  alice@corp.local (AS-REP)
+#   10.20.0.11  KRB-ERROR: nothing
+#   10.20.0.12  machine ws1$@corp.local (host name ws1)
+#   10.20.0.13  service principal nfs/server.corp.local: nothing
+#   10.20.0.14  machine ws5$@corp.local (host/WS5.corp.local)
+#   10.20.0.15  josé.müller@corp.local
+#   10.20.0.16  truncated user name: nothing
+#   10.20.0.17  <b>eve</b>@corp.local (raw here, escaped in the GUI)
+#   10.20.0.18  request without reply: nothing
+#   10.20.0.19  alice@corp.local (TCP TGS-REP)
+# Real traces
+#   10.1.12.2      des@denydc.com (AS-REP; the KRB-ERROR is not bound)
+#   192.168.47.222 apache@acme.com only: the S4U2Self TGS-REPs (ayala,
+#                  nava) and the KRB-ERRORs are not bound
+#   10.5.2.2       nothing: S4U2Proxy (constrained delegation)
+#   10.5.12.12     administrator@denydc.com (AS-REP and TGS-REP)
+# KDCs (servers): nothing
+#   10.20.0.1, 10.1.12.0/24 and 10.5.0.0/16 KDCs
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # Every host of the interface (clients and KDCs). NOTE: an empty Lua table
+  # (e.g. names) is returned as an empty array
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/active.lua?ifid=1&perPage=200" | jq -r '.rsp.data[].ip' | sort -V | \
+    while read -r ip; do
+      curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${ip}" | \
+        jq -c '{ip: .rsp.ip, name: .rsp.name, kerberos_name: (.rsp.names | if type == "object" then .kerberos else null end), usernames: ([(.rsp.usernames // [])[] | "\(.name) (\(.protocol))"] | sort)}'
+    done
