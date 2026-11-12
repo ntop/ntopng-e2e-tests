@@ -1,0 +1,32 @@
+input: kerberos_host_users.pcap
+
+localnet: 10.21.0.0/24
+
+requires: pro
+
+# More Kerberos clients on the same local host (see kerberos_host_users_01.yaml
+# for the rules): up to 3 usernames (MAX_USERNAMES_PER_HOST), when full the
+# one with the oldest last_seen is replaced, and the most recent machine
+# account is the one kept. The times decide, not the order the flows are
+# visited. Every exchange is an AS-REQ/AS-REP (OK reply) on its own flow, 2
+# seconds after the previous one (generator: kerberos_host_users_pcap.py).
+#   KDC 10.21.0.1, realm CORP.LOCAL
+#   10.21.0.10  users u1, u2, u3                      -> u1, u2, u3
+#   10.21.0.11  users u1, u2, u3, u4, u5              -> u3, u4, u5
+#   10.21.0.12  users u3, u1, u5, u2, u4 (this order) -> u5, u2, u4
+#   10.21.0.13  machine ws7, then ws8                 -> ws8$ (name ws8)
+#   10.21.0.14  machine ws8, then ws7                 -> ws7$ (name ws7)
+#   10.21.0.15  machine ws9 and users u1, u2          -> ws9$, u1, u2
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # Every host of the interface. NOTE: an empty Lua table (e.g. names) is
+  # returned as an empty array
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/active.lua?ifid=0&perPage=200" | jq -r '.rsp.data[].ip' | sort -V | \
+    while read -r ip; do
+      curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=${ip}" | \
+        jq -c '{ip: .rsp.ip, name: .rsp.name, kerberos_name: (.rsp.names | if type == "object" then .kerberos else null end), usernames: ([(.rsp.usernames // [])[] | "\(.name) (\(.protocol))"] | sort)}'
+    done

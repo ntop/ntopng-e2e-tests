@@ -1,0 +1,46 @@
+{"INFO":"des@denydc (KDC_ERR_ETYPE_NOSUPP)","IPV4_SRC_ADDR":"10.1.12.2","IP_SRC_PORT":"1059"}
+{"INFO":"des@denydc.com","IPV4_SRC_ADDR":"10.1.12.2","IP_SRC_PORT":"1060"}
+{"INFO":"","IPV4_SRC_ADDR":"10.5.2.2","IP_SRC_PORT":"1112"}
+{"INFO":"administrator@denydc.com","IPV4_SRC_ADDR":"10.5.2.2","IP_SRC_PORT":"1114"}
+{"INFO":"administrator@denydc.com","IPV4_SRC_ADDR":"10.5.12.12","IP_SRC_PORT":"1200"}
+{"INFO":"administrator@denydc.com","IPV4_SRC_ADDR":"10.5.12.12","IP_SRC_PORT":"1201"}
+{"INFO":"alice@corp.local","IPV4_SRC_ADDR":"10.20.0.10","IP_SRC_PORT":"51000"}
+{"INFO":"bob@corp (KDC_ERR_PREAUTH_FAILED)","IPV4_SRC_ADDR":"10.20.0.11","IP_SRC_PORT":"51000"}
+{"INFO":"ws1$@corp.local","IPV4_SRC_ADDR":"10.20.0.12","IP_SRC_PORT":"51000"}
+{"INFO":"","IPV4_SRC_ADDR":"10.20.0.13","IP_SRC_PORT":"51000"}
+{"INFO":"ws5$@corp.local","IPV4_SRC_ADDR":"10.20.0.14","IP_SRC_PORT":"51000"}
+{"INFO":"josé.müller@corp.local","IPV4_SRC_ADDR":"10.20.0.15","IP_SRC_PORT":"51000"}
+{"INFO":"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz@corp.local","IPV4_SRC_ADDR":"10.20.0.16","IP_SRC_PORT":"51000"}
+{"INFO":"<b>eve</b>@corp.local","IPV4_SRC_ADDR":"10.20.0.17","IP_SRC_PORT":"51000"}
+{"INFO":"carol@corp","IPV4_SRC_ADDR":"10.20.0.18","IP_SRC_PORT":"51000"}
+{"INFO":"alice@corp.local","IPV4_SRC_ADDR":"10.20.0.19","IP_SRC_PORT":"52000"}
+{"INFO":"ayala@acme.com (KDC_ERR_PREAUTH_REQUIRED)","IPV4_SRC_ADDR":"192.168.47.222","IP_SRC_PORT":"51781"}
+{"INFO":"ayala@acme.com","IPV4_SRC_ADDR":"192.168.47.222","IP_SRC_PORT":"51782"}
+{"INFO":"nava\\@cdom.acme.com@acme.com (KDC_ERR_WRONG_REALM)","IPV4_SRC_ADDR":"192.168.47.222","IP_SRC_PORT":"51800"}
+{"INFO":"nava@cdom.acme.com (KDC_ERR_PREAUTH_REQUIRED)","IPV4_SRC_ADDR":"192.168.47.222","IP_SRC_PORT":"51801"}
+{"INFO":"apache@acme.com","IPV4_SRC_ADDR":"192.168.47.222","IP_SRC_PORT":"51802"}
+{"INFO":"apache@acme.com","IPV4_SRC_ADDR":"192.168.47.222","IP_SRC_PORT":"51803"}
+{"INFO":"nava@cdom.acme.com","IPV4_SRC_ADDR":"192.168.47.222","IP_SRC_PORT":"51804"}
+{"cli":"10.1.12.2:1059","kerberos":{"client_name":"des@denydc","error":"KDC_ERR_ETYPE_NOSUPP","error_code":14,"response_ok":false}}
+{"cli":"10.1.12.2:1060","kerberos":{"client_name":"des@denydc.com","response_ok":true}}
+{"cli":"10.5.2.2:1112","kerberos":{"delegation":true,"error":"KDC_ERR_BADOPTION","error_code":13,"response_ok":false}}
+{"cli":"10.5.2.2:1114","kerberos":{"client_name":"administrator@denydc.com","delegation":true,"response_ok":true}}
+{"cli":"10.5.12.12:1200","kerberos":{"client_name":"administrator@denydc.com","response_ok":true}}
+{"cli":"10.5.12.12:1201","kerberos":{"client_name":"administrator@denydc.com","response_ok":true}}
+{"cli":"10.20.0.10:51000","kerberos":{"client_name":"alice@corp.local","response_ok":true}}
+{"cli":"10.20.0.11:51000","kerberos":{"client_name":"bob@corp","error":"KDC_ERR_PREAUTH_FAILED","error_code":24,"response_ok":false}}
+{"cli":"10.20.0.12:51000","kerberos":{"client_name":"ws1$@corp.local","response_ok":true}}
+{"cli":"10.20.0.13:51000","kerberos":{"response_ok":true}}
+{"cli":"10.20.0.14:51000","kerberos":{"client_name":"ws5$@corp.local","response_ok":true}}
+{"cli":"10.20.0.15:51000","kerberos":{"client_name":"josé.müller@corp.local","response_ok":true}}
+{"cli":"10.20.0.16:51000","kerberos":{"client_name":"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz@corp.local","response_ok":true,"username_truncated":true}}
+{"cli":"10.20.0.17:51000","kerberos":{"client_name":"<b>eve</b>@corp.local","response_ok":true}}
+{"cli":"10.20.0.18:51000","kerberos":{"client_name":"carol@corp"}}
+{"cli":"10.20.0.19:52000","kerberos":{"client_name":"alice@corp.local","response_ok":true}}
+{"cli":"192.168.47.222:51781","kerberos":{"client_name":"ayala@acme.com","error":"KDC_ERR_PREAUTH_REQUIRED","error_code":25,"response_ok":false}}
+{"cli":"192.168.47.222:51782","kerberos":{"client_name":"ayala@acme.com","delegation":true,"response_ok":true}}
+{"cli":"192.168.47.222:51800","kerberos":{"client_name":"nava\\@cdom.acme.com@acme.com","error":"KDC_ERR_WRONG_REALM","error_code":68,"response_ok":false}}
+{"cli":"192.168.47.222:51801","kerberos":{"client_name":"nava@cdom.acme.com","error":"KDC_ERR_PREAUTH_REQUIRED","error_code":25,"response_ok":false}}
+{"cli":"192.168.47.222:51802","kerberos":{"client_name":"apache@acme.com","response_ok":true}}
+{"cli":"192.168.47.222:51803","kerberos":{"client_name":"apache@acme.com","delegation":true,"response_ok":true}}
+{"cli":"192.168.47.222:51804","kerberos":{"client_name":"nava@cdom.acme.com","delegation":true,"response_ok":true}}

@@ -1,0 +1,35 @@
+input: kerberos_flows.pcap
+
+localnet: 10.20.0.0/24
+
+requires: pro
+
+clickhouse: true
+
+# Kerberos info of the historical flows: the flow info (client principal,
+# plus the error) and the Kerberos block of the historical flow details (raw,
+# from the flow JSON: the page builds its rows, see kerberos-utils.js). Same
+# pcap (and cases) as kerberos_flow_info_01.
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+post: |
+  # Flows are flushed to ClickHouse when the interface is shut down, wait a bit
+  sleep 5
+
+  # Kerberos flows: info (the client principal, plus the error)
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "select_clause": "IPV4_SRC_ADDR,IP_SRC_PORT,INFO", "where_clause": "L7_PROTO=111", "begin_time_clause": 0, "end_time_clause": 2000000000, "maxhits_clause": 1000, "order_by_clause": "IPV4_SRC_ADDR,IP_SRC_PORT"}' http://localhost:3333/lua/pro/rest/v2/get/db/flows.lua | \
+    jq -c '.rsp[]'
+
+  # Historical flow details (the overview REST of the page): the Kerberos block of the flow
+  # JSON
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "select_clause": "FLOW_ID,FIRST_SEEN,IPV4_SRC_ADDR,IP_SRC_PORT", "where_clause": "L7_PROTO=111", "begin_time_clause": 0, "end_time_clause": 2000000000, "maxhits_clause": 1000, "order_by_clause": "IPV4_SRC_ADDR,IP_SRC_PORT"}' http://localhost:3333/lua/pro/rest/v2/get/db/flows.lua | \
+    jq -c '.rsp[]' | \
+    while read -r flow; do
+      row_id=$(echo "${flow}" | jq -r .FLOW_ID)
+      tstamp=$(echo "${flow}" | jq -r .FIRST_SEEN)
+      curl -s -u admin:admin "http://localhost:3333/lua/pro/rest/v2/get/flow/historical/overview.lua?ifid=0&row_id=${row_id}&tstamp=${tstamp}" | \
+        jq -c --argjson flow "${flow}" '{cli: "\($flow.IPV4_SRC_ADDR):\($flow.IP_SRC_PORT)", kerberos: .rsp.proto_info.proto.kerberos}'
+    done

@@ -1,0 +1,18 @@
+{"ip":"10.1.12.2","kerberos_name":null,"name":"","usernames":["des@denydc.com (Kerberos)"]}
+{"ip":"10.5.2.2","kerberos_name":null,"name":"","usernames":[]}
+{"ip":"10.5.3.1","kerberos_name":null,"name":"","usernames":[]}
+{"ip":"10.5.12.12","kerberos_name":null,"name":"","usernames":["administrator@denydc.com (Kerberos)"]}
+{"ip":"10.20.0.1","kerberos_name":null,"name":"","usernames":[]}
+{"ip":"10.20.0.10","kerberos_name":null,"name":"","usernames":["alice@corp.local (Kerberos)"]}
+{"ip":"10.20.0.11","kerberos_name":null,"name":"","usernames":[]}
+{"ip":"10.20.0.12","kerberos_name":"ws1$@corp.local","name":"ws1","usernames":[]}
+{"ip":"10.20.0.13","kerberos_name":null,"name":"","usernames":[]}
+{"ip":"10.20.0.14","kerberos_name":"ws5$@corp.local","name":"ws5","usernames":[]}
+{"ip":"10.20.0.15","kerberos_name":null,"name":"","usernames":["josé.müller@corp.local (Kerberos)"]}
+{"ip":"10.20.0.16","kerberos_name":null,"name":"","usernames":[]}
+{"ip":"10.20.0.17","kerberos_name":null,"name":"","usernames":["<b>eve</b>@corp.local (Kerberos)"]}
+{"ip":"10.20.0.18","kerberos_name":null,"name":"","usernames":[]}
+{"ip":"10.20.0.19","kerberos_name":null,"name":"","usernames":["alice@corp.local (Kerberos)"]}
+{"ip":"192.168.47.110","kerberos_name":null,"name":"","usernames":[]}
+{"ip":"192.168.47.120","kerberos_name":null,"name":"","usernames":[]}
+{"ip":"192.168.47.222","kerberos_name":null,"name":"","usernames":["apache@acme.com (Kerberos)"]}
