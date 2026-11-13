@@ -1,0 +1,33 @@
+input: assets_vlan_routed.pcap
+
+localnet: 192.168.1.0/24
+
+requires: pro
+
+# The same host seen on two VLANs through a router (issue #11208: the VLAN
+# must not be part of the key of the asset of a host).
+#
+# assets_vlan_routed.pcap: the same 400
+# packets as assets_vlan_l2.pcap (host 192.168.1.93, MAC 28:37:37:00:6d:c8):
+# - VLAN 15: the packets unchanged (the VLAN of the host);
+# - VLAN 188: the same flows as seen after a router (router on a stick): on
+#   the side of the host the MAC is the one of the router (10:13:31:f1:39:76,
+#   the gateway of the excerpt), and the TTL of the packets of the host is
+#   decreased by one.
+#
+# The copy on VLAN 188 reports the MAC of the router (that must not become the
+# MAC of the asset), and the same TCP fingerprint (the TTL decreased by one
+# does not change it).
+#
+# NOTE: the assets are not checked here, as the queue of the assets is never
+# processed on pcap interfaces (see tags_application_based_01.yaml).
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # The host on each VLAN
+  for v in 15 188; do
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=192.168.1.93@$v" | jq -c --arg v $v '{vlan: ($v | tonumber), rc_str, mac: .rsp.mac, tcp_fingerprint: .rsp.tcp_fingerprint, localhost: .rsp.localhost}'
+  done | jq -s -c '{hosts: .}'

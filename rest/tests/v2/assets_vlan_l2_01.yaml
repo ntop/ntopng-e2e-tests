@@ -1,0 +1,29 @@
+input: assets_vlan_l2.pcap
+
+localnet: 192.168.1.0/24
+
+requires: pro
+
+# The same host seen on several VLANs (issue #11208: the VLAN must not be part
+# of the key of the asset of a host).
+#
+# assets_vlan_l2.pcap: 400 packets of the host
+# 192.168.1.93 (MAC 28:37:37:00:6d:c8, an excerpt of test_01.pcap: DNS, TLS,
+# HTTP, 25 TCP connections) repeated on VLAN 15, 188 and 192, unchanged (L2
+# copies, e.g. a mirror of the access port and of the trunk).
+#
+# ntopng keeps one host per IP and VLAN: the three copies report the same MAC
+# and TCP fingerprint, the information merged into one asset.
+#
+# NOTE: the assets are not checked here, as the queue of the assets is never
+# processed on pcap interfaces (see tags_application_based_01.yaml).
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # The host on each VLAN
+  for v in 15 188 192; do
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=192.168.1.93@$v" | jq -c --arg v $v '{vlan: ($v | tonumber), rc_str, mac: .rsp.mac, tcp_fingerprint: .rsp.tcp_fingerprint, localhost: .rsp.localhost}'
+  done | jq -s -c '{hosts: .}'
