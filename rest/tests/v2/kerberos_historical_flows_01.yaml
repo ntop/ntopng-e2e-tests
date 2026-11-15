@@ -24,12 +24,12 @@ post: |
     jq -c '.rsp[]'
 
   # Historical flow details (the overview REST of the page): the Kerberos block of the flow
-  # JSON
+  # JSON, and the TCP fingerprint of the TCP flows
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "select_clause": "FLOW_ID,FIRST_SEEN,IPV4_SRC_ADDR,IP_SRC_PORT", "where_clause": "L7_PROTO=111", "begin_time_clause": 0, "end_time_clause": 2000000000, "maxhits_clause": 1000, "order_by_clause": "IPV4_SRC_ADDR,IP_SRC_PORT"}' http://localhost:3333/lua/pro/rest/v2/get/db/flows.lua | \
     jq -c '.rsp[]' | \
     while read -r flow; do
       row_id=$(echo "${flow}" | jq -r .FLOW_ID)
       tstamp=$(echo "${flow}" | jq -r .FIRST_SEEN)
       curl -s -u admin:admin "http://localhost:3333/lua/pro/rest/v2/get/flow/historical/overview.lua?ifid=0&row_id=${row_id}&tstamp=${tstamp}" | \
-        jq -c --argjson flow "${flow}" '{cli: "\($flow.IPV4_SRC_ADDR):\($flow.IP_SRC_PORT)", kerberos: .rsp.proto_info.proto.kerberos}'
+        jq -c --argjson flow "${flow}" '{cli: "\($flow.IPV4_SRC_ADDR):\($flow.IP_SRC_PORT)", kerberos: .rsp.proto_info.proto.kerberos} + (if .rsp.proto_info.proto.fingerprints.tcp_fingerprint then {tcp_fingerprint: .rsp.proto_info.proto.fingerprints.tcp_fingerprint} else {} end)'
     done
