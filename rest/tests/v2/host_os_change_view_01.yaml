@@ -16,6 +16,13 @@ options:
 # pcap the OS of the host was then learnt only from the User-Agent of its
 # second connection (Windows), that is ignored on the other interfaces as it
 # does not match the OS learnt from the TCP fingerprint (Linux).
+#
+# The host of the view also reports its TCP fingerprint, and each flow of the
+# view its own one.
+# NOTE: the view applies the fingerprints of its flows in the order it visits
+# them (the order of the flows hash, not the time order): here the host keeps
+# the Linux one, unlike on the pcap interface (host_os_change_01.yaml), where
+# it keeps the first one (Windows). Current behaviour, to be fixed.
 
 pre: |
   # Disable everything not related to this test
@@ -23,4 +30,14 @@ pre: |
 
 runtime: |
   # OS of the host of the view (1 = Windows, 4 = Linux, see ndpi_os) and how it has been learnt
-  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=172.16.1.137" | jq -c '{rc_str, host: .rsp.ip, os: .rsp.os, os_learning: .rsp.os_learning}'
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=172.16.1.137" | jq -c '{rc_str, host: .rsp.ip, os: .rsp.os, os_learning: .rsp.os_learning, tcp_fingerprint: .rsp.tcp_fingerprint}'
+
+  # TCP fingerprint of each flow (Windows: 2_128_64240_47466ece, Linux: 2_64_64240_789c1d1f)
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active_list.lua?ifid=1&start=0&length=100" | \
+    jq -c '.rsp[] | {cli: "\(.client.ip):\(.client.port)", srv: "\(.server.ip):\(.server.port)", key: .key, hash_id: .hash_id}' | \
+    while read -r flow; do
+      key=$(echo "${flow}" | jq -r .key)
+      hash_id=$(echo "${flow}" | jq -r .hash_id)
+      curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/live/flow_details.lua?ifid=1&flow_key=${key}&flow_hash_id=${hash_id}" | \
+        jq -c --argjson flow "${flow}" '{cli: $flow.cli, srv: $flow.srv, tcp_fingerprint: .rsp.fingerprints.tcp}'
+    done | jq -s -c 'sort_by(.cli) | .[]'

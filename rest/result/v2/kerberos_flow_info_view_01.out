@@ -9,11 +9,11 @@
 {"cli":"10.20.0.16:51000","info":"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz@corp.local","kerberos":{"client_name":"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz@corp.local","response_ok":true,"username_truncated":true},"l7":"Kerberos","srv":"10.20.0.1:88"}
 {"cli":"10.20.0.17:51000","info":"<b>eve</b>@corp.local","kerberos":{"client_name":"<b>eve</b>@corp.local","response_ok":true},"l7":"Kerberos","srv":"10.20.0.1:88"}
 {"cli":"10.20.0.18:51000","info":"carol@corp","kerberos":{"client_name":"carol@corp"},"l7":"Kerberos","srv":"10.20.0.1:88"}
-{"cli":"10.20.0.19:52000","info":"alice@corp.local","kerberos":{"client_name":"alice@corp.local","response_ok":true},"l7":"Kerberos","srv":"10.20.0.1:88"}
+{"cli":"10.20.0.19:52000","info":"alice@corp.local","kerberos":{"client_name":"alice@corp.local","response_ok":true},"l7":"Kerberos","srv":"10.20.0.1:88","tcp_fingerprint":"2_64_65535_00000000"}
 {"cli":"10.5.12.12:1200","info":"administrator@denydc.com","kerberos":{"client_name":"administrator@denydc.com","response_ok":true},"l7":"Kerberos","srv":"10.5.3.1:88"}
 {"cli":"10.5.12.12:1201","info":"administrator@denydc.com","kerberos":{"client_name":"administrator@denydc.com","response_ok":true},"l7":"Kerberos","srv":"10.5.3.1:88"}
-{"cli":"10.5.2.2:1112","info":"","kerberos":{"delegation":true,"error":"KDC_ERR_BADOPTION","error_code":13,"response_ok":false},"l7":"Kerberos","srv":"10.5.3.1:88"}
-{"cli":"10.5.2.2:1114","info":"administrator@denydc.com","kerberos":{"client_name":"administrator@denydc.com","delegation":true,"response_ok":true},"l7":"Kerberos","srv":"10.5.3.1:88"}
+{"cli":"10.5.2.2:1112","info":"","kerberos":{"delegation":true,"error":"KDC_ERR_BADOPTION","error_code":13,"response_ok":false},"l7":"Kerberos","srv":"10.5.3.1:88","tcp_fingerprint":"2_128_16384_f22bb562"}
+{"cli":"10.5.2.2:1114","info":"administrator@denydc.com","kerberos":{"client_name":"administrator@denydc.com","delegation":true,"response_ok":true},"l7":"Kerberos","srv":"10.5.3.1:88","tcp_fingerprint":"2_128_16384_f22bb562"}
 {"cli":"192.168.47.222:51781","info":"ayala@acme.com (KDC_ERR_PREAUTH_REQUIRED)","kerberos":{"client_name":"ayala@acme.com","error":"KDC_ERR_PREAUTH_REQUIRED","error_code":25,"response_ok":false},"l7":"Kerberos","srv":"192.168.47.120:88"}
 {"cli":"192.168.47.222:51782","info":"ayala@acme.com","kerberos":{"client_name":"ayala@acme.com","delegation":true,"response_ok":true},"l7":"Kerberos","srv":"192.168.47.120:88"}
 {"cli":"192.168.47.222:51800","info":"nava\\@cdom.acme.com@acme.com (KDC_ERR_WRONG_REALM)","kerberos":{"client_name":"nava\\@cdom.acme.com@acme.com","error":"KDC_ERR_WRONG_REALM","error_code":68,"response_ok":false},"l7":"Kerberos","srv":"192.168.47.120:88"}

@@ -23,8 +23,8 @@
 {"INFO":"nava@cdom.acme.com","IPV4_SRC_ADDR":"192.168.47.222","IP_SRC_PORT":"51804"}
 {"cli":"10.1.12.2:1059","kerberos":{"client_name":"des@denydc","error":"KDC_ERR_ETYPE_NOSUPP","error_code":14,"response_ok":false}}
 {"cli":"10.1.12.2:1060","kerberos":{"client_name":"des@denydc.com","response_ok":true}}
-{"cli":"10.5.2.2:1112","kerberos":{"delegation":true,"error":"KDC_ERR_BADOPTION","error_code":13,"response_ok":false}}
-{"cli":"10.5.2.2:1114","kerberos":{"client_name":"administrator@denydc.com","delegation":true,"response_ok":true}}
+{"cli":"10.5.2.2:1112","kerberos":{"delegation":true,"error":"KDC_ERR_BADOPTION","error_code":13,"response_ok":false},"tcp_fingerprint":"2_128_16384_f22bb562"}
+{"cli":"10.5.2.2:1114","kerberos":{"client_name":"administrator@denydc.com","delegation":true,"response_ok":true},"tcp_fingerprint":"2_128_16384_f22bb562"}
 {"cli":"10.5.12.12:1200","kerberos":{"client_name":"administrator@denydc.com","response_ok":true}}
 {"cli":"10.5.12.12:1201","kerberos":{"client_name":"administrator@denydc.com","response_ok":true}}
 {"cli":"10.20.0.10:51000","kerberos":{"client_name":"alice@corp.local","response_ok":true}}
@@ -36,7 +36,7 @@
 {"cli":"10.20.0.16:51000","kerberos":{"client_name":"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz@corp.local","response_ok":true,"username_truncated":true}}
 {"cli":"10.20.0.17:51000","kerberos":{"client_name":"<b>eve</b>@corp.local","response_ok":true}}
 {"cli":"10.20.0.18:51000","kerberos":{"client_name":"carol@corp"}}
-{"cli":"10.20.0.19:52000","kerberos":{"client_name":"alice@corp.local","response_ok":true}}
+{"cli":"10.20.0.19:52000","kerberos":{"client_name":"alice@corp.local","response_ok":true},"tcp_fingerprint":"2_64_65535_00000000"}
 {"cli":"192.168.47.222:51781","kerberos":{"client_name":"ayala@acme.com","error":"KDC_ERR_PREAUTH_REQUIRED","error_code":25,"response_ok":false}}
 {"cli":"192.168.47.222:51782","kerberos":{"client_name":"ayala@acme.com","delegation":true,"response_ok":true}}
 {"cli":"192.168.47.222:51800","kerberos":{"client_name":"nava\\@cdom.acme.com@acme.com","error":"KDC_ERR_WRONG_REALM","error_code":68,"response_ok":false}}

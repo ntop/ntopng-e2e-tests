@@ -36,6 +36,9 @@ options:
 #                  answered by KRB-ERROR 13
 #   10.5.12.12     AS and TGS exchanges of administrator@denydc.com
 
+# The TCP flows also report the TCP fingerprint of their client (nDPI, from
+# the first SYN of the flow), on the flows of a view as well.
+
 pre: |
   # Disable everything not related to this test
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
@@ -47,5 +50,5 @@ runtime: |
       key=$(echo "${flow}" | jq -r .key)
       hash_id=$(echo "${flow}" | jq -r .hash_id)
       curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/live/flow_details.lua?ifid=1&flow_key=${key}&flow_hash_id=${hash_id}" | \
-        jq -c --argjson flow "${flow}" '{cli: $flow.cli, srv: $flow.srv, l7: $flow.l7, info: $flow.info, kerberos: .rsp.kerberos}'
+        jq -c --argjson flow "${flow}" '{cli: $flow.cli, srv: $flow.srv, l7: $flow.l7, info: $flow.info, kerberos: .rsp.kerberos} + (if .rsp.fingerprints.tcp then {tcp_fingerprint: .rsp.fingerprints.tcp} else {} end)'
     done | jq -s -c 'sort_by(.cli) | .[]'
