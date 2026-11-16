@@ -5,8 +5,8 @@ localnet: 192.168.0.0/16
 requires: pro
 
 # Client and server of TCP flows (tcp_direction_cases.pcap, generated with
-# scapy: one flow per case, listed below), and the server ports learned by
-# the hosts.
+# scapy: one flow per case, listed below), the server ports learned by the
+# hosts, and the traffic of their MACs.
 #
 # Flow i: client 192.168.9.i, server 192.168.10.i (port 5555; 2222 for the SSH
 # flows; 587 for flow 107, a replica of an SMTP flow seen in production, and for
@@ -24,6 +24,10 @@ requires: pro
 # 128-130; not flow 131, from port 25, another SMTP default port).
 # The direction is final once the protocol is detected on a flow that carried
 # payload: a SYN or SYN-ACK seen later does not change it (flows 132-133).
+# The traffic of each MAC (one MAC per host) must be the traffic its host sent
+# and received in the pcap. Covered issue: the MACs of a flow were not swapped
+# with its hosts, so the traffic of the swapped flows was accounted to their
+# MACs reversed (sent as received and vice versa).
 #
 #   1   192.168.9.1:40001 -> 192.168.10.1:5555  no stray; SYN, SYN-ACK, ACK; client port > server port
 #   2   192.168.9.2:40002 -> 192.168.10.2:5555  stray client ACK; SYN, SYN-ACK, ACK; client port > server port
@@ -168,9 +172,13 @@ runtime: |
   # must be 192.168.9.i
   curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=0&perPage=500" | jq -c '[.rsp.data[] | {i: ((if (.client.ip | startswith("192.168.9.")) then .client.ip else .server.ip end) | split(".")[3] | tonumber), cli: "\(.client.ip):\(.client.port)", srv: "\(.server.ip):\(.server.port)", client_ok: (.client.ip | startswith("192.168.9."))}] | sort_by(.i, .cli) | .[]'
 
-  # Server ports learned by the client and by the server of each flow
+  # Server ports learned by the client and by the server of each flow, and
+  # the bytes [sent, received] by their MACs (00:00:00:09:00:i and
+  # 00:00:00:0a:00:i, i in hex)
   for i in $(seq 1 133); do
     c=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/open_ports.lua?ifid=0&host=192.168.9.${i}" | jq -c '[.rsp[]?.key | tonumber] | sort')
     s=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/open_ports.lua?ifid=0&host=192.168.10.${i}" | jq -c '[.rsp[]?.key | tonumber] | sort')
-    echo "{\"i\": ${i}, \"client_server_ports\": ${c:-null}, \"server_server_ports\": ${s:-null}}"
+    cm=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/mac/data.lua?ifid=0&mac=$(printf '00:00:00:09:00:%02X' ${i})" | jq -c '[.rsp.tot_bytes_sent, .rsp.tot_bytes_recv]')
+    sm=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/mac/data.lua?ifid=0&mac=$(printf '00:00:00:0A:00:%02X' ${i})" | jq -c '[.rsp.tot_bytes_sent, .rsp.tot_bytes_recv]')
+    echo "{\"i\": ${i}, \"client_server_ports\": ${c:-null}, \"server_server_ports\": ${s:-null}, \"client_mac_bytes\": ${cm:-null}, \"server_mac_bytes\": ${sm:-null}}"
   done
