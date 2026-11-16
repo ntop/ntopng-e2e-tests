@@ -1,0 +1,30 @@
+input: host_names.pcap
+
+localnet: 192.168.5.0/24
+
+requires: pro
+
+# mDNS, mDNS TXT ("nm=") and NetBIOS names of the hosts (host_names.pcap,
+# generated with scapy). Each host announces a mixed case name, then another
+# name in a later flow:
+#   192.168.5.10  mDNS A "My-Laptop" (multicast), then "Other-Name" (unicast
+#                 to .20)
+#   192.168.5.11  NetBIOS registration "WorkStation1" (broadcast), then
+#                 "WorkStation2" (unicast to the WINS server .1)
+#   192.168.5.12  mDNS TXT of the service instance "LRTV-1234" with
+#                 nm=Living Room TV (multicast), then nm=Other TV (unicast to
+#                 .20)
+#
+# Expected: each host keeps the names of its first flow, lowercased (the time
+# of the flow decides, not the order of the periodic updates). The asset of
+# the host gets the same names (not visible here: the snapshots of the hosts
+# are queued when the hosts are deleted).
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  for h in 192.168.5.10 192.168.5.11 192.168.5.12; do
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, names: (.rsp.names | objects)} else {host: $host, rc: .rc} end'
+  done

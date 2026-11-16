@@ -1,0 +1,3 @@
+{"host":"192.168.5.10","names":{"mdns":"my-laptop"}}
+{"host":"192.168.5.11","names":{"netbios":"workstation1"}}
+{"host":"192.168.5.12","names":{"mdns":"lrtv-1234","mdns_txt":"living room tv"}}
