@@ -20,3 +20,6 @@
 {"cli_ip":"192.168.4.32","cli_port":68,"l7":"DHCP","srv_ip":"192.168.4.254","srv_port":67,"vlan":0}
 {"cli_ip":"192.168.4.40","cli_port":68,"l7":"DHCP","srv_ip":"192.168.4.1","srv_port":67,"vlan":10}
 {"cli_ip":"192.168.4.41","cli_port":68,"l7":"DHCP","srv_ip":"192.168.4.1","srv_port":67,"vlan":20}
+{"cli_ip":"192.168.4.60","cli_port":68,"l7":"DHCP","srv_ip":"192.168.4.1","srv_port":67,"vlan":0}
+{"cli_ip":"192.168.4.60","cli_port":68,"l7":"DHCP","srv_ip":"255.255.255.255","srv_port":67,"vlan":0}
+{"dhcp_name":"new-name","host":"192.168.4.60"}

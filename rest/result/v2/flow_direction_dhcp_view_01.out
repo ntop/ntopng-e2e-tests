@@ -20,10 +20,13 @@
 {"cli_ip":"192.168.4.32","cli_port":68,"l7":"DHCP","srv_ip":"192.168.4.254","srv_port":67,"vlan":0}
 {"cli_ip":"192.168.4.40","cli_port":68,"l7":"DHCP","srv_ip":"192.168.4.1","srv_port":67,"vlan":10}
 {"cli_ip":"192.168.4.41","cli_port":68,"l7":"DHCP","srv_ip":"192.168.4.1","srv_port":67,"vlan":20}
-{"as_client":1,"as_server":9,"host":"192.168.4.1"}
+{"cli_ip":"192.168.4.60","cli_port":68,"l7":"DHCP","srv_ip":"192.168.4.1","srv_port":67,"vlan":0}
+{"cli_ip":"192.168.4.60","cli_port":68,"l7":"DHCP","srv_ip":"255.255.255.255","srv_port":67,"vlan":0}
+{"as_client":1,"as_server":10,"host":"192.168.4.1"}
 {"as_client":0,"as_server":1,"host":"192.168.4.1@10"}
 {"as_client":0,"as_server":1,"host":"192.168.4.1@20"}
 {"as_client":1,"as_server":7,"host":"192.168.4.2"}
+{"as_client":2,"as_server":0,"dhcp_name":"new-name","host":"192.168.4.60"}
 {"as_client":1,"as_server":0,"host":"192.168.4.11"}
 {"as_client":1,"as_server":0,"host":"192.168.4.12"}
 {"as_client":1,"as_server":0,"host":"192.168.4.13"}

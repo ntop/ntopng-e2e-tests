@@ -17,6 +17,8 @@ requires: pro
 # and are swapped.
 #
 # Allowed server 192.168.4.1
+#   192.168.4.60   renew REQUEST (host name "old-name"), then ACK; 130 s later,
+#                  rebinding REQUEST to broadcast ("new-name"), then ACK
 #   0.0.0.0        DISCOVER to broadcast
 #   192.168.4.1    OFFER to broadcast
 #   192.168.4.11   unicast ACK, then renew REQUEST              (reply first)
@@ -43,6 +45,13 @@ requires: pro
 #   192.168.4.40   unicast ACK only, VLAN 10                    (reply first)
 #   192.168.4.41   unicast ACK only, VLAN 20                    (reply first)
 
+# DHCP name: the host keeps the name of its latest DHCP request ("new-name"
+# for 192.168.4.60): the flow of the renewal, still active, must not set
+# "old-name" again. The asset of the host gets the name of the host (not
+# checked here: on pcap interfaces the snapshots of the hosts are written to
+# the queue of the assets only when the hosts are deleted, see
+# tags_application_based_01).
+
 pre: |
   # Disable everything not related to this test
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
@@ -50,3 +59,6 @@ pre: |
 runtime: |
   # Client and server of the active flows
   curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=0&perPage=100" | jq -c '[.rsp.data[] | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, vlan: .vlan, l7: .protocol.l7}] | sort_by(.cli_ip, .srv_ip, .vlan) | .[]'
+
+  # DHCP name of the renamed client
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=192.168.4.60" | jq -c '{host: "192.168.4.60", dhcp_name: .rsp.names.dhcp}'
