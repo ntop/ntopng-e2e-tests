@@ -1,0 +1,39 @@
+input: tcp_fingerprint_change.pcap
+
+localnet: 192.168.30.0/24
+
+requires: pro
+
+# The TCP fingerprint of a host is the one of its latest flow, and its OS is
+# the one of that fingerprint.
+#
+# tcp_fingerprint_change.pcap (generated, see the TCP fingerprint dev scripts):
+# the host 192.168.30.10 opens 4 HTTP connections, 10 seconds apart, each
+# one with the SYN of another TCP stack:
+#   50000: Windows, window 64240  2_128_64240_47466ece
+#   50001: Windows, window 65535  2_128_65535_47466ece (same OS)
+#   50002: Linux                  2_64_64240_789c1d1f
+#   50003: Windows, window 64240  2_128_64240_47466ece (the first one again)
+# Expected: the host has the fingerprint of its last connection and its OS
+# (1 = Windows), and an inconsistent OS (two fingerprints of different OSes).
+# NOTE: the asset keeps all the fingerprints of the host (list field
+# tcp_fingerprints): not checked here, the assets are not imported on pcap
+# interfaces (see tags_application_based_01.yaml)
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  # The host: its fingerprint, OS (see ndpi_os) and how it has been learnt
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=192.168.30.10" | jq -c '{rc_str, host: .rsp.ip, os: .rsp.os, os_learning: .rsp.os_learning, tcp_fingerprint: .rsp.tcp_fingerprint, inconsistent_host_os: .rsp.inconsistent_host_os}'
+
+  # TCP fingerprint of each flow
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active_list.lua?ifid=0&start=0&length=100" | \
+    jq -c '.rsp[] | {cli: "\(.client.ip):\(.client.port)", srv: "\(.server.ip):\(.server.port)", key: .key, hash_id: .hash_id}' | \
+    while read -r flow; do
+      key=$(echo "${flow}" | jq -r .key)
+      hash_id=$(echo "${flow}" | jq -r .hash_id)
+      curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/live/flow_details.lua?ifid=0&flow_key=${key}&flow_hash_id=${hash_id}" | \
+        jq -c --argjson flow "${flow}" '{cli: $flow.cli, srv: $flow.srv, tcp_fingerprint: .rsp.fingerprints.tcp}'
+    done | jq -s -c 'sort_by(.cli) | .[]'

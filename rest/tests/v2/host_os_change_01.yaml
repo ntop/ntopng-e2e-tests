@@ -12,10 +12,10 @@ localnet: 172.16.1.0/24
 # kept about how the OS has been learnt (and, with it, the OS of the asset)
 # was not updated, and was still reporting the first OS.
 #
-# The host also reports its TCP fingerprint, and each flow its own one.
-# NOTE: the host keeps the first fingerprint it has seen (Windows), while its
-# OS is Linux (learnt from the second flow): current behaviour, to be fixed
-# (the host and its asset end up with different fingerprints).
+# The host also reports its TCP fingerprint, and each flow its own one: the
+# host has the one of its latest flow (Linux), as its OS (it used to keep the
+# first one, Windows, while its OS was Linux). Two fingerprints of different
+# OSes: the OS of the host is inconsistent (gateway, NAT, VPN, ...).
 
 pre: |
   # Disable everything not related to this test
@@ -23,7 +23,7 @@ pre: |
 
 runtime: |
   # OS of the host (1 = Windows, 4 = Linux, see ndpi_os) and how it has been learnt
-  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=172.16.1.137" | jq -c '{rc_str, host: .rsp.ip, os: .rsp.os, os_learning: .rsp.os_learning, tcp_fingerprint: .rsp.tcp_fingerprint}'
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=172.16.1.137" | jq -c '{rc_str, host: .rsp.ip, os: .rsp.os, os_learning: .rsp.os_learning, tcp_fingerprint: .rsp.tcp_fingerprint, inconsistent_host_os: .rsp.inconsistent_host_os}'
 
   # TCP fingerprint of each flow (Windows: 2_128_64240_47466ece, Linux: 2_64_64240_789c1d1f)
   curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active_list.lua?ifid=0&start=0&length=100" | \

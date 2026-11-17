@@ -19,10 +19,10 @@ options:
 #
 # The host of the view also reports its TCP fingerprint, and each flow of the
 # view its own one.
-# NOTE: the view applies the fingerprints of its flows in the order it visits
-# them (the order of the flows hash, not the time order): here the host keeps
-# the Linux one, unlike on the pcap interface (host_os_change_01.yaml), where
-# it keeps the first one (Windows). Current behaviour, to be fixed.
+# The view applies the fingerprints of its flows in the order it visits them
+# (the order of the flows hash, not the time order): the host has the one of
+# its latest flow by time (Linux), as on the pcap interface
+# (host_os_change_01.yaml).
 
 pre: |
   # Disable everything not related to this test
@@ -30,7 +30,7 @@ pre: |
 
 runtime: |
   # OS of the host of the view (1 = Windows, 4 = Linux, see ndpi_os) and how it has been learnt
-  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=172.16.1.137" | jq -c '{rc_str, host: .rsp.ip, os: .rsp.os, os_learning: .rsp.os_learning, tcp_fingerprint: .rsp.tcp_fingerprint}'
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=172.16.1.137" | jq -c '{rc_str, host: .rsp.ip, os: .rsp.os, os_learning: .rsp.os_learning, tcp_fingerprint: .rsp.tcp_fingerprint, inconsistent_host_os: .rsp.inconsistent_host_os}'
 
   # TCP fingerprint of each flow (Windows: 2_128_64240_47466ece, Linux: 2_64_64240_789c1d1f)
   curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active_list.lua?ifid=1&start=0&length=100" | \
