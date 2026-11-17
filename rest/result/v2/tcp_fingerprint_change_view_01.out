@@ -1,0 +1,5 @@
+{"host":"192.168.30.10","inconsistent_host_os":true,"os":1,"os_learning":{"TCP Fingerprint":"Windows"},"rc_str":"OK","tcp_fingerprint":"2_128_64240_47466ece"}
+{"cli":"192.168.30.10:50000","srv":"192.168.30.1:80","tcp_fingerprint":"2_128_64240_47466ece"}
+{"cli":"192.168.30.10:50001","srv":"192.168.30.1:80","tcp_fingerprint":"2_128_65535_47466ece"}
+{"cli":"192.168.30.10:50002","srv":"192.168.30.1:80","tcp_fingerprint":"2_64_64240_789c1d1f"}
+{"cli":"192.168.30.10:50003","srv":"192.168.30.1:80","tcp_fingerprint":"2_128_64240_47466ece"}
