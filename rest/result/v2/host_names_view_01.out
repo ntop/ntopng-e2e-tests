@@ -14,3 +14,14 @@
 {"host":"192.168.5.73","names":{}}
 {"host":"192.168.5.74","names":{}}
 {"host":"203.0.113.5","names":{"http":"remote.example.com"}}
+{"host":"192.168.5.90","names":{"netbios":"pc-90"}}
+{"host":"192.168.5.91","names":{"netbios":"workstation-091"}}
+{"host":"192.168.5.92","names":{"netbios":"pc-92"}}
+{"host":"192.168.5.93","names":{}}
+{"host":"192.168.5.95","names":{"mdns":"box-95","mdns_txt":"living box"}}
+{"host":"192.168.5.97","names":{"mdns":"printer-97"}}
+{"host":"192.168.5.98","names":{"mdns":"tv-98","mdns_txt":"office tv"}}
+{"host":"192.168.5.61","names":{"mdns":"filler-61","mdns_txt":"big box"}}
+{"host":"192.168.5.62","names":{"mdns":"filler-62","mdns_txt":"big box"}}
+{"host":"192.168.5.63","names":{"mdns":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-063","mdns_txt":"thirty four"}}
+{"host":"192.168.5.64","names":{"mdns":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbb-064","mdns_txt":"long name"}}
