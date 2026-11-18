@@ -1,3 +1,16 @@
+{"cli_ip":"192.168.5.80","cli_port":41000,"l7":"HTTP","srv_ip":"192.168.5.70","srv_port":80}
+{"cli_ip":"192.168.5.80","cli_port":41001,"l7":"HTTP","srv_ip":"192.168.5.70","srv_port":80}
+{"cli_ip":"192.168.5.81","cli_port":41002,"l7":"HTTP","srv_ip":"192.168.5.71","srv_port":80}
+{"cli_ip":"192.168.5.82","cli_port":41003,"l7":"HTTP","srv_ip":"192.168.5.72","srv_port":80}
+{"cli_ip":"192.168.5.83","cli_port":41004,"l7":"HTTP_Proxy","srv_ip":"192.168.5.73","srv_port":3128}
+{"cli_ip":"192.168.5.84","cli_port":41005,"l7":"HTTP","srv_ip":"203.0.113.5","srv_port":80}
+{"cli_ip":"192.168.5.85","cli_port":41006,"l7":"HTTP_Connect","srv_ip":"192.168.5.74","srv_port":8080}
 {"host":"192.168.5.10","names":{"mdns":"my-laptop"}}
 {"host":"192.168.5.11","names":{"netbios":"workstation1"}}
 {"host":"192.168.5.12","names":{"mdns":"lrtv-1234","mdns_txt":"living room tv"}}
+{"host":"192.168.5.70","names":{"http":"www-a.lan","server_name":"www-a.lan"}}
+{"host":"192.168.5.71","names":{}}
+{"host":"192.168.5.72","names":{}}
+{"host":"192.168.5.73","names":{}}
+{"host":"192.168.5.74","names":{}}
+{"host":"203.0.113.5","names":{"http":"remote.example.com","server_name":"remote.example.com"}}

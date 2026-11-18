@@ -1,0 +1,19 @@
+input: tls_cert_expired.pcap
+
+localnet: 192.168.2.0/24,104.111.215.0/24
+
+requires: pro
+
+# TLS name of a local server (tls_cert_expired.pcap, 104.111.215.93 in the
+# local networks): no name, as the TLS names of local hosts are not used (no
+# check of the certificate: the names of local hosts come from other
+# protocols); its asset gets no TLS name either.
+
+pre: |
+  # Disable everything not related to this test
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
+
+runtime: |
+  for h in 192.168.2.126 104.111.215.93; do
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, localhost: .rsp.localhost, names: ((.rsp.names | objects) // {})} else {host: $host, rc: .rc} end'
+  done
