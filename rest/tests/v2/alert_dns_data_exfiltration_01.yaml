@@ -7,6 +7,7 @@ ignore:
   - tstamp
   - title
   - rowid
+  - row_id
   - historical_url
   - query_duration_msec
   - epoch_begin
