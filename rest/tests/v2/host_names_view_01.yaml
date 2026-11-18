@@ -20,6 +20,16 @@ requires: pro
 #   192.168.5.12  mDNS TXT of the service instance "LRTV-1234" with
 #                 nm=Living Room TV (multicast), then nm=Other TV (unicast to
 #                 .20)
+#   192.168.5.70  HTTP server of two virtual hosts: "WWW-A.lan", then
+#                 "www-b.lan" in a flow 5 s later (client .80)
+#
+# HTTP names, given to the server of a request answered 200 (Host: header):
+#   192.168.5.71  answered 404 ("bad.lan"): no name
+#   192.168.5.72  IP address in the Host: header: no name
+#   192.168.5.73  proxy (port 3128) of a request for www.example.com: no name
+#                 (the name of the site, not of the proxy)
+#   192.168.5.74  proxy (port 8080) of a CONNECT to www.example.org: no name
+#   203.0.113.5   remote server of "remote.example.com"
 #
 # Expected: each host keeps the names of its first flow, lowercased (the time
 # of the flow decides, not the order of the periodic updates). The asset of
@@ -31,6 +41,9 @@ pre: |
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "action": "disable"}' http://localhost:3333/lua/toggle_all_checks.lua -o /dev/null
 
 runtime: |
-  for h in 192.168.5.10 192.168.5.11 192.168.5.12; do
-    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, names: (.rsp.names | objects)} else {host: $host, rc: .rc} end'
+  # Client, server and application of the HTTP flows
+  curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=1&perPage=100" | jq -c '[.rsp.data[] | select(.server.port == 80 or .server.port == 3128 or .server.port == 8080) | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, l7: .protocol.l7}] | sort_by(.cli_ip, .cli_port) | .[]'
+
+  for h in 192.168.5.10 192.168.5.11 192.168.5.12 192.168.5.70 192.168.5.71 192.168.5.72 192.168.5.73 192.168.5.74 203.0.113.5; do
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, names: ((.rsp.names | objects) // {})} else {host: $host, rc: .rc} end'
   done
