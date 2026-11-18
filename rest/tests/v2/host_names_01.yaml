@@ -25,6 +25,30 @@ requires: pro
 #   192.168.5.74  proxy (port 8080) of a CONNECT to www.example.org: no name
 #   203.0.113.5   remote server of "remote.example.com"
 #
+# NetBIOS node status responses (sent to .94, without the query: the sender
+# is the client of the flow), the first unique name with the suffix 0x00:
+#   192.168.5.90  short name "PC-90" (followed by its file server name)
+#   192.168.5.91  name of 15 characters "WORKSTATION-091"
+#   192.168.5.92  group name "WORKGROUP" first, then "PC-92"
+#   192.168.5.93  file server name only (suffix 0x20): no name
+#
+# mDNS responses echoing the questions, as the responses to legacy unicast
+# queries (sent to .96, without the query: the sender is the client of the
+# flow): the questions are skipped, the answers give the names:
+#   192.168.5.95  PTR question, TXT answer "Box-95" with nm=Living Box
+#   192.168.5.97  A question, answer "Printer-97" with the name compressed
+#                 (pointer to the question)
+#   192.168.5.98  two PTR questions, TXT answer "Tv-98" with nm=Office TV
+#
+# Names of the records (labels and compression pointers), mDNS responses sent
+# to .60 without a query:
+#   192.168.5.61  354 bytes: the TXT with nm=Big Box after offset 256, its
+#                 name compressed (pointer 0xC1..)
+#   192.168.5.62  the same records, not compressed
+#   192.168.5.63  label of 34 characters (length 0x22), nm=Thirty Four
+#   192.168.5.64  label of 33 characters, then the same name compressed,
+#                 nm=Long Name
+#
 # Expected: each host keeps the names of its first flow, lowercased (the time
 # of the flow decides, not the order of the periodic updates). The asset of
 # the host gets the same names (not visible here: the snapshots of the hosts
@@ -38,6 +62,6 @@ runtime: |
   # Client, server and application of the HTTP flows
   curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/flow/active.lua?ifid=0&perPage=100" | jq -c '[.rsp.data[] | select(.server.port == 80 or .server.port == 3128 or .server.port == 8080) | {cli_ip: .client.ip, cli_port: .client.port, srv_ip: .server.ip, srv_port: .server.port, l7: .protocol.l7}] | sort_by(.cli_ip, .cli_port) | .[]'
 
-  for h in 192.168.5.10 192.168.5.11 192.168.5.12 192.168.5.70 192.168.5.71 192.168.5.72 192.168.5.73 192.168.5.74 203.0.113.5; do
+  for h in 192.168.5.10 192.168.5.11 192.168.5.12 192.168.5.70 192.168.5.71 192.168.5.72 192.168.5.73 192.168.5.74 203.0.113.5 192.168.5.90 192.168.5.91 192.168.5.92 192.168.5.93 192.168.5.95 192.168.5.97 192.168.5.98 192.168.5.61 192.168.5.62 192.168.5.63 192.168.5.64; do
     curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=0&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, names: ((.rsp.names | objects) // {})} else {host: $host, rc: .rc} end'
   done
