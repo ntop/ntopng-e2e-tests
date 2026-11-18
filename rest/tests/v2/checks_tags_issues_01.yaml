@@ -28,14 +28,20 @@ pre: |
 post: |
   B="http://localhost:3333/lua/pro/rest/v2/get/issue"
   curl -s -u admin:admin -H "Content-Type: application/json" -d '{"ifid": 0, "host": "192.168.1.51", "vlan": 0, "score": 100, "info": "Check tags test"}' http://localhost:3333/lua/rest/v2/trigger/host/alert.lua | jq -c '{trigger: .rc_str}'
+  # The alert triggered from Lua reaches the issues when the alerts queue is processed: wait for
+  # its issue (host_alert_external_script, 27)
+  for i in $(seq 1 60); do
+    curl -s -u admin:admin "${B}/list.lua?view=problems&length=200" | jq -e '.rsp | any(.alert.id == 27)' > /dev/null && break
+    sleep 1
+  done
   # Signal-only updates are written at most once a minute: wait until none is pending
-  sleep 2
   for i in $(seq 1 90); do
     [ "$(curl -s -u admin:admin "${B}/stats.lua" | jq '.rsp.num_unsaved')" = "0" ] && break
     sleep 1
   done
-  # Tags of the issues, by alert type
-  curl -s -u admin:admin "${B}/list.lua?view=problems&length=200" | jq -c '[.rsp[] | {alert: .alert.id, tags: [.tags[].id]}] | group_by(.) | map(.[0] + {count: length})'
+  # Tags of the issues, by alert type. No system issues (entity 9): they depend on the Internet
+  # connectivity (e.g. list downloads)
+  curl -s -u admin:admin "${B}/list.lua?view=problems&length=200" | jq -c '[.rsp[] | select(.entity.id != 9) | {alert: .alert.id, tags: [.tags[].id]}] | group_by(.) | map(.[0] + {count: length})'
   # Filter by tag
   for T in 40 41 63; do
     curl -s -u admin:admin "${B}/list.lua?view=problems&tag=${T}&length=200" | jq -c "{tag: ${T}, rc: .rc, alerts: ([.rsp[].alert.id] | unique)}"
