@@ -8,3 +8,13 @@
 {"dns_server":false,"host":"192.168.2.16"}
 {"dns_server":false,"host":"192.168.2.17"}
 {"dns_server":false,"host":"192.168.2.18"}
+{"used_ports":{"contacted":[],"host":"192.168.2.1","ifid":0,"server":["udp:53 DNS"]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.10","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.11","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.12","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.13","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.14","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.15","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.16","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.17","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.18","ifid":0,"server":[]}}

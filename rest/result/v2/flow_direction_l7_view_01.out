@@ -45,3 +45,26 @@
 {"host":"192.168.2.66","server_role":true}
 {"host":"fd00::50","server_role":false}
 {"host":"fd00::51","server_role":false}
+{"used_ports":{"host":"192.168.2.1","ifid":1,"server":["udp:123 NTP"]}}
+{"used_ports":{"host":"192.168.2.2","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.3","ifid":1,"server":["udp:5060 SIP"]}}
+{"used_ports":{"host":"192.168.2.4","ifid":1,"server":["udp:443 QUIC"]}}
+{"used_ports":{"host":"192.168.2.30","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.31","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.32","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.33","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.34","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.35","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.36","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.37","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.40","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.41","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.42","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.43","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.60","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.61","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.62","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.63","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.64","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.65","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.66","ifid":1,"server":[]}}

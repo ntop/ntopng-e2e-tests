@@ -1,2 +1,3 @@
 {"host":"192.168.2.126","localhost":true,"names":{}}
 {"host":"104.111.215.93","localhost":false,"names":{"tls":"www.repubblica.it"}}
+{"used_ports":{"contacted":["tcp:443 TLS"],"host":"192.168.2.126","ifid":0,"server":[]}}

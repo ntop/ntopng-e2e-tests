@@ -182,3 +182,16 @@ runtime: |
     sm=$(curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/mac/data.lua?ifid=0&mac=$(printf '00:00:00:0A:00:%02X' ${i})" | jq -c '[.rsp.tot_bytes_sent, .rsp.tot_bytes_recv]')
     echo "{\"i\": ${i}, \"client_server_ports\": ${c:-null}, \"server_server_ports\": ${s:-null}, \"client_mac_bytes\": ${cm:-null}, \"server_mac_bytes\": ${sm:-null}}"
   done
+
+  # Server ports (local_server_ports) and ports contacted as client
+  # (remote_contacted_ports) learned by each local host, per interface.
+  # NOTE: baseline of the learning of the server ports, recorded before
+  # changing it: not necessarily the expected values.
+  for ifid in 0; do
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/active.lua?ifid=${ifid}&mode=local&perPage=1000" | \
+      jq -r '.rsp.data[] | if ((.vlan // 0) | tonumber? // 0) > 0 then "\(.ip)@\(.vlan)" else .ip end' | sort -V | \
+      while read -r h; do
+        curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/used_ports.lua?ifid=${ifid}&host=${h}" | \
+          jq -c --arg h "${h}" --argjson ifid ${ifid} '{used_ports: {ifid: $ifid, host: $h, server: ([.rsp.local_server_ports | to_entries[]? | "\(.key) \(.value)"] | sort), contacted: ([.rsp.remote_contacted_ports | to_entries[]? | "\(.key) \(.value)"] | sort)}}'
+      done
+  done

@@ -35,3 +35,38 @@
 {"host":"203.0.113.12","names":{}}
 {"host":"203.0.113.13","names":{"tls":"good.example.com"}}
 {"host":"203.0.113.14","names":{"tls":"swapped.example.com"}}
+{"used_ports":{"host":"192.168.5.1","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.10","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.11","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.12","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.20","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.60","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.61","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.62","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.63","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.64","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.70","ifid":1,"server":["tcp:80 HTTP"]}}
+{"used_ports":{"host":"192.168.5.71","ifid":1,"server":["tcp:80 HTTP"]}}
+{"used_ports":{"host":"192.168.5.72","ifid":1,"server":["tcp:80 HTTP"]}}
+{"used_ports":{"host":"192.168.5.73","ifid":1,"server":["tcp:3128 HTTP_Proxy"]}}
+{"used_ports":{"host":"192.168.5.74","ifid":1,"server":["tcp:8080 HTTP_Connect"]}}
+{"used_ports":{"host":"192.168.5.80","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.81","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.82","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.83","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.84","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.85","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.86","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.87","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.88","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.89","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.90","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.91","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.92","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.93","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.94","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.95","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.96","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.97","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.98","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.5.99","ifid":1,"server":[]}}

@@ -33,3 +33,21 @@ runtime: |
            192.168.4.250 192.168.4.251 192.168.4.252 192.168.4.253 192.168.4.254 255.255.255.255; do
     curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/data.lua?ifid=1&host=${h}" | jq -c --arg host "${h}" 'if .rc == 0 then {host: $host, dhcp_server: (.rsp.services.dhcp == true)} else {host: $host, rc: .rc} end'
   done
+
+  # Server ports (local_server_ports) and ports contacted as client
+  # (remote_contacted_ports) learned by each local host, per interface.
+  # NOTE: baseline of the learning of the server ports, recorded before
+  # changing it: not necessarily the expected values.
+  # Not stable, left out: the ports contacted by the hosts of the view
+  # (ifid 1). A view host can be created twice at the same time (by the
+  # alerts of the viewed interface and by the view) and the REST shows the
+  # empty copy; a flow visited by the view before its pending swap gives
+  # the ports of the reversed flow, never removed.
+  for ifid in 0 1; do
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/active.lua?ifid=${ifid}&mode=local&perPage=1000" | \
+      jq -r '.rsp.data[] | if ((.vlan // 0) | tonumber? // 0) > 0 then "\(.ip)@\(.vlan)" else .ip end' | sort -V | \
+      while read -r h; do
+        curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/used_ports.lua?ifid=${ifid}&host=${h}" | \
+          jq -c --arg h "${h}" --argjson ifid ${ifid} '{used_ports: {ifid: $ifid, host: $h, server: ([.rsp.local_server_ports | to_entries[]? | "\(.key) \(.value)"] | sort), contacted: ([.rsp.remote_contacted_ports | to_entries[]? | "\(.key) \(.value)"] | sort)}} | if $ifid == 1 then del(.used_ports.contacted) else . end'
+      done
+  done

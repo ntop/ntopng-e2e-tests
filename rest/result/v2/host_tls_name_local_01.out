@@ -1,2 +1,4 @@
 {"host":"192.168.2.126","localhost":true,"names":{}}
 {"host":"104.111.215.93","localhost":true,"names":{}}
+{"used_ports":{"contacted":[],"host":"104.111.215.93","ifid":0,"server":["tcp:443 TLS"]}}
+{"used_ports":{"contacted":["tcp:443 TLS"],"host":"192.168.2.126","ifid":0,"server":[]}}

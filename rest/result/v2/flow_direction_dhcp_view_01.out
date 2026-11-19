@@ -47,3 +47,28 @@
 {"as_client":1,"as_server":0,"host":"192.168.4.252"}
 {"as_client":1,"as_server":0,"host":"192.168.4.253"}
 {"as_client":0,"as_server":1,"host":"192.168.4.254"}
+{"used_ports":{"host":"192.168.4.1","ifid":1,"server":["udp:67 DHCP"]}}
+{"used_ports":{"host":"192.168.4.1@10","ifid":1,"server":["udp:67 DHCP"]}}
+{"used_ports":{"host":"192.168.4.1@20","ifid":1,"server":["udp:67 DHCP"]}}
+{"used_ports":{"host":"192.168.4.2","ifid":1,"server":["udp:67 DHCP"]}}
+{"used_ports":{"host":"192.168.4.11","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.12","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.13","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.14","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.15","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.16","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.17","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.20","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.21","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.22","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.23","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.24","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.32","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.40@10","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.41@20","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.60","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.250","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.251","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.252","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.253","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.4.254","ifid":1,"server":["udp:67 DHCP"]}}
