@@ -5,6 +5,11 @@
 {"cli_ip":"192.168.5.83","cli_port":41004,"l7":"HTTP_Proxy","srv_ip":"192.168.5.73","srv_port":3128}
 {"cli_ip":"192.168.5.84","cli_port":41005,"l7":"HTTP","srv_ip":"203.0.113.5","srv_port":80}
 {"cli_ip":"192.168.5.85","cli_port":41006,"l7":"HTTP_Connect","srv_ip":"192.168.5.74","srv_port":8080}
+{"cli_ip":"192.168.5.86","cli_port":42000,"l7":"TLS","srv_ip":"203.0.113.10","srv_port":443}
+{"cli_ip":"192.168.5.87","cli_port":42001,"l7":"TLS","srv_ip":"203.0.113.11","srv_port":443}
+{"cli_ip":"192.168.5.88","cli_port":42002,"l7":"TLS","srv_ip":"203.0.113.12","srv_port":443}
+{"cli_ip":"192.168.5.89","cli_port":42003,"l7":"TLS","srv_ip":"203.0.113.13","srv_port":443}
+{"cli_ip":"192.168.5.99","cli_port":42004,"l7":"TLS","srv_ip":"203.0.113.14","srv_port":443}
 {"host":"192.168.5.10","names":{"mdns":"my-laptop"}}
 {"host":"192.168.5.11","names":{"netbios":"workstation1"}}
 {"host":"192.168.5.12","names":{"mdns":"lrtv-1234","mdns_txt":"living room tv"}}
@@ -25,3 +30,8 @@
 {"host":"192.168.5.62","names":{"mdns":"filler-62","mdns_txt":"big box"}}
 {"host":"192.168.5.63","names":{"mdns":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-063","mdns_txt":"thirty four"}}
 {"host":"192.168.5.64","names":{"mdns":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbb-064","mdns_txt":"long name"}}
+{"host":"203.0.113.10","names":{}}
+{"host":"203.0.113.11","names":{}}
+{"host":"203.0.113.12","names":{}}
+{"host":"203.0.113.13","names":{"tls":"good.example.com"}}
+{"host":"203.0.113.14","names":{"tls":"swapped.example.com"}}
