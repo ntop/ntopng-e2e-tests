@@ -28,3 +28,26 @@
 {"host":"192.168.2.35","ntp_server":false,"ntp_server_tag":false}
 {"host":"192.168.2.36","ntp_server":false,"ntp_server_tag":false}
 {"host":"192.168.2.37","ntp_server":false,"ntp_server_tag":false}
+{"used_ports":{"contacted":[],"host":"192.168.2.1","ifid":0,"server":["udp:123 NTP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.2","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.3","ifid":0,"server":["udp:5060 SIP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.4","ifid":0,"server":["udp:443 QUIC"]}}
+{"used_ports":{"contacted":["udp:123 NTP"],"host":"192.168.2.30","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:123 NTP"],"host":"192.168.2.31","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:123 NTP"],"host":"192.168.2.32","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:123 NTP"],"host":"192.168.2.33","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:123 NTP"],"host":"192.168.2.34","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:123 NTP"],"host":"192.168.2.35","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:123 NTP"],"host":"192.168.2.36","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.37","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.40","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.41","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.42","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.43","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:5060 SIP"],"host":"192.168.2.60","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:5060 SIP"],"host":"192.168.2.61","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:5060 SIP"],"host":"192.168.2.62","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.63","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:443 QUIC"],"host":"192.168.2.64","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:443 QUIC"],"host":"192.168.2.65","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.66","ifid":0,"server":[]}}

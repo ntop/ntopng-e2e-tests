@@ -8,3 +8,13 @@
 {"dns_server":false,"host":"192.168.2.16"}
 {"dns_server":false,"host":"192.168.2.17"}
 {"dns_server":false,"host":"192.168.2.18"}
+{"used_ports":{"host":"192.168.2.1","ifid":1,"server":["udp:53 DNS"]}}
+{"used_ports":{"host":"192.168.2.10","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.11","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.12","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.13","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.14","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.15","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.16","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.17","ifid":1,"server":[]}}
+{"used_ports":{"host":"192.168.2.18","ifid":1,"server":[]}}

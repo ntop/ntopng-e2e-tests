@@ -23,3 +23,28 @@
 {"cli_ip":"192.168.4.60","cli_port":68,"l7":"DHCP","srv_ip":"192.168.4.1","srv_port":67,"vlan":0}
 {"cli_ip":"192.168.4.60","cli_port":68,"l7":"DHCP","srv_ip":"255.255.255.255","srv_port":67,"vlan":0}
 {"dhcp_name":"new-name","host":"192.168.4.60"}
+{"used_ports":{"contacted":[],"host":"192.168.4.1","ifid":0,"server":["udp:67 DHCP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.4.1@10","ifid":0,"server":["udp:67 DHCP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.4.1@20","ifid":0,"server":["udp:67 DHCP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.4.2","ifid":0,"server":["udp:67 DHCP"]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.11","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.12","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.13","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.14","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.15","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.16","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.17","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.20","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.21","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.22","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.23","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.24","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.32","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.40@10","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.41@20","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.4.60","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.4.250","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.4.251","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.4.252","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.4.253","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.4.254","ifid":0,"server":["udp:67 DHCP"]}}

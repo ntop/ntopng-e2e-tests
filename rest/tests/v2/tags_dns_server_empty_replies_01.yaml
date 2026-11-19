@@ -51,3 +51,16 @@ runtime: |
   for i in $(seq 10 18); do
     check_dns_server "192.168.2.${i}"
   done
+
+  # Server ports (local_server_ports) and ports contacted as client
+  # (remote_contacted_ports) learned by each local host, per interface.
+  # NOTE: baseline of the learning of the server ports, recorded before
+  # changing it: not necessarily the expected values.
+  for ifid in 0; do
+    curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/active.lua?ifid=${ifid}&mode=local&perPage=1000" | \
+      jq -r '.rsp.data[] | if ((.vlan // 0) | tonumber? // 0) > 0 then "\(.ip)@\(.vlan)" else .ip end' | sort -V | \
+      while read -r h; do
+        curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/used_ports.lua?ifid=${ifid}&host=${h}" | \
+          jq -c --arg h "${h}" --argjson ifid ${ifid} '{used_ports: {ifid: $ifid, host: $h, server: ([.rsp.local_server_ports | to_entries[]? | "\(.key) \(.value)"] | sort), contacted: ([.rsp.remote_contacted_ports | to_entries[]? | "\(.key) \(.value)"] | sort)}}'
+      done
+  done

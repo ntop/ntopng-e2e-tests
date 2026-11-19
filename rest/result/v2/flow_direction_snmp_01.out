@@ -37,3 +37,23 @@
 {"host":"192.168.8.26","server_ports":[]}
 {"host":"192.168.8.27","server_ports":[]}
 {"host":"192.168.8.28","server_ports":[]}
+{"used_ports":{"contacted":["udp:161 SNMP"],"host":"192.168.8.1","ifid":0,"server":["udp:162 SNMP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.8.10","ifid":0,"server":["udp:161 SNMP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.8.11","ifid":0,"server":["udp:161 SNMP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.8.12","ifid":0,"server":["udp:161 SNMP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.8.13","ifid":0,"server":["udp:161 SNMP"]}}
+{"used_ports":{"contacted":["udp:162 SNMP"],"host":"192.168.8.14","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.8.15","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:162 SNMP"],"host":"192.168.8.16","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:162 SNMP"],"host":"192.168.8.17","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.8.18","ifid":0,"server":["udp:161 SNMP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.8.19","ifid":0,"server":["udp:161 SNMP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.8.20","ifid":0,"server":["udp:161 SNMP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.8.21","ifid":0,"server":["udp:161 SNMP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.8.22","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:162 SNMP"],"host":"192.168.8.23","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:162 SNMP"],"host":"192.168.8.24","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.8.25","ifid":0,"server":["udp:161 SNMP"]}}
+{"used_ports":{"contacted":["udp:161 SNMP"],"host":"192.168.8.26","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:161 SNMP"],"host":"192.168.8.27","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:162 SNMP"],"host":"192.168.8.28","ifid":0,"server":[]}}

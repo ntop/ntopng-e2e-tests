@@ -12,3 +12,19 @@
 {"L7_PROTO":92,"PROTOCOL":6,"cli2srv_bytes":0,"cli2srv_pkts":0,"cli2srv_tcp_flags":0,"cli_ip":"192.168.2.22","cli_port":50022,"srv2cli_bytes":108,"srv2cli_pkts":2,"srv2cli_tcp_flags":16,"srv_ip":"192.168.2.2","srv_port":22,"tcp_flags_analysis":"{\"cli2srv\":{\"num_syn\":0,\"num_rst\":0,\"num_fin\":0,\"num_zero_window\":0},\"srv2cli\":{\"num_syn\":0,\"num_rst\":0,\"num_fin\":0,\"num_zero_window\":0}}"}
 {"L7_PROTO":92,"PROTOCOL":6,"cli2srv_bytes":54,"cli2srv_pkts":1,"cli2srv_tcp_flags":16,"cli_ip":"192.168.2.23","cli_port":50023,"srv2cli_bytes":54,"srv2cli_pkts":1,"srv2cli_tcp_flags":20,"srv_ip":"192.168.2.2","srv_port":22,"tcp_flags_analysis":"{\"cli2srv\":{\"num_syn\":0,\"num_rst\":0,\"num_fin\":0,\"num_zero_window\":0},\"srv2cli\":{\"num_syn\":0,\"num_rst\":1,\"num_fin\":0,\"num_zero_window\":0}}"}
 {"L7_PROTO":92,"PROTOCOL":6,"cli2srv_bytes":216,"cli2srv_pkts":4,"cli2srv_tcp_flags":19,"cli_ip":"192.168.2.24","cli_port":50024,"srv2cli_bytes":108,"srv2cli_pkts":2,"srv2cli_tcp_flags":19,"srv_ip":"192.168.2.2","srv_port":22,"tcp_flags_analysis":"{\"cli2srv\":{\"num_syn\":1,\"num_rst\":0,\"num_fin\":1,\"num_zero_window\":0},\"srv2cli\":{\"num_syn\":1,\"num_rst\":0,\"num_fin\":1,\"num_zero_window\":0}}"}
+{"used_ports":{"contacted":[],"host":"192.168.2.1","ifid":0,"server":["udp:53 DNS"]}}
+{"used_ports":{"contacted":["tcp:50021 SSH"],"host":"192.168.2.2","ifid":0,"server":["tcp:22 SSH"]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.10","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.11","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.12","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.13","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.14","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.15","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.16","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.17","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.18","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.20","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:50021 SSH"],"host":"192.168.2.21","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.22","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.23","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:22 SSH"],"host":"192.168.2.24","ifid":0,"server":[]}}
