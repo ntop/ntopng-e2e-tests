@@ -14,6 +14,9 @@
 #
 # ./run.sh -j=8
 #
+# A full run also executes smoke.sh (every REST endpoint, see the README),
+# counted as one more test; -S skips it.
+#
 # Clone the packager repository in the same folder to enable notifications
 #
 
@@ -34,6 +37,7 @@ RUN_FROM_PACKAGES=false
 DEBUG_LEVEL=0
 KEEP_RUNNING=0
 JOBS=1
+RUN_SMOKE=true
 
 # Redis ships with 16 logical DBs; parallel slots use DB 2..(1+JOBS)
 MAX_JOBS=14
@@ -41,7 +45,7 @@ MAX_JOBS=14
 source "${TESTS_PATH}/common.sh"
 
 function usage {
-    echo "Usage: run.sh [-y=<test>] [-j=<jobs>] [-f=<mail from>] [-t=<mail to>] [-d=<discord webhook>] [-s=<discord webhook>] [-D=<debug level>] [-K]"
+    echo "Usage: run.sh [-y=<test>] [-j=<jobs>] [-f=<mail from>] [-t=<mail to>] [-d=<discord webhook>] [-s=<discord webhook>] [-D=<debug level>] [-K] [-S]"
     echo ""
     echo "Options:"
     echo "[-y|--test]=<test>                | Run a selected test (e.g. -y=v2/get_host_active_01)"
@@ -54,6 +58,7 @@ function usage {
     echo "[-p|--use-package]                | Run ntopng from binary package"
     echo "[-D|--debug]=<level>              | Set the debug level (0 - default, 1 - verbose, 2 - gdb)"
     echo "[-K|--keep-running]               | Keep ntopng running after completing the test (with -y)"
+    echo "[-S|--skip-smoke]                 | Do not run the smoke test of all the REST endpoints (smoke.sh)"
     echo "[-h|--help]                       | Print this help"
     exit 0
 }
@@ -99,6 +104,10 @@ do
 
         -K|--keep-running)
             KEEP_RUNNING=1
+            ;;
+
+        -S|--skip-smoke)
+            RUN_SMOKE=false
             ;;
 
         -h|--help)
@@ -264,6 +273,26 @@ run_tests_parallel() {
 }
 
 #
+# Run smoke.sh, counted as one test; on failure its report is sent
+#
+run_smoke() {
+    echo "[>] Running the smoke test of all the REST endpoints"
+    ((G_RAN=G_RAN+1))
+
+    if bash "${TESTS_PATH}/smoke.sh" > /dev/null 2>&1; then
+        echo "[i] OK"
+        ((G_SUCCESS=G_SUCCESS+1))
+    else
+        if [ -s "${TESTS_PATH}/logs/smoke-report.txt" ]; then
+            send_error "Smoke Test Failure" "$(tail -1 "${TESTS_PATH}/logs/smoke-report.txt")" "${TESTS_PATH}/logs/smoke-report.txt"
+        else
+            send_error "Smoke Test Failure" "No report: ntopng did not start or did not run the check" "${TESTS_PATH}/logs/smoke-ntopng.log"
+        fi
+        RC=1
+    fi
+}
+
+#
 # Prepare the environment and dispatch a batch of tests
 # Params:
 # $1 - List of tests to run
@@ -311,6 +340,11 @@ run_tests() {
         run_tests_sequential "${TESTS}" "${NUM_TESTS}"
     else
         run_tests_parallel "${TESTS}" "${NUM_TESTS}"
+    fi
+
+    # The smoke test lists the endpoints from the sources: not with -p
+    if [ "${RUN_SMOKE}" = true ] && [ -z "${TEST_NAME}" ] && [ "${RUN_FROM_PACKAGES}" = false ]; then
+        run_smoke
     fi
 
     if [ "${G_SUCCESS}" == "${G_RAN}" ]; then

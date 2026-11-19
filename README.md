@@ -56,6 +56,35 @@ cd rest
 
 Then go to **localhost:3333/**
 
+Smoke Test of all the REST endpoints
+====================================
+
+`rest/smoke.sh` calls every REST v2 endpoint (found under `scripts/lua/rest/v2`
+and `pro/scripts/lua/rest/v2`) on a ntopng instance with login enabled and the
+default pcap, with no expected output to maintain:
+
+- as admin (read endpoints only): no error or warning in the ntopng log during
+  the call, no HTTP 5xx, valid JSON with a single answer, no INTERNAL_ERROR
+- as a user without capabilities and as anonymous (all endpoints): the outcome
+  (allowed or denied) is the one recorded in `rest/smoke-baseline.txt`
+
+```
+cd rest
+./smoke.sh                            # all the endpoints (about 3 minutes)
+SMOKE_ONLY=get/host/ ./smoke.sh       # only the paths matching a regex
+./smoke.sh -u                         # rewrite the baseline after a permission change
+```
+
+A full `./run.sh` also runs the smoke test after the other tests, counted as one
+more test (its report is attached to the failure notification); `./run.sh -S`
+skips it. It is not run with `-y` (single test) nor with `-p` (package: the
+endpoints are listed from the sources).
+
+The report (`rest/logs/smoke-report.txt`, also printed) has one entry per
+problem: the URL to retry with curl, who called it and what went wrong, with
+the Lua file and line taken from the ntopng log. It ends with the endpoints
+that answered OK with no data (the code path with data did not run).
+
 Add a Test
 ==========
 
