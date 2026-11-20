@@ -271,21 +271,21 @@
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.5","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.6","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.7","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["tcp:40008 Unknown","tcp:5555 SIP"],"host":"192.168.9.8","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.8","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.9","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.10","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.11","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.12","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.13","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.14","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["tcp:40015 Unknown","tcp:5555 SIP"],"host":"192.168.9.15","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.15","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.16","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.17","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.18","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.19","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.20","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.21","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["tcp:40022 Unknown"],"host":"192.168.9.22","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.9.22","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.23","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.24","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.25","ifid":0,"server":[]}}
@@ -313,21 +313,21 @@
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.47","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.48","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.49","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["tcp:1050 Unknown","tcp:5555 SIP"],"host":"192.168.9.50","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.50","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.51","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.52","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.53","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.54","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.55","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.56","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["tcp:1057 Unknown","tcp:5555 SIP"],"host":"192.168.9.57","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.57","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.58","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.59","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.60","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.61","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.62","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.63","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["tcp:1064 Unknown"],"host":"192.168.9.64","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.9.64","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.65","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.66","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.67","ifid":0,"server":[]}}
@@ -361,12 +361,12 @@
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.95","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.96","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:2222 SSH"],"host":"192.168.9.97","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["tcp:40098 Unknown"],"host":"192.168.9.98","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.9.98","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.99","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.100","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:2222 SSH"],"host":"192.168.9.101","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:2222 SSH"],"host":"192.168.9.102","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["tcp:1103 Unknown"],"host":"192.168.9.103","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.9.103","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.104","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.105","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:2222 SSH"],"host":"192.168.9.106","ifid":0,"server":[]}}
