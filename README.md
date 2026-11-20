@@ -102,7 +102,7 @@ test and deleted at the end, with its own menu). A page fails on:
   page (`admin` and `user` passes; one link per path and parameter names, links
   with side effects such as logout or `action=` are not followed)
 
-On the first page of every pass, axe also checks the sidebar parts shown only
+On the first page of every desktop pass, axe also checks the sidebar parts shown only
 under the mouse (expanded rail and menu panel, user popup). The guided tours of
 the user are dismissed after the login (they cover the page).
 

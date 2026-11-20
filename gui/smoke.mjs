@@ -8,7 +8,7 @@
 //   - broken links to other ntopng pages (HTTP 4xx/5xx, the error page, the login page)
 //
 // The sidebar hover states (expanded rail, menu panel, user popup) are checked
-// with axe on the first page of every pass.
+// with axe on the first page of every desktop pass.
 //
 // The pages are checked in more passes (see PASSES): as admin, in the dark
 // theme, on a phone screen (also horizontal scroll) and as a user without
@@ -357,7 +357,8 @@ async function checkPass(browser, pass, report) {
 
   const pages = getMenuPages(menu);
   let failed = 0;
-  if (pages.length) {
+  // Phones have no hover (and the sidebar is closed)
+  if (pages.length && pass.viewport === DESKTOP) {
     const problems = await checkSidebarHover(context, pages[0]);
     console.log(`${problems.length ? "FAIL" : "OK  "}  [${pass.name}] sidebar hover`);
     if (problems.length) {
