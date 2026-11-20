@@ -98,6 +98,13 @@ test and deleted at the end, with its own menu). A page fails on:
 - errors and warnings in the ntopng log while the page was open
 - accessibility violations (WCAG 2.2 AA, e.g. low contrast) found by axe
 - horizontal scroll (`mobile` pass only)
+- broken links to other ntopng pages: HTTP 4xx/5xx, the error page or the login
+  page (`admin` and `user` passes; one link per path and parameter names, links
+  with side effects such as logout or `action=` are not followed)
+
+On the first page of every pass, axe also checks the sidebar parts shown only
+under the mouse (expanded rail and menu panel, user popup). The guided tours of
+the user are dismissed after the login (they cover the page).
 
 It also fails on the i18n keys used in the code (`i18n("...")` in Vue, JS and
 Lua, `*_i18n` in the table definitions) and missing in `scripts/locales/en.lua`:

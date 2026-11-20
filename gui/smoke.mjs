@@ -5,6 +5,10 @@
 //   - HTTP 4xx/5xx answers and failed requests of ntopng (the page and its REST calls)
 //   - errors and warnings written to the ntopng log while the page was open
 //   - accessibility violations (WCAG 2.2 AA, e.g. low contrast) found by axe
+//   - broken links to other ntopng pages (HTTP 4xx/5xx, the error page, the login page)
+//
+// The sidebar hover states (expanded rail, menu panel, user popup) are checked
+// with axe on the first page of every pass.
 //
 // The pages are checked in more passes (see PASSES): as admin, in the dark
 // theme, on a phone screen (also horizontal scroll) and as a user without
@@ -52,11 +56,12 @@ const DESKTOP = { width: 1400, height: 900 };
 const PHONE = { width: 390, height: 844 };
 
 // One pass = every page of the menu of the user, checked with these settings
+// (the links are the same in every theme and screen size: checked once per user)
 const PASSES = [
-  { name: "admin", user: ADMIN, viewport: DESKTOP },
+  { name: "admin", user: ADMIN, viewport: DESKTOP, checkLinks: true },
   { name: "dark", user: ADMIN, viewport: DESKTOP, dark: true },
   { name: "mobile", user: ADMIN, viewport: PHONE, noHorizontalScroll: true },
-  { name: "user", user: UNPRIVILEGED, viewport: DESKTOP },
+  { name: "user", user: UNPRIVILEGED, viewport: DESKTOP, checkLinks: true },
 ].filter((pass) => !process.env.GUI_SMOKE_PASSES || process.env.GUI_SMOKE_PASSES.split(",").includes(pass.name));
 
 const PAGE_LOAD_TIMEOUT_MS = 30000;
@@ -65,6 +70,11 @@ const NETWORK_IDLE_TIMEOUT_MS = 10000;
 const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 // The lines of the ntopng log that are problems
 const LOG_PROBLEM = /ERROR:|WARNING:/;
+// Links not followed: they change the state of the instance under test
+const LINK_SKIP_PATH = /\/(logout|rest\/)/;
+const LINK_SKIP_PARAMS = ["action", "delete", "remove", "reset", "restart", "shutdown"];
+// Where ntopng sends a missing page or a script error
+const ERROR_PAGE = "/lua/http_status_code.lua";
 
 // i18n check: where the keys are used and how (i18n("a.b"), _i18n('a.b'), "title_i18n": "a.b")
 const I18N_DIRS = ["http_src", "pro/http_src", "scripts/lua", "pro/scripts/lua", "httpdocs/tables_config", "pro/httpdocs/tables_config"];
@@ -125,15 +135,30 @@ async function deleteUnprivilegedUser(request) {
   await adminPost(request, "/lua/rest/v2/delete/ntopng/user.lua", { username: UNPRIVILEGED.username });
 }
 
-// Sets the theme of the logged in user, as the theme switch of the GUI does
-async function setTheme(context, dark) {
+// POST of a form as the logged in user, with the CSRF token of the session (as the GUI does)
+async function postAsUser(context, url, form) {
   const page = await context.newPage();
   await page.goto(`${BASE_URL}/lua/about.lua`);
-  await page.evaluate(async ({ baseUrl, dark }) => {
-    const body = new URLSearchParams({ action: "toggle_theme", toggle_dark_theme: String(dark), csrf: window.__CSRF_DATATABLE__ });
-    await fetch(`${baseUrl}/lua/update_prefs.lua`, { method: "POST", body });
-  }, { baseUrl: BASE_URL, dark });
+  await page.evaluate(async ({ url, form }) => {
+    await fetch(url, { method: "POST", body: new URLSearchParams({ ...form, csrf: window.__CSRF_DATATABLE__ }) });
+  }, { url: `${BASE_URL}${url}`, form });
   await page.close();
+}
+
+// Sets the theme of the logged in user, as the theme switch of the GUI does
+async function setTheme(context, dark) {
+  await postAsUser(context, "/lua/update_prefs.lua", { action: "toggle_theme", toggle_dark_theme: String(dark) });
+}
+
+// "Never show again" on the guided tours the user would see: a tour covers the
+// page (e.g. the first login one of a new user)
+async function dismissDemoTours(context) {
+  const status = await (await context.request.get(`${BASE_URL}/lua/rest/v2/get/demo/status.lua`)).json();
+  for (const demo of status.rsp?.demos ?? []) {
+    if (demo.should_show) {
+      await postAsUser(context, "/lua/rest/v2/add/demo/progress.lua", { id: demo.id, action: "dismiss" });
+    }
+  }
 }
 
 // ############################################## Pages to test
@@ -175,10 +200,47 @@ function logProblemsSince(offset) {
   return newLines.filter((line) => LOG_PROBLEM.test(line));
 }
 
+// ############################################## Links
+
+// A link is checked once per shape (path + names of the parameters): the links
+// to the 1000 hosts of a table are the same link
+function linkShape(url) {
+  return `${url.pathname}?${[...url.searchParams.keys()].sort().join("&")}`;
+}
+
+// Problems of the links to other ntopng pages found in the page; checkedShapes
+// keeps the shapes already checked in this pass
+async function checkLinks(page, request, checkedShapes) {
+  const problems = [];
+  const hrefs = await page.evaluate(() => [...document.querySelectorAll("a[href]")].map((a) => a.href));
+  for (const href of new Set(hrefs)) {
+    const url = new URL(href);
+    const shape = linkShape(url);
+    const sideEffects = LINK_SKIP_PATH.test(url.pathname) || LINK_SKIP_PARAMS.some((name) => url.searchParams.has(name));
+    if (url.origin !== new URL(BASE_URL).origin || !url.pathname.startsWith("/lua/") || sideEffects || checkedShapes.has(shape)) {
+      continue;
+    }
+    checkedShapes.add(shape);
+
+    const answer = await request.get(href, { timeout: PAGE_LOAD_TIMEOUT_MS }).catch((error) => error);
+    const target = href.slice(BASE_URL.length);
+    if (answer instanceof Error) {
+      problems.push(`broken link (${answer.message.split("\n")[0]}): ${target}`);
+    } else if (answer.status() >= 400) {
+      problems.push(`broken link (HTTP ${answer.status()}): ${target}`);
+    } else if (new URL(answer.url()).pathname === ERROR_PAGE) {
+      problems.push(`broken link (${new URL(answer.url()).searchParams.get("message")}): ${target}`);
+    } else if (isLoginPage(answer.url())) {
+      problems.push(`link to a page the user cannot open (login page): ${target}`);
+    }
+  }
+  return problems;
+}
+
 // ############################################## Check of one page
 
 // Opens the page and returns the list of its problems, one string each
-async function checkPage(context, pass, url) {
+async function checkPage(context, pass, url, checkedShapes) {
   const problems = [];
   const page = await context.newPage();
   const isNtopng = (requestUrl) => requestUrl.startsWith(BASE_URL);
@@ -223,6 +285,10 @@ async function checkPage(context, pass, url) {
         problems.push(`horizontal scroll: the page is ${pageWidth}px wide on a ${pass.viewport.width}px screen`);
       }
     }
+
+    if (pass.checkLinks) {
+      problems.push(...(await checkLinks(page, context.request, checkedShapes)));
+    }
   } catch (error) {
     problems.push(`page not loaded: ${error.message.split("\n")[0]}`);
   }
@@ -240,6 +306,41 @@ async function checkPage(context, pass, url) {
   return problems;
 }
 
+// ############################################## Sidebar hover states
+
+// The sidebar parts shown only under the mouse, checked with axe: the
+// expanded rail with the menu panel of a section, then the user popup
+async function checkSidebarHover(context, url) {
+  const problems = [];
+  const page = await context.newPage();
+  await page.goto(`${BASE_URL}${url}`, { timeout: PAGE_LOAD_TIMEOUT_MS });
+  await page.waitForLoadState("networkidle", { timeout: NETWORK_IDLE_TIMEOUT_MS }).catch(() => {});
+
+  const states = [
+    { name: "menu panel", hover: ".sb-rail__btn[data-section]", shown: ".sb-panel" },
+    { name: "user popup", hover: ".sb-rail__btn--avatar", shown: ".sb-user-popup" },
+  ];
+  for (const state of states) {
+    const hovered = await page.hover(state.hover, { timeout: 5000 }).then(() => true, (error) => {
+      problems.push(`${state.name}: cannot hover ${state.hover}: ${error.message.split("\n")[0]}`);
+      return false;
+    });
+    if (!hovered) {
+      continue;
+    }
+    await page.waitForSelector(state.shown, { state: "visible", timeout: 5000 }).catch(() => {});
+    // The colors change with a transition
+    await page.waitForTimeout(500);
+    const axe = await new AxeBuilder({ page }).include(".sb-rail").include(state.shown).withTags(AXE_TAGS).analyze();
+    for (const violation of axe.violations) {
+      const where = violation.nodes.slice(0, 3).map((node) => node.target.join(" ")).join(", ");
+      problems.push(`${state.name}: accessibility (${violation.id}, ${violation.nodes.length} elements): ${violation.help}. E.g. ${where}`);
+    }
+  }
+  await page.close();
+  return problems;
+}
+
 // ############################################## Check of one pass
 
 // Checks every page of the menu of the pass user; adds the failed pages to the
@@ -247,6 +348,7 @@ async function checkPage(context, pass, url) {
 async function checkPass(browser, pass, report) {
   const context = await browser.newContext({ viewport: pass.viewport });
   await login(context, pass.user);
+  await dismissDemoTours(context);
 
   const menu = await getMenu(context.request);
   if (pass.dark) {
@@ -255,8 +357,18 @@ async function checkPass(browser, pass, report) {
 
   const pages = getMenuPages(menu);
   let failed = 0;
+  if (pages.length) {
+    const problems = await checkSidebarHover(context, pages[0]);
+    console.log(`${problems.length ? "FAIL" : "OK  "}  [${pass.name}] sidebar hover`);
+    if (problems.length) {
+      failed++;
+      report.push(`FAIL  [${pass.name}] sidebar hover (on ${pages[0]})`, ...problems.map((problem) => `      ${problem}`));
+    }
+  }
+
+  const checkedShapes = new Set();
   for (const url of pages) {
-    const problems = await checkPage(context, pass, url);
+    const problems = await checkPage(context, pass, url, checkedShapes);
     console.log(`${problems.length ? "FAIL" : "OK  "}  [${pass.name}] ${url}`);
     if (problems.length) {
       failed++;
