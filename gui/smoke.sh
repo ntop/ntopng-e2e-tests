@@ -4,11 +4,12 @@
 #
 # ntopng is started as in ../rest/smoke.sh (login enabled, default pcap, own
 # slot); once the pcap has been processed it runs smoke.mjs, that opens every
-# page of the menu in headless Chromium: see there for the checks.
+# page of the menu in headless Chromium and checks the i18n keys: see there
+# for the checks.
 #
 # Requirements: Node.js; 'npm install' in this folder (it also downloads Chromium).
 #
-# Usage: [GUI_SMOKE_ONLY=<regex>] ./smoke.sh
+# Usage: [GUI_SMOKE_ONLY=<regex>] [GUI_SMOKE_PASSES=admin,dark,mobile,user] ./smoke.sh
 # Report: logs/gui-smoke-report.txt (also printed). Exit code: 0 ok, 1 failures.
 #
 
@@ -43,6 +44,8 @@ NTOPNG_PASSWORD='${NTOPNG_TEST_ADMIN_PASSWORD}' \
 NTOPNG_LOG='${NTOPNG_LOG}' \
 GUI_SMOKE_REPORT='${REPORT}' \
 GUI_SMOKE_ONLY='${GUI_SMOKE_ONLY}' \
+GUI_SMOKE_PASSES='${GUI_SMOKE_PASSES}' \
+NTOPNG_ROOT='$(cd "${NTOPNG_ROOT}" && pwd)' \
 node '${GUI_PATH}/smoke.mjs'
 EOF
 

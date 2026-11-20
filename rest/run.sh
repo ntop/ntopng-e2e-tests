@@ -15,14 +15,16 @@
 # ./run.sh -j=8
 #
 # A full run also executes the smoke tests smoke.sh (every REST endpoint) and
-# ../gui/smoke.sh (every GUI page), see the README, counted as one more test
-# each; -S skips them.
+# ../gui/smoke.sh (every GUI page) and the checks ../checks/lua.sh (luacheck of
+# the Lua sources) and ../checks/js.sh (unit tests of the GUI JS utilities), see
+# the README, counted as one more test each; -S skips them.
 #
 # Clone the packager repository in the same folder to enable notifications
 #
 
 TESTS_PATH="${PWD}"
 GUI_PATH="$(cd "${TESTS_PATH}/../gui" && pwd)"
+CHECKS_PATH="$(cd "${TESTS_PATH}/../checks" && pwd)"
 NTOPNG_ROOT="../../.."
 NTOPNG_BIN="./ntopng"
 
@@ -60,7 +62,7 @@ function usage {
     echo "[-p|--use-package]                | Run ntopng from binary package"
     echo "[-D|--debug]=<level>              | Set the debug level (0 - default, 1 - verbose, 2 - gdb)"
     echo "[-K|--keep-running]               | Keep ntopng running after completing the test (with -y)"
-    echo "[-S|--skip-smoke]                 | Do not run the smoke tests (REST endpoints and GUI pages)"
+    echo "[-S|--skip-smoke]                 | Do not run the smoke tests and the checks (REST endpoints, GUI pages, Lua, JS)"
     echo "[-h|--help]                       | Print this help"
     exit 0
 }
@@ -353,6 +355,8 @@ run_tests() {
     if [ "${RUN_SMOKE}" = true ] && [ -z "${TEST_NAME}" ] && [ "${RUN_FROM_PACKAGES}" = false ]; then
         run_smoke "all the REST endpoints" "${TESTS_PATH}/smoke.sh" "${TESTS_PATH}/logs/smoke-report.txt" "${TESTS_PATH}/logs/smoke-ntopng.log"
         run_smoke "all the GUI pages" "${GUI_PATH}/smoke.sh" "${GUI_PATH}/logs/gui-smoke-report.txt" "${GUI_PATH}/logs/gui-smoke-ntopng.log"
+        run_smoke "the Lua sources" "${CHECKS_PATH}/lua.sh" "${CHECKS_PATH}/logs/lua-report.txt" "${CHECKS_PATH}/logs/lua-report.txt"
+        run_smoke "the JS utilities" "${CHECKS_PATH}/js.sh" "${CHECKS_PATH}/logs/js-report.txt" "${CHECKS_PATH}/logs/js-report.txt"
     fi
 
     if [ "${G_SUCCESS}" == "${G_RAN}" ]; then

@@ -134,6 +134,8 @@ anon denied /lua/pro/rest/v2/delete/system/access_control_list.lua
 user denied /lua/pro/rest/v2/delete/system/access_control_list.lua
 anon denied /lua/pro/rest/v2/delete/system/access_control_list_all.lua
 user denied /lua/pro/rest/v2/delete/system/access_control_list_all.lua
+anon denied /lua/pro/rest/v2/delete/traffic_model/day.lua
+user denied /lua/pro/rest/v2/delete/traffic_model/day.lua
 anon denied /lua/pro/rest/v2/delete/traffic_model/servers.lua
 user denied /lua/pro/rest/v2/delete/traffic_model/servers.lua
 anon denied /lua/pro/rest/v2/delete/vs/report.lua
@@ -688,6 +690,8 @@ anon denied /lua/pro/rest/v2/get/traffic_model/clients.lua
 user denied /lua/pro/rest/v2/get/traffic_model/clients.lua
 anon denied /lua/pro/rest/v2/get/traffic_model/compare.lua
 user denied /lua/pro/rest/v2/get/traffic_model/compare.lua
+anon denied /lua/pro/rest/v2/get/traffic_model/daily_report.lua
+user denied /lua/pro/rest/v2/get/traffic_model/daily_report.lua
 anon denied /lua/pro/rest/v2/get/traffic_model/expected.lua
 user denied /lua/pro/rest/v2/get/traffic_model/expected.lua
 anon denied /lua/pro/rest/v2/get/traffic_model/expected_filters.lua

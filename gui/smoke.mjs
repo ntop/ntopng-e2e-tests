@@ -1,25 +1,34 @@
 //
-// Smoke test of the ntopng web GUI: opens every page of the menu as admin in
-// headless Chromium and reports, for each page:
+// Smoke test of the ntopng web GUI: opens every page of the menu in headless
+// Chromium and reports, for each page:
 //   - JavaScript exceptions and console errors (Vue errors are logged as [VUE_ERROR])
 //   - HTTP 4xx/5xx answers and failed requests of ntopng (the page and its REST calls)
 //   - errors and warnings written to the ntopng log while the page was open
 //   - accessibility violations (WCAG 2.2 AA, e.g. low contrast) found by axe
 //
-// The pages are the entries of the menu (GET /lua/rest/v2/get/ntopng/menu.lua),
-// so a new page is tested as soon as it is in the menu. A failed page is saved as
-// a full page screenshot next to the report.
+// The pages are checked in more passes (see PASSES): as admin, in the dark
+// theme, on a phone screen (also horizontal scroll) and as a user without
+// capabilities. The pages are the entries of the menu of the user
+// (GET /lua/rest/v2/get/ntopng/menu.lua), so a new page is tested as soon as
+// it is in the menu. A failed page is saved as a full page screenshot next to
+// the report.
+//
+// It also reports the i18n keys used in the code (Vue, JS, Lua, table
+// definitions) that are missing in scripts/locales/en.lua: the GUI would show
+// an empty or raw text.
 //
 // Started by smoke.sh on a test instance, or by hand on any running ntopng:
 //   NTOPNG_URL=http://localhost:3000 NTOPNG_PASSWORD=<admin password> node smoke.mjs
 //
 // Environment:
-//   NTOPNG_URL       ntopng address (default http://localhost:3000)
-//   NTOPNG_USER      user, an administrator (default admin)
-//   NTOPNG_PASSWORD  password of the user (required)
-//   NTOPNG_LOG       ntopng log file to check (optional: without it the log is not checked)
-//   GUI_SMOKE_ONLY   only the pages whose URL matches this regex (e.g. alert)
-//   GUI_SMOKE_REPORT report file (default logs/gui-smoke-report.txt)
+//   NTOPNG_URL        ntopng address (default http://localhost:3000)
+//   NTOPNG_USER       user, an administrator (default admin)
+//   NTOPNG_PASSWORD   password of the user (required)
+//   NTOPNG_LOG        ntopng log file to check (optional: without it the log is not checked)
+//   NTOPNG_ROOT       ntopng sources, for the i18n check (default: the ntopng this folder is in)
+//   GUI_SMOKE_ONLY    only the pages whose URL matches this regex (e.g. alert)
+//   GUI_SMOKE_PASSES  only these passes, comma separated (e.g. admin,dark; default all)
+//   GUI_SMOKE_REPORT  report file (default logs/gui-smoke-report.txt)
 //
 // Exit code: 0 no problem, 1 at least one FAIL.
 //
@@ -30,11 +39,25 @@ import { chromium } from "playwright";
 import { AxeBuilder } from "@axe-core/playwright";
 
 const BASE_URL = process.env.NTOPNG_URL ?? "http://localhost:3000";
-const USER = process.env.NTOPNG_USER ?? "admin";
-const PASSWORD = process.env.NTOPNG_PASSWORD;
+const ADMIN = { username: process.env.NTOPNG_USER ?? "admin", password: process.env.NTOPNG_PASSWORD };
 const NTOPNG_LOG = process.env.NTOPNG_LOG;
+const NTOPNG_ROOT = process.env.NTOPNG_ROOT ?? path.resolve(import.meta.dirname, "../../..");
 const ONLY = process.env.GUI_SMOKE_ONLY ? new RegExp(process.env.GUI_SMOKE_ONLY) : null;
 const REPORT = process.env.GUI_SMOKE_REPORT ?? "logs/gui-smoke-report.txt";
+
+// User without capabilities, created for the "user" pass and deleted at the end
+const UNPRIVILEGED = { username: "gui_smoke", password: "Gui_smoke_pw_1" };
+
+const DESKTOP = { width: 1400, height: 900 };
+const PHONE = { width: 390, height: 844 };
+
+// One pass = every page of the menu of the user, checked with these settings
+const PASSES = [
+  { name: "admin", user: ADMIN, viewport: DESKTOP },
+  { name: "dark", user: ADMIN, viewport: DESKTOP, dark: true },
+  { name: "mobile", user: ADMIN, viewport: PHONE, noHorizontalScroll: true },
+  { name: "user", user: UNPRIVILEGED, viewport: DESKTOP },
+].filter((pass) => !process.env.GUI_SMOKE_PASSES || process.env.GUI_SMOKE_PASSES.split(",").includes(pass.name));
 
 const PAGE_LOAD_TIMEOUT_MS = 30000;
 // Most pages refresh their data periodically and never reach network idle: wait at most this
@@ -43,25 +66,32 @@ const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 // The lines of the ntopng log that are problems
 const LOG_PROBLEM = /ERROR:|WARNING:/;
 
-if (!PASSWORD) {
+// i18n check: where the keys are used and how (i18n("a.b"), _i18n('a.b'), "title_i18n": "a.b")
+const I18N_DIRS = ["http_src", "pro/http_src", "scripts/lua", "pro/scripts/lua", "httpdocs/tables_config", "pro/httpdocs/tables_config"];
+const I18N_SKIP_DIRS = ["node_modules", "attic", "dist"];
+const I18N_FILES = /\.(vue|js|lua|json)$/;
+const I18N_USES = [/\b_?i18n\(\s*["'`]([\w-]+(?:\.[\w-]+)*)["'`]\s*[,)]/g, /"\w*_i18n"\s*:\s*"([\w-]+(?:\.[\w-]+)*)"/g];
+const COMMENT_LINE = /^\s*(--|\/\/|\/?\*)/;
+
+if (!ADMIN.password) {
   console.error("NTOPNG_PASSWORD is not set");
   process.exit(2);
 }
 
-// ############################################## Login
+// ############################################## Login and users
 
 // Logs in with the login form, as a user does: the session cookie is then
 // shared by all the pages of the context and by context.request
-async function login(context) {
+async function login(context, user) {
   const page = await context.newPage();
   await page.goto(`${BASE_URL}/lua/login.lua`);
-  await page.fill("#input-username", USER);
-  await page.fill("#input-password", PASSWORD);
+  await page.fill("#input-username", user.username);
+  await page.fill("#input-password", user.password);
   await Promise.all([page.waitForNavigation(), page.click("button[type=submit]")]);
   const loggedIn = !isLoginPage(page.url());
   await page.close();
   if (!loggedIn) {
-    throw new Error(`login of '${USER}' failed: check NTOPNG_USER and NTOPNG_PASSWORD`);
+    throw new Error(`login of '${user.username}' failed`);
   }
 }
 
@@ -69,21 +99,62 @@ function isLoginPage(url) {
   return new URL(url).pathname.endsWith("/login.lua");
 }
 
+// REST calls as admin, authenticated per request (no CSRF token needed)
+async function adminPost(request, url, form) {
+  const auth = Buffer.from(`${ADMIN.username}:${ADMIN.password}`).toString("base64");
+  const answer = await request.post(`${BASE_URL}${url}`, { form, headers: { Authorization: `Basic ${auth}` } });
+  if (!answer.ok()) {
+    throw new Error(`${url} answered HTTP ${answer.status()}`);
+  }
+}
+
+async function addUnprivilegedUser(request) {
+  await adminPost(request, "/lua/rest/v2/add/ntopng/user.lua", {
+    username: UNPRIVILEGED.username,
+    full_name: UNPRIVILEGED.username,
+    password: UNPRIVILEGED.password,
+    confirm_password: UNPRIVILEGED.password,
+    user_role: "unprivileged",
+    allowed_networks: "0.0.0.0/0,::/0",
+    allowed_interface: "",
+    add_user_language: "en",
+  });
+}
+
+async function deleteUnprivilegedUser(request) {
+  await adminPost(request, "/lua/rest/v2/delete/ntopng/user.lua", { username: UNPRIVILEGED.username });
+}
+
+// Sets the theme of the logged in user, as the theme switch of the GUI does
+async function setTheme(context, dark) {
+  const page = await context.newPage();
+  await page.goto(`${BASE_URL}/lua/about.lua`);
+  await page.evaluate(async ({ baseUrl, dark }) => {
+    const body = new URLSearchParams({ action: "toggle_theme", toggle_dark_theme: String(dark), csrf: window.__CSRF_DATATABLE__ });
+    await fetch(`${baseUrl}/lua/update_prefs.lua`, { method: "POST", body });
+  }, { baseUrl: BASE_URL, dark });
+  await page.close();
+}
+
 // ############################################## Pages to test
 
-// The URLs of the menu entries that open an ntopng page (no dividers, external
-// links or entries disabled by the current configuration)
-async function getMenuPages(request) {
+// The menu of the logged in user
+async function getMenu(request) {
   const answer = await request.get(`${BASE_URL}/lua/rest/v2/get/ntopng/menu.lua`);
   if (!answer.ok()) {
     throw new Error(`menu.lua answered HTTP ${answer.status()}`);
   }
-  const menu = (await answer.json()).rsp;
+  return (await answer.json()).rsp;
+}
 
+// The URLs of the menu entries that open an ntopng page (no dividers, external
+// links or entries disabled by the current configuration)
+function getMenuPages(menu) {
   const urls = menu.sections
     .flatMap((section) => section.entries ?? [])
     .filter((entry) => entry.url?.startsWith("/lua/") && !entry.is_external && !entry.is_divider && !entry.disabled)
-    .map((entry) => entry.url);
+    .map((entry) => entry.url)
+    .filter((url) => !ONLY || ONLY.test(url));
 
   // The same page can be in more than one section
   return [...new Set(urls)];
@@ -107,7 +178,7 @@ function logProblemsSince(offset) {
 // ############################################## Check of one page
 
 // Opens the page and returns the list of its problems, one string each
-async function checkPage(context, url) {
+async function checkPage(context, pass, url) {
   const problems = [];
   const page = await context.newPage();
   const isNtopng = (requestUrl) => requestUrl.startsWith(BASE_URL);
@@ -145,11 +216,18 @@ async function checkPage(context, url) {
       const where = violation.nodes.slice(0, 3).map((node) => node.target.join(" ")).join(", ");
       problems.push(`accessibility (${violation.id}, ${violation.nodes.length} elements): ${violation.help}. E.g. ${where}`);
     }
+
+    if (pass.noHorizontalScroll) {
+      const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+      if (pageWidth > pass.viewport.width) {
+        problems.push(`horizontal scroll: the page is ${pageWidth}px wide on a ${pass.viewport.width}px screen`);
+      }
+    }
   } catch (error) {
     problems.push(`page not loaded: ${error.message.split("\n")[0]}`);
   }
   if (problems.length) {
-    const screenshot = path.join(path.dirname(REPORT), `${url.replace(/[^\w]+/g, "_")}.png`);
+    const screenshot = path.join(path.dirname(REPORT), `${pass.name}${url.replace(/[^\w]+/g, "_")}.png`);
     await page.screenshot({ path: screenshot, fullPage: true }).catch(() => {});
     problems.push(`screenshot: ${screenshot}`);
   }
@@ -162,30 +240,121 @@ async function checkPage(context, url) {
   return problems;
 }
 
+// ############################################## Check of one pass
+
+// Checks every page of the menu of the pass user; adds the failed pages to the
+// report and returns how many pages were checked and how many failed
+async function checkPass(browser, pass, report) {
+  const context = await browser.newContext({ viewport: pass.viewport });
+  await login(context, pass.user);
+
+  const menu = await getMenu(context.request);
+  if (pass.dark) {
+    await setTheme(context, true);
+  }
+
+  const pages = getMenuPages(menu);
+  let failed = 0;
+  for (const url of pages) {
+    const problems = await checkPage(context, pass, url);
+    console.log(`${problems.length ? "FAIL" : "OK  "}  [${pass.name}] ${url}`);
+    if (problems.length) {
+      failed++;
+      report.push(`FAIL  [${pass.name}] ${url}`, ...problems.map((problem) => `      ${problem}`));
+    }
+  }
+
+  if (pass.dark) {
+    // Back to the theme the user had: the instance may be a real one
+    await setTheme(context, menu.theme === "dark");
+  }
+  await context.close();
+  return { checked: pages.length, failed };
+}
+
+// ############################################## i18n keys
+
+// The English strings, as served to the GUI: /lua/locale.lua is a script that sets
+// "const ntop_locale = {...};" (the content of scripts/locales/en.lua as JSON)
+async function getLocale(request) {
+  const script = await (await request.get(`${BASE_URL}/lua/locale.lua`)).text();
+  const start = script.indexOf("{");
+  const end = script.indexOf(";\n\nfunction i18n");
+  return JSON.parse(script.slice(start, end));
+}
+
+// "file:line key" of every key used in the sources and missing in the locale
+function missingI18nKeys(locale) {
+  // As i18n() does: the whole key (keys written with the dots in en.lua), then field by field
+  const exists = (key) => locale[key] != null || key.split(".").reduce((value, field) => value?.[field], locale) != null;
+  const missing = [];
+
+  const scan = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const file = path.join(dir, entry.name);
+      if (entry.isDirectory() && !I18N_SKIP_DIRS.includes(entry.name)) {
+        scan(file);
+      } else if (entry.isFile() && I18N_FILES.test(entry.name)) {
+        fs.readFileSync(file, "utf8").split("\n").forEach((line, index) => {
+          if (COMMENT_LINE.test(line)) {
+            return;
+          }
+          for (const use of I18N_USES) {
+            for (const [, key] of line.matchAll(use)) {
+              if (!exists(key)) {
+                missing.push(`${path.relative(NTOPNG_ROOT, file)}:${index + 1} ${key}`);
+              }
+            }
+          }
+        });
+      }
+    }
+  };
+
+  for (const dir of I18N_DIRS) {
+    if (fs.existsSync(path.join(NTOPNG_ROOT, dir))) {
+      scan(path.join(NTOPNG_ROOT, dir));
+    }
+  }
+  return missing;
+}
+
 // ############################################## Main
 
 // The Chromium downloaded by npm install (postinstall)
 const browser = await chromium.launch();
-const context = await browser.newContext({ viewport: { width: 1400, height: 900 } });
-await login(context);
-
-const pages = (await getMenuPages(context.request)).filter((url) => !ONLY || ONLY.test(url));
+const adminRequest = (await browser.newContext()).request;
 const report = [];
-let failedPages = 0;
+let pagesChecked = 0;
+let pagesFailed = 0;
 
-for (const url of pages) {
-  const problems = await checkPage(context, url);
-  console.log(`${problems.length ? "FAIL" : "OK  "}  ${url}`);
-  if (problems.length) {
-    failedPages++;
-    report.push(`FAIL  ${url}`, ...problems.map((problem) => `      ${problem}`));
+const usesUnprivileged = PASSES.some((pass) => pass.user === UNPRIVILEGED);
+if (usesUnprivileged) {
+  await addUnprivilegedUser(adminRequest);
+}
+try {
+  for (const pass of PASSES) {
+    const { checked, failed } = await checkPass(browser, pass, report);
+    pagesChecked += checked;
+    pagesFailed += failed;
   }
+} finally {
+  if (usesUnprivileged) {
+    await deleteUnprivilegedUser(adminRequest);
+  }
+}
+
+const adminContext = await browser.newContext();
+await login(adminContext, ADMIN);
+const missingKeys = missingI18nKeys(await getLocale(adminContext.request));
+if (missingKeys.length) {
+  report.push(`FAIL  i18n: keys used in the code and missing in scripts/locales/en.lua`, ...missingKeys.map((key) => `      ${key}`));
 }
 await browser.close();
 
-report.push(`PAGES ${pages.length}   FAIL ${failedPages}`);
+report.push(`PAGES ${pagesChecked}   FAIL ${pagesFailed}   I18N MISSING ${missingKeys.length}`);
 fs.mkdirSync(path.dirname(REPORT), { recursive: true });
 fs.writeFileSync(REPORT, report.join("\n") + "\n");
 console.log(`\n${report.join("\n")}`);
 
-process.exit(failedPages ? 1 : 0);
+process.exit(pagesFailed || missingKeys.length ? 1 : 0);

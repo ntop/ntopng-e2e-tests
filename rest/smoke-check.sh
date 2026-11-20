@@ -9,9 +9,8 @@ USER_PW="Smoke_user_pw_1"
 BASELINE="${TESTS_PATH}/smoke-baseline.txt"
 TMP="$(mktemp -d)"
 FAILS="${TMP}/fails"
-EMPTY="${TMP}/empty"
 OUTCOMES="${TMP}/outcomes"
-touch "${FAILS}" "${EMPTY}" "${OUTCOMES}"
+touch "${FAILS}" "${OUTCOMES}"
 
 # shortcut: only ifid=0 is passed, so endpoints that need a host, a device,
 # an id... stop at INVALID_ARGUMENTS; add per-endpoint params when needed
@@ -98,8 +97,6 @@ for f in $(find scripts/lua/rest/v2 pro/scripts/lua/rest/v2 -name '*.lua' 2> /de
                 fail "$(query "${path}")" "admin: invalid JSON: $(head -c 120 "${BODY_FILE}" | tr -s "\r\n" " ")"
             elif [ "${rc}" = "INTERNAL_ERROR" ]; then
                 fail "$(query "${path}")" "admin: rc_str=INTERNAL_ERROR"
-            elif [ "${rc}" = "OK" ] && jq -e '.rsp | . == null or . == [] or . == {}' "${BODY_FILE}" > /dev/null 2>&1; then
-                echo "${path}" >> "${EMPTY}"
             fi
             ;;
     esac
@@ -135,12 +132,8 @@ fi
 
 {
     cat "${FAILS}"
-    if [ -s "${EMPTY}" ]; then
-        echo "NOT COVERED (admin got rc OK with empty rsp, the code path with data did not run):"
-        sed 's/^/      /' "${EMPTY}"
-    fi
     [ -n "${BASELINE_SAVED}" ] && echo "[i] Baseline saved to smoke-baseline.txt: review it and commit it"
-    echo "ENDPOINTS ${TOTAL}   FAIL $(grep -c '^FAIL' "${FAILS}")   NOT COVERED $(wc -l < "${EMPTY}")"
+    echo "ENDPOINTS ${TOTAL}   FAIL $(grep -c '^FAIL' "${FAILS}")"
 } > "${SMOKE_REPORT}"
 
 rm -rf "${TMP}"

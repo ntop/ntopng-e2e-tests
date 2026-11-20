@@ -82,20 +82,26 @@ endpoints are listed from the sources).
 
 The report (`rest/logs/smoke-report.txt`, also printed) has one entry per
 problem: the URL to retry with curl, who called it and what went wrong, with
-the Lua file and line taken from the ntopng log. It ends with the endpoints
-that answered OK with no data (the code path with data did not run).
+the Lua file and line taken from the ntopng log.
 
 Smoke Test of all the GUI pages
 ===============================
 
 `gui/smoke.sh` starts ntopng as `rest/smoke.sh` does and opens every page of
-the menu (as listed by `/lua/rest/v2/get/ntopng/menu.lua`) as admin in headless
-Chromium. A page fails on:
+the menu (as listed by `/lua/rest/v2/get/ntopng/menu.lua`) in headless
+Chromium, in four passes: `admin`, `dark` (admin, dark theme), `mobile` (admin,
+390px wide screen) and `user` (a user without capabilities, created for the
+test and deleted at the end, with its own menu). A page fails on:
 
 - JavaScript exceptions and `console.error` (Vue errors are tagged `[VUE_ERROR]`)
 - HTTP 4xx/5xx answers and failed requests of ntopng (the page and its REST calls)
 - errors and warnings in the ntopng log while the page was open
 - accessibility violations (WCAG 2.2 AA, e.g. low contrast) found by axe
+- horizontal scroll (`mobile` pass only)
+
+It also fails on the i18n keys used in the code (`i18n("...")` in Vue, JS and
+Lua, `*_i18n` in the table definitions) and missing in `scripts/locales/en.lua`:
+the GUI would show an empty or raw text.
 
 Requirements: Node.js. `npm install` also downloads the Chromium used by the
 test (Playwright); on a machine without a desktop, Chromium may need some system
@@ -104,8 +110,9 @@ libraries: `sudo npx playwright install-deps chromium` installs them.
 ```
 cd gui
 npm install                           # once (also downloads Chromium)
-./smoke.sh                            # all the pages (about 3 minutes)
+./smoke.sh                            # all the pages, all the passes (about 10 minutes)
 GUI_SMOKE_ONLY=alert ./smoke.sh       # only the pages whose URL matches a regex
+GUI_SMOKE_PASSES=admin,dark ./smoke.sh  # only some passes
 ```
 
 The check can also be run on an ntopng already running, e.g. the development
@@ -119,7 +126,32 @@ NTOPNG_URL=http://localhost:3000 NTOPNG_PASSWORD=<admin password> node smoke.mjs
 A full `./run.sh` also runs it after the REST smoke test, counted as one more
 test; `./run.sh -S` skips both. The report (`gui/logs/gui-smoke-report.txt`,
 also printed) lists every failed page with its problems and the path of a full
-page screenshot taken when the problems were found (`gui/logs/*.png`).
+page screenshot taken when the problems were found (`gui/logs/<pass>_*.png`).
+
+Checks of the sources
+=====================
+
+Two checks that do not start ntopng, run by a full `./run.sh` after the smoke
+tests (one more test each, `./run.sh -S` skips them):
+
+- `checks/lua.sh`: luacheck of the Lua sources, only the warnings that are
+  bugs: syntax errors, assignments to read-only globals, undefined fields of the
+  standard libraries (e.g. `string.lenght`), keys repeated in a table
+  constructor (a value is lost), unreachable code. Requirements: luacheck
+  (`apt install lua-check`). Report: `checks/logs/lua-report.txt`.
+- `checks/js.sh`: unit tests of the GUI JavaScript utilities with Vitest
+  (`pro/tests/js/*.test.js`, e.g. the dates in the server time zone).
+  Requirements: `npm install` in `pro`. Report: `checks/logs/js-report.txt`.
+
+```
+cd checks
+./lua.sh
+./js.sh                               # or: cd pro && npm run test:js
+```
+
+A new JS test is a `pro/tests/js/<name>.test.js` file (see
+`server-dates.test.js`); code that uses the browser globals needs the
+`// @vitest-environment happy-dom` line on top.
 
 Add a Test
 ==========
