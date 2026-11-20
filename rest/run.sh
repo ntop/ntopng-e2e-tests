@@ -14,13 +14,15 @@
 #
 # ./run.sh -j=8
 #
-# A full run also executes smoke.sh (every REST endpoint, see the README),
-# counted as one more test; -S skips it.
+# A full run also executes the smoke tests smoke.sh (every REST endpoint) and
+# ../gui/smoke.sh (every GUI page), see the README, counted as one more test
+# each; -S skips them.
 #
 # Clone the packager repository in the same folder to enable notifications
 #
 
 TESTS_PATH="${PWD}"
+GUI_PATH="$(cd "${TESTS_PATH}/../gui" && pwd)"
 NTOPNG_ROOT="../../.."
 NTOPNG_BIN="./ntopng"
 
@@ -58,7 +60,7 @@ function usage {
     echo "[-p|--use-package]                | Run ntopng from binary package"
     echo "[-D|--debug]=<level>              | Set the debug level (0 - default, 1 - verbose, 2 - gdb)"
     echo "[-K|--keep-running]               | Keep ntopng running after completing the test (with -y)"
-    echo "[-S|--skip-smoke]                 | Do not run the smoke test of all the REST endpoints (smoke.sh)"
+    echo "[-S|--skip-smoke]                 | Do not run the smoke tests (REST endpoints and GUI pages)"
     echo "[-h|--help]                       | Print this help"
     exit 0
 }
@@ -273,20 +275,25 @@ run_tests_parallel() {
 }
 
 #
-# Run smoke.sh, counted as one test; on failure its report is sent
+# Run a smoke test, counted as one test; on failure its report is sent
+# Params:
+# $1 - What is tested (for the messages)
+# $2 - Smoke test script
+# $3 - Report written by the script
+# $4 - ntopng log, sent when there is no report
 #
 run_smoke() {
-    echo "[>] Running the smoke test of all the REST endpoints"
+    echo "[>] Running the smoke test of ${1}"
     ((G_RAN=G_RAN+1))
 
-    if bash "${TESTS_PATH}/smoke.sh" > /dev/null 2>&1; then
+    if bash "${2}" > /dev/null 2>&1; then
         echo "[i] OK"
         ((G_SUCCESS=G_SUCCESS+1))
     else
-        if [ -s "${TESTS_PATH}/logs/smoke-report.txt" ]; then
-            send_error "Smoke Test Failure" "$(tail -1 "${TESTS_PATH}/logs/smoke-report.txt")" "${TESTS_PATH}/logs/smoke-report.txt"
+        if [ -s "${3}" ]; then
+            send_error "Smoke Test Failure (${1})" "$(tail -1 "${3}")" "${3}"
         else
-            send_error "Smoke Test Failure" "No report: ntopng did not start or did not run the check" "${TESTS_PATH}/logs/smoke-ntopng.log"
+            send_error "Smoke Test Failure (${1})" "No report: ntopng did not start or did not run the check" "${4}"
         fi
         RC=1
     fi
@@ -342,9 +349,10 @@ run_tests() {
         run_tests_parallel "${TESTS}" "${NUM_TESTS}"
     fi
 
-    # The smoke test lists the endpoints from the sources: not with -p
+    # The REST smoke test lists the endpoints from the sources: not with -p
     if [ "${RUN_SMOKE}" = true ] && [ -z "${TEST_NAME}" ] && [ "${RUN_FROM_PACKAGES}" = false ]; then
-        run_smoke
+        run_smoke "all the REST endpoints" "${TESTS_PATH}/smoke.sh" "${TESTS_PATH}/logs/smoke-report.txt" "${TESTS_PATH}/logs/smoke-ntopng.log"
+        run_smoke "all the GUI pages" "${GUI_PATH}/smoke.sh" "${GUI_PATH}/logs/gui-smoke-report.txt" "${GUI_PATH}/logs/gui-smoke-ntopng.log"
     fi
 
     if [ "${G_SUCCESS}" == "${G_RAN}" ]; then

@@ -85,6 +85,42 @@ problem: the URL to retry with curl, who called it and what went wrong, with
 the Lua file and line taken from the ntopng log. It ends with the endpoints
 that answered OK with no data (the code path with data did not run).
 
+Smoke Test of all the GUI pages
+===============================
+
+`gui/smoke.sh` starts ntopng as `rest/smoke.sh` does and opens every page of
+the menu (as listed by `/lua/rest/v2/get/ntopng/menu.lua`) as admin in headless
+Chromium. A page fails on:
+
+- JavaScript exceptions and `console.error` (Vue errors are tagged `[VUE_ERROR]`)
+- HTTP 4xx/5xx answers and failed requests of ntopng (the page and its REST calls)
+- errors and warnings in the ntopng log while the page was open
+- accessibility violations (WCAG 2.2 AA, e.g. low contrast) found by axe
+
+Requirements: Node.js. `npm install` also downloads the Chromium used by the
+test (Playwright); on a machine without a desktop, Chromium may need some system
+libraries: `sudo npx playwright install-deps chromium` installs them.
+
+```
+cd gui
+npm install                           # once (also downloads Chromium)
+./smoke.sh                            # all the pages (about 3 minutes)
+GUI_SMOKE_ONLY=alert ./smoke.sh       # only the pages whose URL matches a regex
+```
+
+The check can also be run on an ntopng already running, e.g. the development
+one (the log is checked only if `NTOPNG_LOG` is set):
+
+```
+cd gui
+NTOPNG_URL=http://localhost:3000 NTOPNG_PASSWORD=<admin password> node smoke.mjs
+```
+
+A full `./run.sh` also runs it after the REST smoke test, counted as one more
+test; `./run.sh -S` skips both. The report (`gui/logs/gui-smoke-report.txt`,
+also printed) lists every failed page with its problems and the path of a full
+page screenshot taken when the problems were found (`gui/logs/*.png`).
+
 Add a Test
 ==========
 
