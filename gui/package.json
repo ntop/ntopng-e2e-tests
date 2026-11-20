@@ -1,0 +1,14 @@
+{
+  "name": "ntopng-e2e-gui",
+  "private": true,
+  "type": "module",
+  "description": "Smoke test of the ntopng web GUI pages, see ../README.md",
+  "scripts": {
+    "postinstall": "playwright install chromium",
+    "smoke": "node smoke.mjs"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "playwright": "^1.65.1"
+  }
+}
