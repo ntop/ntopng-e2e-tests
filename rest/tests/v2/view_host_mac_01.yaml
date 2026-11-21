@@ -25,8 +25,9 @@ runtime: |
 
   # Server ports (local_server_ports) and ports contacted as client
   # (remote_contacted_ports) learned by each local host, per interface.
-  # NOTE: baseline of the learning of the server ports, recorded before
-  # changing it: not necessarily the expected values.
+  # A port is learned only from the flows whose direction is reliable (decided,
+  # see doc/developers/README.flow_direction.md in ntopng) and whose server has
+  # answered: with a SYN-ACK (TCP), with any traffic (UDP).
   # Not stable, left out: the ports contacted by the hosts of the view
   # (ifid 1). A view host can be created twice at the same time (by the
   # alerts of the viewed interface and by the view) and the REST shows the

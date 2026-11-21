@@ -28,6 +28,14 @@ requires: pro
 # and received in the pcap. Covered issue: the MACs of a flow were not swapped
 # with its hosts, so the traffic of the swapped flows was accounted to their
 # MACs reversed (sent as received and vice versa).
+# Server ports (server_server_ports and the used_ports lines): learned only
+# when the direction has been decided and the server has sent a SYN-ACK. So:
+# learned with a handshake, a stray server RST, the SYN missed (SYN-ACK seen),
+# a SSH flow with the SYN missed (98, 103); not learned for the mid-stream
+# flows (no handshake), a connection refused (85, 91: SYN then RST, nor as a
+# port contacted by the client) and the RST only flows. Known limitation (TCP
+# flags in OR per direction): flow 132 (late SYN-ACK from the client) learns
+# nothing, flow 133 (late SYN from the server, after its ACKs) learns port 80.
 #
 #   1   192.168.9.1:40001 -> 192.168.10.1:5555  no stray; SYN, SYN-ACK, ACK; client port > server port
 #   2   192.168.9.2:40002 -> 192.168.10.2:5555  stray client ACK; SYN, SYN-ACK, ACK; client port > server port
@@ -185,8 +193,9 @@ runtime: |
 
   # Server ports (local_server_ports) and ports contacted as client
   # (remote_contacted_ports) learned by each local host, per interface.
-  # NOTE: baseline of the learning of the server ports, recorded before
-  # changing it: not necessarily the expected values.
+  # A port is learned only from the flows whose direction is reliable (decided,
+  # see doc/developers/README.flow_direction.md in ntopng) and whose server has
+  # answered: with a SYN-ACK (TCP), with any traffic (UDP).
   for ifid in 0; do
     curl -s -u admin:admin "http://localhost:3333/lua/rest/v2/get/host/active.lua?ifid=${ifid}&mode=local&perPage=1000" | \
       jq -r '.rsp.data[] | if ((.vlan // 0) | tonumber? // 0) > 0 then "\(.ip)@\(.vlan)" else .ip end' | sort -V | \

@@ -3,8 +3,8 @@
 {"cli":"192.168.7.10:40010","confidence":"Guess","l7":"DNS","srv":"192.168.7.1:53"}
 {"cli":"192.168.7.11:40011","confidence":"Guess","l7":"NTP","srv":"192.168.7.1:123"}
 {"used_ports":{"contacted":[],"host":"192.168.7.1","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.7.10","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["udp:123 NTP"],"host":"192.168.7.11","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["udp:67 DHCP"],"host":"192.168.7.12","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.7.10","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.7.11","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.7.12","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"fd00:7::1","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["udp:547 DHCPV6"],"host":"fd00:7::12","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"fd00:7::12","ifid":0,"server":[]}}
