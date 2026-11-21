@@ -77,6 +77,12 @@ cat tests/${TEST}.yaml | shyaml -q get-value post > ${POST_TEST}
 cat tests/${TEST}.yaml | shyaml -q get-values ignore > ${IGNORE}
 cat tests/${TEST}.yaml | shyaml -q get-values options > ${EXTRA_OPTIONS}
 
+# Preferences set before ntopng starts ('prefs': "<name> <value>" items, written
+# as ntopng.prefs.<name> to the Redis DB of the test, just flushed)
+shyaml -q get-values prefs < tests/${TEST}.yaml | while read -r PREF_NAME PREF_VALUE; do
+    [ -n "${PREF_NAME}" ] && redis-cli -n "${NTOPNG_TEST_REDIS}" set "ntopng.prefs.${PREF_NAME}" "${PREF_VALUE}" > /dev/null
+done
+
 if [ -z "${FORMAT}" ] || [ $FORMAT == "None" ]; then
     FORMAT="json"
 fi
