@@ -29,16 +29,16 @@
 {"dhcp_server":false,"host":"fe80::51"}
 {"dhcp_server":false,"host":"fe80::52"}
 {"dhcp_server":false,"host":"ff02::1:2"}
-{"used_ports":{"host":"fd00:6::1","ifid":1,"server":[]}}
-{"used_ports":{"host":"fd00:6::1@10","ifid":1,"server":[]}}
-{"used_ports":{"host":"fd00:6::1@20","ifid":1,"server":[]}}
-{"used_ports":{"host":"fd00:6::2","ifid":1,"server":[]}}
+{"used_ports":{"host":"fd00:6::1","ifid":1,"server":["udp:547 DHCPV6"]}}
+{"used_ports":{"host":"fd00:6::1@10","ifid":1,"server":["udp:547 DHCPV6"]}}
+{"used_ports":{"host":"fd00:6::1@20","ifid":1,"server":["udp:547 DHCPV6"]}}
+{"used_ports":{"host":"fd00:6::2","ifid":1,"server":["udp:547 DHCPV6"]}}
 {"used_ports":{"host":"fd00:6::f0","ifid":1,"server":[]}}
 {"used_ports":{"host":"fd00:6::f1","ifid":1,"server":[]}}
 {"used_ports":{"host":"fd00:6::f2","ifid":1,"server":[]}}
 {"used_ports":{"host":"fd00:6::fa","ifid":1,"server":[]}}
 {"used_ports":{"host":"fd00:6::fb","ifid":1,"server":[]}}
-{"used_ports":{"host":"fd00:6::fc","ifid":1,"server":[]}}
+{"used_ports":{"host":"fd00:6::fc","ifid":1,"server":["udp:547 DHCPV6"]}}
 {"used_ports":{"host":"fd00:6::fd","ifid":1,"server":[]}}
 {"used_ports":{"host":"fd00:6::fe","ifid":1,"server":[]}}
 {"used_ports":{"host":"fe80::10","ifid":1,"server":[]}}

@@ -17,4 +17,4 @@
 {"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.15","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.16","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.17","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.2.18","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.2.18","ifid":0,"server":[]}}

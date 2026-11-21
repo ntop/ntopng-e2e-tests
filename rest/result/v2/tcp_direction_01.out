@@ -136,29 +136,29 @@
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":3,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":4,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,167],"client_server_ports":[],"i":5,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
-{"client_mac_bytes":[167,167],"client_server_ports":[],"i":6,"server_mac_bytes":[167,167],"server_server_ports":[]}
+{"client_mac_bytes":[167,167],"client_server_ports":[],"i":6,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,167],"client_server_ports":[],"i":7,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,113],"client_server_ports":[],"i":8,"server_mac_bytes":[113,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":9,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":10,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":11,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,167],"client_server_ports":[],"i":12,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
-{"client_mac_bytes":[167,167],"client_server_ports":[],"i":13,"server_mac_bytes":[167,167],"server_server_ports":[]}
+{"client_mac_bytes":[167,167],"client_server_ports":[],"i":13,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,167],"client_server_ports":[],"i":14,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,113],"client_server_ports":[],"i":15,"server_mac_bytes":[113,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":16,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":17,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":18,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,167],"client_server_ports":[],"i":19,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
-{"client_mac_bytes":[167,167],"client_server_ports":[],"i":20,"server_mac_bytes":[167,167],"server_server_ports":[]}
+{"client_mac_bytes":[167,167],"client_server_ports":[],"i":20,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,167],"client_server_ports":[],"i":21,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
-{"client_mac_bytes":[113,113],"client_server_ports":[],"i":22,"server_mac_bytes":[113,113],"server_server_ports":[]}
-{"client_mac_bytes":[167,113],"client_server_ports":[],"i":23,"server_mac_bytes":[113,167],"server_server_ports":[]}
-{"client_mac_bytes":[167,113],"client_server_ports":[],"i":24,"server_mac_bytes":[113,167],"server_server_ports":[]}
-{"client_mac_bytes":[167,113],"client_server_ports":[],"i":25,"server_mac_bytes":[113,167],"server_server_ports":[]}
-{"client_mac_bytes":[113,167],"client_server_ports":[],"i":26,"server_mac_bytes":[167,113],"server_server_ports":[]}
-{"client_mac_bytes":[113,167],"client_server_ports":[],"i":27,"server_mac_bytes":[167,113],"server_server_ports":[]}
-{"client_mac_bytes":[113,167],"client_server_ports":[],"i":28,"server_mac_bytes":[167,113],"server_server_ports":[]}
+{"client_mac_bytes":[113,113],"client_server_ports":[],"i":22,"server_mac_bytes":[113,113],"server_server_ports":[5555]}
+{"client_mac_bytes":[167,113],"client_server_ports":[],"i":23,"server_mac_bytes":[113,167],"server_server_ports":[5555]}
+{"client_mac_bytes":[167,113],"client_server_ports":[],"i":24,"server_mac_bytes":[113,167],"server_server_ports":[5555]}
+{"client_mac_bytes":[167,113],"client_server_ports":[],"i":25,"server_mac_bytes":[113,167],"server_server_ports":[5555]}
+{"client_mac_bytes":[113,167],"client_server_ports":[],"i":26,"server_mac_bytes":[167,113],"server_server_ports":[5555]}
+{"client_mac_bytes":[113,167],"client_server_ports":[],"i":27,"server_mac_bytes":[167,113],"server_server_ports":[5555]}
+{"client_mac_bytes":[113,167],"client_server_ports":[],"i":28,"server_mac_bytes":[167,113],"server_server_ports":[5555]}
 {"client_mac_bytes":[118,59],"client_server_ports":[],"i":29,"server_mac_bytes":[59,118],"server_server_ports":[]}
 {"client_mac_bytes":[172,59],"client_server_ports":[],"i":30,"server_mac_bytes":[59,172],"server_server_ports":[]}
 {"client_mac_bytes":[172,59],"client_server_ports":[],"i":31,"server_mac_bytes":[59,172],"server_server_ports":[]}
@@ -178,29 +178,29 @@
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":45,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":46,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,167],"client_server_ports":[],"i":47,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
-{"client_mac_bytes":[167,167],"client_server_ports":[],"i":48,"server_mac_bytes":[167,167],"server_server_ports":[]}
+{"client_mac_bytes":[167,167],"client_server_ports":[],"i":48,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,167],"client_server_ports":[],"i":49,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,113],"client_server_ports":[],"i":50,"server_mac_bytes":[113,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":51,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":52,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":53,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,167],"client_server_ports":[],"i":54,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
-{"client_mac_bytes":[167,167],"client_server_ports":[],"i":55,"server_mac_bytes":[167,167],"server_server_ports":[]}
+{"client_mac_bytes":[167,167],"client_server_ports":[],"i":55,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,167],"client_server_ports":[],"i":56,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,113],"client_server_ports":[],"i":57,"server_mac_bytes":[113,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":58,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":59,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[221,113],"client_server_ports":[],"i":60,"server_mac_bytes":[113,221],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,167],"client_server_ports":[],"i":61,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
-{"client_mac_bytes":[167,167],"client_server_ports":[],"i":62,"server_mac_bytes":[167,167],"server_server_ports":[]}
+{"client_mac_bytes":[167,167],"client_server_ports":[],"i":62,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[167,167],"client_server_ports":[],"i":63,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
-{"client_mac_bytes":[113,113],"client_server_ports":[],"i":64,"server_mac_bytes":[113,113],"server_server_ports":[]}
-{"client_mac_bytes":[167,113],"client_server_ports":[],"i":65,"server_mac_bytes":[113,167],"server_server_ports":[]}
-{"client_mac_bytes":[167,113],"client_server_ports":[],"i":66,"server_mac_bytes":[113,167],"server_server_ports":[]}
-{"client_mac_bytes":[167,113],"client_server_ports":[],"i":67,"server_mac_bytes":[113,167],"server_server_ports":[]}
-{"client_mac_bytes":[113,167],"client_server_ports":[],"i":68,"server_mac_bytes":[167,113],"server_server_ports":[]}
-{"client_mac_bytes":[113,167],"client_server_ports":[],"i":69,"server_mac_bytes":[167,113],"server_server_ports":[]}
-{"client_mac_bytes":[113,167],"client_server_ports":[],"i":70,"server_mac_bytes":[167,113],"server_server_ports":[]}
+{"client_mac_bytes":[113,113],"client_server_ports":[],"i":64,"server_mac_bytes":[113,113],"server_server_ports":[5555]}
+{"client_mac_bytes":[167,113],"client_server_ports":[],"i":65,"server_mac_bytes":[113,167],"server_server_ports":[5555]}
+{"client_mac_bytes":[167,113],"client_server_ports":[],"i":66,"server_mac_bytes":[113,167],"server_server_ports":[5555]}
+{"client_mac_bytes":[167,113],"client_server_ports":[],"i":67,"server_mac_bytes":[113,167],"server_server_ports":[5555]}
+{"client_mac_bytes":[113,167],"client_server_ports":[],"i":68,"server_mac_bytes":[167,113],"server_server_ports":[5555]}
+{"client_mac_bytes":[113,167],"client_server_ports":[],"i":69,"server_mac_bytes":[167,113],"server_server_ports":[5555]}
+{"client_mac_bytes":[113,167],"client_server_ports":[],"i":70,"server_mac_bytes":[167,113],"server_server_ports":[5555]}
 {"client_mac_bytes":[118,59],"client_server_ports":[],"i":71,"server_mac_bytes":[59,118],"server_server_ports":[]}
 {"client_mac_bytes":[172,59],"client_server_ports":[],"i":72,"server_mac_bytes":[59,172],"server_server_ports":[]}
 {"client_mac_bytes":[172,59],"client_server_ports":[],"i":73,"server_mac_bytes":[59,172],"server_server_ports":[]}
@@ -228,12 +228,12 @@
 {"client_mac_bytes":[167,167],"client_server_ports":[],"i":95,"server_mac_bytes":[167,167],"server_server_ports":[5555]}
 {"client_mac_bytes":[442,280],"client_server_ports":[],"i":96,"server_mac_bytes":[280,442],"server_server_ports":[5555]}
 {"client_mac_bytes":[183,131],"client_server_ports":[],"i":97,"server_mac_bytes":[131,183],"server_server_ports":[2222]}
-{"client_mac_bytes":[129,131],"client_server_ports":[],"i":98,"server_mac_bytes":[131,129],"server_server_ports":[]}
+{"client_mac_bytes":[129,131],"client_server_ports":[],"i":98,"server_mac_bytes":[131,129],"server_server_ports":[2222]}
 {"client_mac_bytes":[75,154],"client_server_ports":[],"i":99,"server_mac_bytes":[154,75],"server_server_ports":[]}
 {"client_mac_bytes":[150,77],"client_server_ports":[],"i":100,"server_mac_bytes":[77,150],"server_server_ports":[]}
 {"client_mac_bytes":[183,185],"client_server_ports":[],"i":101,"server_mac_bytes":[185,183],"server_server_ports":[2222]}
 {"client_mac_bytes":[183,131],"client_server_ports":[],"i":102,"server_mac_bytes":[131,183],"server_server_ports":[2222]}
-{"client_mac_bytes":[129,131],"client_server_ports":[],"i":103,"server_mac_bytes":[131,129],"server_server_ports":[]}
+{"client_mac_bytes":[129,131],"client_server_ports":[],"i":103,"server_mac_bytes":[131,129],"server_server_ports":[2222]}
 {"client_mac_bytes":[75,154],"client_server_ports":[],"i":104,"server_mac_bytes":[154,75],"server_server_ports":[]}
 {"client_mac_bytes":[150,77],"client_server_ports":[],"i":105,"server_mac_bytes":[77,150],"server_server_ports":[]}
 {"client_mac_bytes":[183,185],"client_server_ports":[],"i":106,"server_mac_bytes":[185,183],"server_server_ports":[2222]}
@@ -262,8 +262,8 @@
 {"client_mac_bytes":[136,210],"client_server_ports":[],"i":129,"server_mac_bytes":[210,136],"server_server_ports":[]}
 {"client_mac_bytes":[136,210],"client_server_ports":[],"i":130,"server_mac_bytes":[210,136],"server_server_ports":[]}
 {"client_mac_bytes":[204,140],"client_server_ports":[],"i":131,"server_mac_bytes":[140,204],"server_server_ports":[]}
-{"client_mac_bytes":[342,184],"client_server_ports":[],"i":132,"server_mac_bytes":[184,342],"server_server_ports":[80]}
-{"client_mac_bytes":[288,238],"client_server_ports":[],"i":133,"server_mac_bytes":[238,288],"server_server_ports":[]}
+{"client_mac_bytes":[342,184],"client_server_ports":[],"i":132,"server_mac_bytes":[184,342],"server_server_ports":[]}
+{"client_mac_bytes":[288,238],"client_server_ports":[],"i":133,"server_mac_bytes":[238,288],"server_server_ports":[80]}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.1","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.2","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.3","ifid":0,"server":[]}}
@@ -285,13 +285,13 @@
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.19","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.20","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.21","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.22","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.23","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.24","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.25","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.26","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.27","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.28","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.22","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.23","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.24","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.25","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.26","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.27","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.28","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.29","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.30","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.31","ifid":0,"server":[]}}
@@ -327,13 +327,13 @@
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.61","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.62","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.63","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.64","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.65","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.66","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.67","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.68","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.69","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.70","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.64","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.65","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.66","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.67","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.68","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.69","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.70","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.71","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.72","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.73","ifid":0,"server":[]}}
@@ -348,25 +348,25 @@
 {"used_ports":{"contacted":[],"host":"192.168.9.82","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.83","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.84","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["tcp:5555 Unknown"],"host":"192.168.9.85","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.9.85","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.86","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.87","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.88","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.89","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.90","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["tcp:5555 Unknown"],"host":"192.168.9.91","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.9.91","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.92","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.93","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.94","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.95","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:5555 SIP"],"host":"192.168.9.96","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:2222 SSH"],"host":"192.168.9.97","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.98","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:2222 SSH"],"host":"192.168.9.98","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.99","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.100","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:2222 SSH"],"host":"192.168.9.101","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:2222 SSH"],"host":"192.168.9.102","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.103","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:2222 SSH"],"host":"192.168.9.103","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.104","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.105","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:2222 SSH"],"host":"192.168.9.106","ifid":0,"server":[]}}
@@ -395,36 +395,36 @@
 {"used_ports":{"contacted":[],"host":"192.168.9.129","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.130","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.131","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["tcp:80 HTTP"],"host":"192.168.9.132","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.9.133","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.9.132","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:80 HTTP"],"host":"192.168.9.133","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.1","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.2","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.3","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.4","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.5","ifid":0,"server":["tcp:5555 SIP"]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.6","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.6","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.7","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.8","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.9","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.10","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.11","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.12","ifid":0,"server":["tcp:5555 SIP"]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.13","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.13","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.14","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.15","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.16","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.17","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.18","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.19","ifid":0,"server":["tcp:5555 SIP"]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.20","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.20","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.21","ifid":0,"server":["tcp:5555 SIP"]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.22","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.23","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.24","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.25","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.26","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.27","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.28","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.22","ifid":0,"server":["tcp:5555 SIP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.23","ifid":0,"server":["tcp:5555 SIP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.24","ifid":0,"server":["tcp:5555 SIP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.25","ifid":0,"server":["tcp:5555 SIP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.26","ifid":0,"server":["tcp:5555 SIP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.27","ifid":0,"server":["tcp:5555 SIP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.28","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.29","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.30","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.31","ifid":0,"server":[]}}
@@ -444,29 +444,29 @@
 {"used_ports":{"contacted":[],"host":"192.168.10.45","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.46","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.47","ifid":0,"server":["tcp:5555 SIP"]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.48","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.48","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.49","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.50","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.51","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.52","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.53","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.54","ifid":0,"server":["tcp:5555 SIP"]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.55","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.55","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.56","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.57","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.58","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.59","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.60","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.61","ifid":0,"server":["tcp:5555 SIP"]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.62","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.62","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.63","ifid":0,"server":["tcp:5555 SIP"]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.64","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.65","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.66","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.67","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.68","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.69","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.70","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.64","ifid":0,"server":["tcp:5555 SIP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.65","ifid":0,"server":["tcp:5555 SIP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.66","ifid":0,"server":["tcp:5555 SIP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.67","ifid":0,"server":["tcp:5555 SIP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.68","ifid":0,"server":["tcp:5555 SIP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.69","ifid":0,"server":["tcp:5555 SIP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.70","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.71","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.72","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.73","ifid":0,"server":[]}}
@@ -494,12 +494,12 @@
 {"used_ports":{"contacted":[],"host":"192.168.10.95","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.96","ifid":0,"server":["tcp:5555 SIP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.97","ifid":0,"server":["tcp:2222 SSH"]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.98","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.98","ifid":0,"server":["tcp:2222 SSH"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.99","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.100","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.101","ifid":0,"server":["tcp:2222 SSH"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.102","ifid":0,"server":["tcp:2222 SSH"]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.103","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.103","ifid":0,"server":["tcp:2222 SSH"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.104","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.105","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.106","ifid":0,"server":["tcp:2222 SSH"]}}
@@ -528,5 +528,5 @@
 {"used_ports":{"contacted":[],"host":"192.168.10.129","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.130","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.131","ifid":0,"server":[]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.132","ifid":0,"server":["tcp:80 HTTP"]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.133","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.132","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.133","ifid":0,"server":["tcp:80 HTTP"]}}
