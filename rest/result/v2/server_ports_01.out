@@ -1,0 +1,18 @@
+{"cli":"192.168.11.1:40001","l7":"HTTP","proto":"TCP","srv":"192.168.12.1:5555"}
+{"cli":"192.168.11.2:40002","l7":"HTTP","proto":"TCP","srv":"192.168.12.2:5555"}
+{"cli":"192.168.11.3:40003","l7":"Unknown","proto":"UDP","srv":"192.168.12.3:40100"}
+{"cli":"192.168.11.4:40004","l7":"Syslog","proto":"UDP","srv":"192.168.12.4:514"}
+{"cli":"192.168.11.5:123","l7":"NTP","proto":"UDP","srv":"192.168.12.5:123"}
+{"cli":"192.168.11.6:53","l7":"DNS","proto":"UDP","srv":"192.168.12.6:53"}
+{"used_ports":{"contacted":["tcp:5555 HTTP"],"host":"192.168.11.1","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.11.2","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.11.3","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.11.4","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:123 NTP"],"host":"192.168.11.5","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.11.6","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.12.1","ifid":0,"server":["tcp:5555 HTTP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.12.2","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.12.3","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.12.4","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.12.5","ifid":0,"server":["udp:123 NTP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.12.6","ifid":0,"server":["udp:53 DNS"]}}
