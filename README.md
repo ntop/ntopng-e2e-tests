@@ -84,6 +84,22 @@ The report (`rest/logs/smoke-report.txt`, also printed) has one entry per
 problem: the URL to retry with curl, who called it and what went wrong, with
 the Lua file and line taken from the ntopng log.
 
+The admin calls also pass a real host, MAC, ASN, flow and time range taken from
+the instance (printed at the end of the report), so the endpoints that need them
+run the code path with the data.
+An answer is expected within 20 s, 300 s for the exports (`download` in the
+path).
+
+The check can also run on an ntopng already running, e.g. the development one
+with real traffic: then only the admin calls of the read endpoints are done (no
+permission check, the endpoints with side effects are skipped) and the
+interface to use is chosen with `SMOKE_IFID` (a view interface has the hosts):
+
+```
+cd rest
+SMOKE_URL=http://localhost:3000 NTOPNG_PASSWORD=<admin password> SMOKE_IFID=<ifid> ./smoke-check.sh
+```
+
 Smoke Test of all the GUI pages
 ===============================
 
