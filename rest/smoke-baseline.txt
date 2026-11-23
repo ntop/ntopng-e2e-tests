@@ -704,6 +704,8 @@ anon denied /lua/pro/rest/v2/get/traffic_model/server_types.lua
 user allowed /lua/pro/rest/v2/get/traffic_model/server_types.lua
 anon denied /lua/pro/rest/v2/get/traffic_model/servers.lua
 user denied /lua/pro/rest/v2/get/traffic_model/servers.lua
+anon denied /lua/pro/rest/v2/get/traffic_model/traffic_model_context.lua
+user denied /lua/pro/rest/v2/get/traffic_model/traffic_model_context.lua
 anon denied /lua/pro/rest/v2/get/traffic_report/data.lua
 user allowed /lua/pro/rest/v2/get/traffic_report/data.lua
 anon denied /lua/pro/rest/v2/get/user/alert/top.lua
