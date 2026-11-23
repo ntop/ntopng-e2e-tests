@@ -47,7 +47,9 @@ fi
 
 ntopng_cleanup
 ntopng_init_conf
-ntopng_run "" "" "" "${POST}" /dev/null "${SMOKE_LOG}" "192.168.0.0/16" "" "${CLICKHOUSE}"
+# The check is the runtime script: the live hosts and flows are still there (the
+# post script runs after the interfaces are shut down)
+ntopng_run "" "" "${POST}" "" /dev/null "${SMOKE_LOG}" "192.168.0.0/16" "" "${CLICKHOUSE}"
 
 if [ ! -s "${SMOKE_REPORT}" ]; then
     echo "[!] No report produced: ntopng did not start or did not run the check, see ${SMOKE_LOG}"
@@ -61,7 +63,7 @@ fi
     echo "Started as: ${NTOPNG_BIN} <conf> from ${NTOPNG_ROOT_ABS}, conf:"
     sed 's/^/      /' "${NTOPNG_TEST_CONF}"
     echo "ClickHouse flow dump: ${CLICKHOUSE}. Users: admin / ${NTOPNG_TEST_ADMIN_PASSWORD} (set in Redis DB ${NTOPNG_TEST_REDIS} by ntopng_init_conf), smoke / Smoke_user_pw_1 (unprivileged, no capabilities, added by smoke-check.sh)"
-    echo "To reproduce: same conf without --shutdown-when-done and --test-script-post, then retry the URL with curl -u <user>:<password>"
+    echo "To reproduce: same conf without --shutdown-when-done and --test-script, then retry the URL with curl -u <user>:<password>"
     echo
     cat "${SMOKE_REPORT}"
 } > "${SMOKE_REPORT}.tmp" && mv "${SMOKE_REPORT}.tmp" "${SMOKE_REPORT}"

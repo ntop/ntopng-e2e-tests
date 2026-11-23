@@ -35,8 +35,12 @@ fi
 # Own slot, different from the one of rest/smoke.sh (14): the two can run together
 ntopng_slot_setup "${GUI_SMOKE_SLOT:-13}"
 NTOPNG_TEST_LOGIN=true
+# test_01.pcap plus traffic with XSS payloads in the fields shown by the GUI (make_xss_pcap.py)
+PCAP=gui_smoke.pcap
 
-# Script run by ntopng once the pcap has been processed (ntopng is still up)
+# Script run by ntopng once the pcap has been processed, as the runtime script:
+# before the interfaces are shut down, so the live pages still have the hosts
+# and flows of the pcap (the post script runs after they are flushed)
 POST="$(mktemp)"
 cat > "${POST}" <<EOF
 NTOPNG_URL=http://localhost:${NTOPNG_TEST_HTTP_PORT} \
@@ -55,7 +59,7 @@ clickhouse-client -q "SELECT 1" > /dev/null 2>&1 && CLICKHOUSE=true
 
 ntopng_cleanup
 ntopng_init_conf
-ntopng_run "" "" "" "${POST}" "${OUTPUT}" "${NTOPNG_LOG}" "192.168.0.0/16" "" "${CLICKHOUSE}"
+ntopng_run "${PCAP}" "" "${POST}" "" "${OUTPUT}" "${NTOPNG_LOG}" "192.168.0.0/16" "" "${CLICKHOUSE}"
 ntopng_cleanup
 rm -f "${POST}"
 

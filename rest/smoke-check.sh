@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Run by ntopng (--test-script-post) on behalf of smoke.sh: see there.
+# Run by ntopng (--test-script, the runtime script) on behalf of smoke.sh: see there.
 #
 # It can also run on an ntopng already running, e.g. the development one with
 # real traffic (SMOKE_URL set): then only the admin calls of the read endpoints

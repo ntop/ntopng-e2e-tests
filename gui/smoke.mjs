@@ -6,6 +6,7 @@
 //   - errors and warnings written to the ntopng log while the page was open
 //   - accessibility violations (WCAG 2.2 AA, e.g. low contrast) found by axe
 //   - broken links to other ntopng pages (HTTP 4xx/5xx, the error page, the login page)
+//   - XSS: a JavaScript dialog opened by a payload of the pcap (see make_xss_pcap.py)
 //
 // The sidebar hover states (expanded rail, menu panel, user popup) are checked
 // with axe on the first page of every desktop pass.
@@ -58,7 +59,7 @@ const PHONE = { width: 390, height: 844 };
 // One pass = every page of the menu of the user, checked with these settings
 // (the links are the same in every theme and screen size: checked once per user)
 const PASSES = [
-  { name: "admin", user: ADMIN, viewport: DESKTOP, checkLinks: true },
+  { name: "admin", user: ADMIN, viewport: DESKTOP, checkLinks: true, xssPages: true },
   { name: "dark", user: ADMIN, viewport: DESKTOP, dark: true },
   { name: "mobile", user: ADMIN, viewport: PHONE, noHorizontalScroll: true },
   { name: "user", user: UNPRIVILEGED, viewport: DESKTOP, checkLinks: true },
@@ -185,6 +186,23 @@ function getMenuPages(menu) {
   return [...new Set(urls)];
 }
 
+// The host of the XSS payloads of gui_smoke.pcap (make_xss_pcap.py)
+const XSS_HOST = "192.168.1.250";
+
+// The detail pages of the XSS host and of its flows: the HTTP User-Agent and URL
+// are shown only there. None when the host is not there (e.g. a real ntopng)
+async function getXssPages(request) {
+  const host = await (await request.get(`${BASE_URL}/lua/rest/v2/get/host/data.lua?ifid=0&host=${XSS_HOST}`)).json();
+  if (host.rc_str !== "OK") {
+    return [];
+  }
+  const flows = await (await request.get(`${BASE_URL}/lua/rest/v2/get/flow/active.lua?ifid=0&host=${XSS_HOST}&perPage=50`)).json();
+  return [
+    `/lua/host_details.lua?host=${XSS_HOST}`,
+    ...(flows.rsp?.data ?? []).map((flow) => `/lua/flow_details.lua?ifid=0&flow_key=${flow.key}&flow_hash_id=${flow.hash_id}`),
+  ];
+}
+
 // ############################################## ntopng log
 
 // Size of the log now: the lines written after this offset are the ones of the page under test
@@ -246,6 +264,12 @@ async function checkPage(context, pass, url, checkedShapes) {
   const isNtopng = (requestUrl) => requestUrl.startsWith(BASE_URL);
 
   page.on("pageerror", (error) => problems.push(`JS exception: ${error.message}`));
+  // No page opens alert/confirm by itself: a dialog is a payload of gui_smoke.pcap run by
+  // a page that does not escape it (the number says the field, see make_xss_pcap.py)
+  page.on("dialog", async (dialog) => {
+    problems.push(`XSS: a ${dialog.type()}("${dialog.message()}") ran (see make_xss_pcap.py for the field)`);
+    await dialog.dismiss();
+  });
   page.on("console", (message) => {
     // "Failed to load resource" is already reported, with its URL, by the response check below
     if (message.type() === "error" && !message.text().startsWith("Failed to load resource")) {
@@ -355,7 +379,7 @@ async function checkPass(browser, pass, report) {
     await setTheme(context, true);
   }
 
-  const pages = getMenuPages(menu);
+  const pages = [...getMenuPages(menu), ...(pass.xssPages ? await getXssPages(context.request) : [])];
   let failed = 0;
   // Phones have no hover (and the sidebar is closed)
   if (pages.length && pass.viewport === DESKTOP) {

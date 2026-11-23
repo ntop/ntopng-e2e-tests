@@ -114,9 +114,20 @@ test and deleted at the end, with its own menu). A page fails on:
 - errors and warnings in the ntopng log while the page was open
 - accessibility violations (WCAG 2.2 AA, e.g. low contrast) found by axe
 - horizontal scroll (`mobile` pass only)
+- XSS: a JavaScript dialog opened by a page, i.e. a payload of the pcap that a
+  page shows without escaping it (see below)
 - broken links to other ntopng pages: HTTP 4xx/5xx, the error page or the login
   page (`admin` and `user` passes; one link per path and parameter names, links
   with side effects such as logout or `action=` are not followed)
+
+The pcap is `rest/pcap/gui_smoke.pcap`: `test_01.pcap` followed by traffic with
+XSS payloads (`<img src=x onerror=alert(N)>`, N says the field) in the HTTP Host,
+User-Agent and URL, TLS SNI, DNS query and DHCP host name, built by
+`gui/make_xss_pcap.py` (scapy: run it again only when the payloads change). The
+`admin` pass also opens the detail pages of the host of the payloads and of its
+flows, where the User-Agent and the URL are shown. The check runs as the
+runtime script of ntopng, before the interfaces are shut down, so the live
+pages still have the hosts and flows of the pcap.
 
 On the first page of every desktop pass, axe also checks the sidebar parts shown only
 under the mouse (expanded rail and menu panel, user popup). The guided tours of
@@ -154,7 +165,7 @@ page screenshot taken when the problems were found (`gui/logs/<pass>_*.png`).
 Checks of the sources
 =====================
 
-Two checks that do not start ntopng, run by a full `./run.sh` after the smoke
+Four checks that do not start ntopng, run by a full `./run.sh` after the smoke
 tests (one more test each, `./run.sh -S` skips them):
 
 - `checks/lua.sh`: luacheck of the Lua sources, only the warnings that are
@@ -165,11 +176,25 @@ tests (one more test each, `./run.sh -S` skips them):
 - `checks/js.sh`: unit tests of the GUI JavaScript utilities with Vitest
   (`pro/tests/js/*.test.js`, e.g. the dates in the server time zone).
   Requirements: `npm install` in `pro`. Report: `checks/logs/js-report.txt`.
+- `checks/js-lint.sh`: ESLint of the GUI sources (`pro/http_src`, Vue and JS)
+  with only the rules that find bugs (`pro/.eslintrc.errors.json`): undefined
+  variables (a ReferenceError when the code runs), templates and `v-for` not
+  valid, props changed by the child, refs used without `.value`, keys repeated in
+  an object. A global the pages define goes in the `globals` of the config.
+  Requirements: `npm install` in `pro`. Report: `checks/logs/js-lint-report.txt`.
+- `checks/rest-docs.sh`: the REST documentation (`httpdocs/misc/rest-api-v2.json`)
+  against the sources: every documented path exists, and a path documented as
+  GET does not read only `_POST` (a GET request does not fill it; the opposite
+  works, ntopng also puts the params of a JSON POST in `_GET`). The endpoints not
+  documented are listed, not failed (the internal ones are left out on purpose).
+  Requirements: jq. Report: `checks/logs/rest-docs-report.txt`.
 
 ```
 cd checks
 ./lua.sh
 ./js.sh                               # or: cd pro && npm run test:js
+./js-lint.sh                          # or: cd pro && npm run lint:errors
+./rest-docs.sh
 ```
 
 A new JS test is a `pro/tests/js/<name>.test.js` file (see

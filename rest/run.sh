@@ -16,8 +16,10 @@
 #
 # A full run also executes the smoke tests smoke.sh (every REST endpoint) and
 # ../gui/smoke.sh (every GUI page) and the checks ../checks/lua.sh (luacheck of
-# the Lua sources) and ../checks/js.sh (unit tests of the GUI JS utilities), see
-# the README, counted as one more test each; -S skips them.
+# the Lua sources), ../checks/js.sh (unit tests of the GUI JS utilities),
+# ../checks/js-lint.sh (ESLint of the GUI sources) and ../checks/rest-docs.sh
+# (REST documentation against the sources), see the README, counted as one more
+# test each; -S skips them.
 #
 # Clone the packager repository in the same folder to enable notifications
 #
@@ -357,6 +359,8 @@ run_tests() {
         run_smoke "all the GUI pages" "${GUI_PATH}/smoke.sh" "${GUI_PATH}/logs/gui-smoke-report.txt" "${GUI_PATH}/logs/gui-smoke-ntopng.log"
         run_smoke "the Lua sources" "${CHECKS_PATH}/lua.sh" "${CHECKS_PATH}/logs/lua-report.txt" "${CHECKS_PATH}/logs/lua-report.txt"
         run_smoke "the JS utilities" "${CHECKS_PATH}/js.sh" "${CHECKS_PATH}/logs/js-report.txt" "${CHECKS_PATH}/logs/js-report.txt"
+        run_smoke "the GUI sources (ESLint)" "${CHECKS_PATH}/js-lint.sh" "${CHECKS_PATH}/logs/js-lint-report.txt" "${CHECKS_PATH}/logs/js-lint-report.txt"
+        run_smoke "the REST documentation" "${CHECKS_PATH}/rest-docs.sh" "${CHECKS_PATH}/logs/rest-docs-report.txt" "${CHECKS_PATH}/logs/rest-docs-report.txt"
     fi
 
     if [ "${G_SUCCESS}" == "${G_RAN}" ]; then
