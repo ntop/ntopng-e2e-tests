@@ -56,138 +56,256 @@ cd rest
 
 Then go to **localhost:3333/**
 
-Smoke Test of all the REST endpoints
-====================================
+The Tests Run by run.sh
+=======================
 
-`rest/smoke.sh` calls every REST v2 endpoint (found under `scripts/lua/rest/v2`
-and `pro/scripts/lua/rest/v2`) on a ntopng instance with login enabled and the
-default pcap, with no expected output to maintain:
+A full `./run.sh` runs two kinds of tests, in this order:
 
-- as admin (read endpoints only): no error or warning in the ntopng log during
-  the call, no HTTP 5xx, valid JSON with a single answer, no INTERNAL_ERROR
-- as a user without capabilities and as anonymous (all endpoints): the outcome
-  (allowed or denied) is the one recorded in `rest/smoke-baseline.txt`
+1. The regression tests: one `.yaml` file per test in `rest/tests/v2/` (see
+   "Add a Test" below). Each one starts ntopng on a pcap, calls some REST
+   endpoints and compares their output with the one saved in
+   `rest/result/v2/<test>.out`.
+2. Six tests with no expected output to maintain, each one a bash script that
+   writes a report and exits with 0 (ok) or 1 (failures):
+
+| # | Test | Script | Starts ntopng | Report | Time |
+|---|------|--------|---------------|--------|------|
+| 1 | All the REST endpoints | `rest/smoke.sh` | yes (slot 14) | `rest/logs/smoke-report.txt` | ~3 min |
+| 2 | All the GUI pages | `gui/smoke.sh` | yes (slot 13) | `gui/logs/gui-smoke-report.txt` | ~10 min |
+| 3 | Lua sources | `checks/lua.sh` | no | `checks/logs/lua-report.txt` | - |
+| 4 | JS utilities (unit tests) | `checks/js.sh` | no | `checks/logs/js-report.txt` | - |
+| 5 | GUI sources (ESLint) | `checks/js-lint.sh` | no | `checks/logs/js-lint-report.txt` | - |
+| 6 | REST documentation | `checks/rest-docs.sh` | no | `checks/logs/rest-docs-report.txt` | ~6 s |
+
+They are called by `run_smoke()` in `rest/run.sh`, each counted as one more
+test in the total. On a failure the notification (Discord, mail) has the last
+line of the report (the summary, e.g. `ENDPOINTS 512   FAIL 3`) and the full
+report attached; with no report (ntopng did not start) the ntopng log is
+attached instead. They are skipped with `./run.sh -S`, with `-y` (single test)
+and with `-p` (package: the endpoints and pages are listed from the sources).
+Each one can also be run alone, see below.
+
+Requirements of the six (once per machine): Node.js (22 or later), luacheck
+(`apt install lua-check`), jq, `npm install` in `pro` and in `gui` (the latter
+also downloads Chromium; on a machine without a desktop
+`sudo npx playwright install-deps chromium` installs its system libraries).
+A missing requirement is reported as `FAIL  setup: ...`.
+
+How the two smoke tests run ntopng
+----------------------------------
+
+Both use the helpers of `rest/common.sh`, the same as the regression tests:
+
+- `ntopng_slot_setup N`: own HTTP port (3300 + N), Redis DB and data folder.
+  Slot 0 would `killall ntopng`, a development instance included, and the two
+  smoke tests use different slots, so they do not interfere
+- `ntopng_init_conf`: a temporary configuration file, the admin password set in
+  Redis
+- `ntopng_run`: adds the pcap (`-i`), the local networks (`-m`), ClickHouse
+  (`-F=clickhouse`, when a local server answers: the historical endpoints and
+  pages need it) and starts ntopng with `--shutdown-when-done`
+
+ntopng runs the test scripts at three moments:
+
+| Option | When |
+|--------|------|
+| `--test-script-pre` | before reading the pcap |
+| `--test-script` | after reading the pcap, with the live hosts and flows still in memory |
+| `--test-script-post` | after the interfaces are shut down (no live hosts and flows) |
+
+The smoke tests use `--test-script`, so the live pages and endpoints have the
+data of the pcap. When the script ends, ntopng shuts down.
+
+1. Smoke test of all the REST endpoints
+---------------------------------------
+
+Finds the REST endpoints that raise a Lua error, answer HTTP 5xx or invalid
+JSON, do not answer, or whose permissions changed by mistake.
+
+1. `rest/smoke.sh` starts ntopng (slot 14, port 3314) with login enabled,
+   `test_01.pcap` and local network `192.168.0.0/16`, with
+   `rest/smoke-check.sh` as `--test-script`
+2. `smoke-check.sh` takes real params from the instance
+   (`get/host/active_list.lua`, `get/host/data.lua`, `get/flow/active.lua`): a
+   host, its VLAN, MAC and ASN, a flow (`flow_key`, `flow_hash_id`) and the time
+   range of the pcap traffic. The endpoints that need a host or a flow then run
+   the code path with the data instead of stopping at `INVALID_ARGUMENTS`
+3. It adds the user `smoke`, unprivileged and with no capabilities
+4. It lists every `.lua` file under `scripts/lua/rest/v2` and
+   `pro/scripts/lua/rest/v2` and, for each one:
+   - as admin, only `get/*` and `export/*` (the write endpoints would change
+     the instance under test), a FAIL on:
+     - an `ERROR:` or `WARNING:` line written in the ntopng log during the call
+       (the log size is taken before the call, only the new lines are read)
+     - no answer within 20 s, 300 s for the exports (`download` in the path)
+     - HTTP 5xx with no declared REST error (a 503 `IFACE_ENCRYPTION_NOT_PRESENT`
+       is a valid answer)
+     - two HTTP answers in one body (a missing `return` after `rest_utils.answer`)
+     - a JSON content type with invalid JSON, or `rc_str=INTERNAL_ERROR`
+     - ntopng no longer answering on `/` (crash): the test stops there
+   - as the user `smoke` and as anonymous, every endpoint: the outcome
+     `denied` (401/403, redirect to the login, `NOT_GRANTED`) or `allowed`
+5. The outcomes are compared with `rest/smoke-baseline.txt`: an endpoint that
+   was denied and is now allowed (or the opposite) is a FAIL, and so is a new
+   endpoint. Check that its permission is right, then save the new baseline with
+   `./smoke.sh -u` and commit it
+6. The report has one entry per problem: the URL to retry with curl, who called
+   it and what went wrong (with the Lua file and line from the log). At the top
+   `smoke.sh` adds the ntopng version, the configuration and how to reproduce;
+   at the end the admin params and `ENDPOINTS N   FAIL M`
 
 ```
 cd rest
-./smoke.sh                            # all the endpoints (about 3 minutes)
+./smoke.sh                            # all the endpoints
 SMOKE_ONLY=get/host/ ./smoke.sh       # only the paths matching a regex
 ./smoke.sh -u                         # rewrite the baseline after a permission change
 ```
 
-A full `./run.sh` also runs the smoke test after the other tests, counted as one
-more test (its report is attached to the failure notification); `./run.sh -S`
-skips it. It is not run with `-y` (single test) nor with `-p` (package: the
-endpoints are listed from the sources).
-
-The report (`rest/logs/smoke-report.txt`, also printed) has one entry per
-problem: the URL to retry with curl, who called it and what went wrong, with
-the Lua file and line taken from the ntopng log.
-
-The admin calls also pass a real host, MAC, ASN, flow and time range taken from
-the instance (printed at the end of the report), so the endpoints that need them
-run the code path with the data.
-An answer is expected within 20 s, 300 s for the exports (`download` in the
-path).
-
-The check can also run on an ntopng already running, e.g. the development one
-with real traffic: then only the admin calls of the read endpoints are done (no
-permission check, the endpoints with side effects are skipped) and the
-interface to use is chosen with `SMOKE_IFID` (a view interface has the hosts):
+On an ntopng already running, e.g. the development one with real traffic, only
+the admin calls of the read endpoints are done (no permission check, the
+endpoints with side effects are skipped); `SMOKE_IFID` chooses the interface (a
+view interface has the hosts):
 
 ```
 cd rest
 SMOKE_URL=http://localhost:3000 NTOPNG_PASSWORD=<admin password> SMOKE_IFID=<ifid> ./smoke-check.sh
 ```
 
-Smoke Test of all the GUI pages
-===============================
+2. Smoke test of all the GUI pages
+----------------------------------
 
-`gui/smoke.sh` starts ntopng as `rest/smoke.sh` does and opens every page of
-the menu (as listed by `/lua/rest/v2/get/ntopng/menu.lua`) in headless
-Chromium, in four passes: `admin`, `dark` (admin, dark theme), `mobile` (admin,
-390px wide screen) and `user` (a user without capabilities, created for the
-test and deleted at the end, with its own menu). A page fails on:
+Finds the pages with JavaScript or Vue errors, failed REST calls, errors in
+the ntopng log, accessibility violations, horizontal scroll on a phone, broken
+links, XSS, and i18n keys missing.
 
-- JavaScript exceptions and `console.error` (Vue errors are tagged `[VUE_ERROR]`)
-- HTTP 4xx/5xx answers and failed requests of ntopng (the page and its REST calls)
-- errors and warnings in the ntopng log while the page was open
-- accessibility violations (WCAG 2.2 AA, e.g. low contrast) found by axe
-- horizontal scroll (`mobile` pass only)
-- XSS: a JavaScript dialog opened by a page, i.e. a payload of the pcap that a
-  page shows without escaping it (see below)
-- broken links to other ntopng pages: HTTP 4xx/5xx, the error page or the login
-  page (`admin` and `user` passes; one link per path and parameter names, links
-  with side effects such as logout or `action=` are not followed)
+1. `gui/smoke.sh` starts ntopng as the REST smoke test does, on slot 13 (port
+   3313) and with `rest/pcap/gui_smoke.pcap` (see XSS below), with
+   `node gui/smoke.mjs` as `--test-script`
+2. `smoke.mjs` (Playwright, headless Chromium, axe-core) reads the pages from
+   `/lua/rest/v2/get/ntopng/menu.lua`, the real menu of the user: a new page in
+   the menu is tested with no change to the test
+3. It checks the pages in four passes, each one logged in in the browser (the
+   guided tours are dismissed, they cover the page):
 
-The pcap is `rest/pcap/gui_smoke.pcap`: `test_01.pcap` followed by traffic with
-XSS payloads (`<img src=x onerror=alert(N)>`, N says the field) in the HTTP Host,
-User-Agent and URL, TLS SNI, DNS query and DHCP host name, built by
-`gui/make_xss_pcap.py` (scapy: run it again only when the payloads change). The
-`admin` pass also opens the detail pages of the host of the payloads and of its
-flows, where the User-Agent and the URL are shown. The check runs as the
-runtime script of ntopng, before the interfaces are shut down, so the live
-pages still have the hosts and flows of the pcap.
+| Pass | User | Screen | Also |
+|------|------|--------|------|
+| `admin` | admin | 1400×900 | links, XSS detail pages |
+| `dark` | admin | 1400×900 | dark theme (set back at the end) |
+| `mobile` | admin | 390×844 | horizontal scroll |
+| `user` | `gui_smoke`, no capabilities (added for the test, deleted at the end) | 1400×900 | links, its own menu |
 
-On the first page of every desktop pass, axe also checks the sidebar parts shown only
-under the mouse (expanded rail and menu panel, user popup). The guided tours of
-the user are dismissed after the login (they cover the page).
+4. For each page, a FAIL on:
+   - a JavaScript exception, a `console.error` (Vue errors are tagged
+     `[VUE_ERROR]`), an HTTP 4xx/5xx answer or a failed request to ntopng (the
+     page and its REST calls), a redirect to the login page
+   - a JavaScript dialog (`alert`, `confirm`): no page opens one by itself, it
+     is an XSS payload of the pcap run by the page
+   - an accessibility violation found by axe, WCAG 2.2 AA (contrast, labels,
+     24px targets, ARIA roles), with the selectors of the elements
+   - `mobile` only: a page wider than the screen
+   - `admin` and `user` only: a link to another ntopng page that answers
+     4xx/5xx, the error page or the login page. One link per path and parameter
+     names (not 500 equal table rows); links with side effects (logout,
+     `action=`, `delete`...) are not followed
+   - an `ERROR:` or `WARNING:` line in the ntopng log while the page was open
 
-It also fails on the i18n keys used in the code (`i18n("...")` in Vue, JS and
-Lua, `*_i18n` in the table definitions) and missing in `scripts/locales/en.lua`:
-the GUI would show an empty or raw text.
+   A failed page gets a full page screenshot, `gui/logs/<pass>_<url>.png`
+5. On the first page of every desktop pass, axe also checks the sidebar parts
+   shown only under the mouse: the expanded rail, the menu panel, the user popup
+6. i18n: the keys used in the code (`i18n("...")` in Vue, JS and Lua, `*_i18n`
+   in the table definitions) and missing in `scripts/locales/en.lua` are a FAIL:
+   the GUI would show an empty or raw text
+7. The report lists every failed page with its problems and screenshot, then
+   `PAGES N   FAIL M   I18N MISSING K`
 
-Requirements: Node.js. `npm install` also downloads the Chromium used by the
-test (Playwright); on a machine without a desktop, Chromium may need some system
-libraries: `sudo npx playwright install-deps chromium` installs them.
+XSS: `gui/make_xss_pcap.py` (scapy) builds `gui_smoke.pcap`: `test_01.pcap`
+copied byte by byte, followed by 11 packets of the host `192.168.1.250` with the
+payload `<img src=x onerror=alert(N)>` in a field shown by the GUI, N says
+which: 1 HTTP Host, 2 User-Agent, 3 URL, 4 TLS SNI, 5 DNS query, 6 DHCP host
+name. A page that shows the field without escaping it runs `alert(N)`, reported
+as `XSS: a alert("N") ran`. The `admin` pass also opens the detail pages of
+`192.168.1.250` and of its flows, the only ones that show the User-Agent and the
+URL. Run the script again only when the payloads change (the pcap is in the
+repository).
 
 ```
 cd gui
-npm install                           # once (also downloads Chromium)
-./smoke.sh                            # all the pages, all the passes (about 10 minutes)
-GUI_SMOKE_ONLY=alert ./smoke.sh       # only the pages whose URL matches a regex
+npm install                             # once (also downloads Chromium)
+./smoke.sh                              # all the pages, all the passes
+GUI_SMOKE_ONLY=alert ./smoke.sh         # only the pages whose URL matches a regex
 GUI_SMOKE_PASSES=admin,dark ./smoke.sh  # only some passes
 ```
 
-The check can also be run on an ntopng already running, e.g. the development
-one (the log is checked only if `NTOPNG_LOG` is set):
+On an ntopng already running (the log is checked only if `NTOPNG_LOG` is set):
 
 ```
 cd gui
 NTOPNG_URL=http://localhost:3000 NTOPNG_PASSWORD=<admin password> node smoke.mjs
 ```
 
-A full `./run.sh` also runs it after the REST smoke test, counted as one more
-test; `./run.sh -S` skips both. The report (`gui/logs/gui-smoke-report.txt`,
-also printed) lists every failed page with its problems and the path of a full
-page screenshot taken when the problems were found (`gui/logs/<pass>_*.png`).
+3. Lua sources (luacheck)
+-------------------------
 
-Checks of the sources
-=====================
+Finds the Lua bugs visible without running the code, no style. `checks/lua.sh`
+runs luacheck on `scripts/lua`, `pro/scripts/lua` and `scripts/locales`
+(`attic` and the `scripts/lua/pro` link left out) with only these warnings:
 
-Four checks that do not start ntopng, run by a full `./run.sh` after the smoke
-tests (one more test each, `./run.sh -S` skips them):
+- `011` syntax error
+- `121` assignment to a read-only global (e.g. `string = ...`)
+- `143` undefined field of a standard library (e.g. `string.lenght`, `table.insrt`)
+- `314` key repeated in a table constructor (one of the values is lost)
+- `511` unreachable code
 
-- `checks/lua.sh`: luacheck of the Lua sources, only the warnings that are
-  bugs: syntax errors, assignments to read-only globals, undefined fields of the
-  standard libraries (e.g. `string.lenght`), keys repeated in a table
-  constructor (a value is lost), unreachable code. Requirements: luacheck
-  (`apt install lua-check`). Report: `checks/logs/lua-report.txt`.
-- `checks/js.sh`: unit tests of the GUI JavaScript utilities with Vitest
-  (`pro/tests/js/*.test.js`, e.g. the dates in the server time zone).
-  Requirements: `npm install` in `pro`. Report: `checks/logs/js-report.txt`.
-- `checks/js-lint.sh`: ESLint of the GUI sources (`pro/http_src`, Vue and JS)
-  with only the rules that find bugs (`pro/.eslintrc.errors.json`): undefined
-  variables (a ReferenceError when the code runs), templates and `v-for` not
-  valid, props changed by the child, refs used without `.value`, keys repeated in
-  an object. A global the pages define goes in the `globals` of the config.
-  Requirements: `npm install` in `pro`. Report: `checks/logs/js-lint-report.txt`.
-- `checks/rest-docs.sh`: the REST documentation (`httpdocs/misc/rest-api-v2.json`)
-  against the sources: every documented path exists, and a path documented as
-  GET does not read only `_POST` (a GET request does not fill it; the opposite
-  works, ntopng also puts the params of a JSON POST in `_GET`). The endpoints not
-  documented are listed, not failed (the internal ones are left out on purpose).
-  Requirements: jq. Report: `checks/logs/rest-docs-report.txt`.
+The functions ntopng adds to the standard libraries (e.g. `function string.split(`,
+`table.merge = ...`) are found in the sources at every run and passed to
+luacheck as known, so they are not reported.
+
+4. JS utilities (Vitest)
+------------------------
+
+Finds the regressions of the GUI JavaScript utilities. `checks/js.sh` runs
+`npm run test:js` in `pro`: Vitest on `pro/tests/js/*.test.js` (e.g.
+`server-dates.test.js`, the dates in the server time zone). The failed tests
+are printed in full, a dot for each passed one.
+
+A new test is a `pro/tests/js/<name>.test.js` file; code that uses the browser
+globals (`window`, `document`) needs the `// @vitest-environment happy-dom`
+line on top.
+
+5. GUI sources (ESLint)
+-----------------------
+
+Finds the bugs in the `.vue` and `.js` files of `pro/http_src`, no style.
+`checks/js-lint.sh` runs `npm run lint:errors` in `pro` (`eslint --no-eslintrc
+-c .eslintrc.errors.json`, so the style config is not used). The config
+`pro/.eslintrc.errors.json` has `vue3-essential` and the core rules that find
+bugs:
+
+- undefined variables (a ReferenceError when the code runs)
+- templates and `v-for` not valid (missing `key`, same `key` in `v-if` and `v-else`)
+- props changed by the child, refs used without `.value`
+- keys repeated in an object, unreachable code
+
+The globals the pages define (`i18n`, `http_prefix`, `ntopng_utility`, `$`...)
+are listed in the `globals` of the config: a new one goes there. The report has
+one `FAIL  file:line:col: message [rule]` line per problem.
+
+6. REST documentation
+---------------------
+
+Finds a REST documentation (`httpdocs/misc/rest-api-v2.json`, the spec of the
+REST API page) that no longer matches the code. `checks/rest-docs.sh` (jq):
+
+- every documented path must exist (`/lua/pro/rest/v2/...` is
+  `pro/scripts/lua/rest/v2/...`): a moved or removed endpoint is a FAIL, its
+  documentation would answer 404
+- a path documented as GET must not read only `_POST` (comments are left out):
+  a GET request does not fill `_POST`, the documented call cannot work. The
+  opposite is fine: ntopng also puts the params of a JSON POST in `_GET`
+- the endpoints not documented are listed, not failed: the internal ones (page
+  contexts, wizard helpers) are left out on purpose
+
+The last line of the report is `REST DOCS   PATHS N   FAIL M`.
 
 ```
 cd checks
@@ -196,10 +314,6 @@ cd checks
 ./js-lint.sh                          # or: cd pro && npm run lint:errors
 ./rest-docs.sh
 ```
-
-A new JS test is a `pro/tests/js/<name>.test.js` file (see
-`server-dates.test.js`); code that uses the browser globals needs the
-`// @vitest-environment happy-dom` line on top.
 
 Add a Test
 ==========
