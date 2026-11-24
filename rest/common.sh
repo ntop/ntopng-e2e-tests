@@ -73,9 +73,12 @@ ntopng_slot_setup() {
 # Make defaults available to code that sources this file without a slot
 ntopng_slot_setup 0
 
+# Notifications: TESTS_LABEL (optional) prefixes the titles, e.g. [ASan] for the
+# run on a build with the sanitizers
+
 # Send a success alert
 function send_success {
-    TITLE="${1}"
+    TITLE="${TESTS_LABEL:+[${TESTS_LABEL}] }${1}"
     MESSAGE="${2}"
 
     if [ "${NOTIFICATIONS_ON}" = true ]; then
@@ -87,7 +90,7 @@ function send_success {
 
 # Send totals/summary to a secondary Discord channel (if configured)
 function send_summary {
-    TITLE="${1}"
+    TITLE="${TESTS_LABEL:+[${TESTS_LABEL}] }${1}"
     MESSAGE="${2}"
 
     if [ "${NOTIFICATIONS_ON}" = true ] && [ ! -z "${SUMMARY_DISCORD_WEBHOOK}" ]; then
@@ -97,7 +100,7 @@ function send_summary {
 
 # Send an error alert
 function send_error {
-    TITLE="${1}"
+    TITLE="${TESTS_LABEL:+[${TESTS_LABEL}] }${1}"
     MESSAGE="${2}"
     FILE_PATH="${3}"
 
