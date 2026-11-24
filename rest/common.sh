@@ -306,7 +306,7 @@ filter_ntopng_log() {
     # Process filtered log
     touch ${2}
     while IFS= read -r line; do
-        if [[ ${line} == *"    #"* ]] && [[ ${line} == *" 0x"* ]]; then
+        if [[ ${line} == *"    #"* ]] && [[ ${line} == *" 0x"* ]] && [[ ${line} != *" in "* ]]; then
             echo "${line}" | awk '{print $2}' | xargs addr2line -e ntopng >> ${2}
         else
             echo "${line}" >> ${2}
@@ -320,7 +320,7 @@ filter_ntopng_log() {
     # Process raw log
     touch ${1}
     while IFS= read -r line; do
-        if [[ ${line} == *"    #"* ]] && [[ ${line} == *" 0x"* ]]; then
+        if [[ ${line} == *"    #"* ]] && [[ ${line} == *" 0x"* ]] && [[ ${line} != *" in "* ]]; then
             echo "${line}" | awk '{print $2}' | xargs addr2line -e ntopng >> ${1}
         else
             echo "${line}" >> ${1}
@@ -329,6 +329,18 @@ filter_ntopng_log() {
     rm -f ${1}.stage1
 
     cd ${TESTS_PATH}
+}
+
+#
+# Sanitizer reports in an ntopng log, one FAIL line each with its count, for the
+# reports of the tests that check the log while ntopng runs: LeakSanitizer
+# reports at exit, after the checks (ntopng built with --with-leak-sanitizer)
+# Params:
+# $1 - ntopng log
+#
+sanitizer_fails() {
+    grep -E "ERROR: (AddressSanitizer|LeakSanitizer)|: runtime error:" "${1}" 2> /dev/null | sed 's/^==[0-9]*==//' |
+        sort | uniq -c | sed -E "s#^ *([0-9]+) (.*)#FAIL  sanitizer (\1 times): \2, full report in ${1}#"
 }
 
 #

@@ -315,6 +315,60 @@ cd checks
 ./rest-docs.sh
 ```
 
+Tests with the Sanitizers
+=========================
+
+Not run by `./run.sh`: they need an ntopng built with the sanitizers
+(AddressSanitizer, LeakSanitizer, UBSan) and take longer.
+
+Build: a copy of the sources next to `ntopng` (the build looks for `../nDPI`,
+`../PF_RING`, `../license`), without `.git` (do not run `autogen.sh` in a git
+checkout: it updates the submodules and resets `httpdocs/dist`), then
+`./configure --with-leak-sanitizer && make` in the copy (clang).
+
+The environment of every run below:
+
+```
+export ASAN_OPTIONS=detect_leaks=1                         # 0: memory errors only
+export ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-18    # file and line in the stacks
+export UBSAN_OPTIONS=print_stacktrace=1
+```
+
+All the tests: `./run.sh -j=4` from `tests/e2e/rest` of the copy (`run.sh` tests
+the ntopng three folders up; `-j` needs GNU parallel; about 50 minutes). A
+sanitizer report or a leak is an error in the ntopng log: the test fails and the
+notification has the report, with file and line. The REST and GUI smoke tests
+also check the log after ntopng exits (the leaks are reported at exit). The
+source checks need `node_modules` in `pro` and `gui` of the copy (e.g. links to
+the ones of the tree).
+
+Stress test with live traffic: `stress/run.sh` starts the ntopng of the tree
+(slot 12, port 3312) with one ZMQ collector interface, fed by nProbe with a
+NetFlow pcap replayed in a loop by sendPcap, and ClickHouse when a local server
+answers (historical endpoints, flow dump under traffic). With `--simulate-vlans` (random VLAN
+per flow), idle timeouts of 10 s and low host and flow limits (`-x 5000 -X 20000`)
+hosts and flows are created and purged all the time while, for
+`STRESS_MINUTES`, the REST smoke check (live mode, `STRESS_REST_WORKERS` copies
+in parallel) and the GUI smoke check (live mode, `admin` pass) run in a loop and
+the RSS of ntopng is sampled every 30 s. Then ntopng is stopped with SIGTERM. It
+fails on a sanitizer report, a crash, a shutdown longer than
+`STRESS_SHUTDOWN_TIMEOUT` (300 s), a FAIL of the smoke checks (reported once,
+URL without its params), an error or warning in the ntopng log (listed once with
+its count: with calls in parallel it cannot be tied to one of them, the REST
+smoke test tells the endpoint),
+an RSS growth over `STRESS_RSS_GROWTH` % (20) between the first and the last third
+of the samples after the warm-up, and when no flow arrives within 60 s (e.g.
+nProbe stopped on its license: it validates it only as root).
+
+```
+cd stress
+STRESS_PCAP=<NetFlow pcap> NPROBE="sudo <path>/nprobe" SENDPCAP=<path>/sendPcap \
+    STRESS_MINUTES=60 ./run.sh
+```
+
+Report: `stress/logs/stress-report.txt`, with the ntopng log, the RSS samples and
+the smoke reports of every loop in `stress/logs/`.
+
 Add a Test
 ==========
 

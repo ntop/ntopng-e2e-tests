@@ -71,6 +71,8 @@ if [ ! -s "${REPORT}" ]; then
     } > "${REPORT}"
 fi
 
+sanitizer_fails "${NTOPNG_LOG}" >> "${REPORT}"
+
 cat "${REPORT}"
 grep -q '^FAIL' "${REPORT}" && exit 1
 exit 0

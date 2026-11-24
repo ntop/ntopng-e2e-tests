@@ -68,6 +68,7 @@ fi
     cat "${SMOKE_REPORT}"
 } > "${SMOKE_REPORT}.tmp" && mv "${SMOKE_REPORT}.tmp" "${SMOKE_REPORT}"
 
+sanitizer_fails "${SMOKE_LOG}" >> "${SMOKE_REPORT}"
 ntopng_cleanup
 rm -f "${POST}"
 
