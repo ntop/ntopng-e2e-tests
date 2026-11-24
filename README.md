@@ -330,7 +330,7 @@ The environment of every run below:
 
 ```
 export ASAN_OPTIONS=detect_leaks=1                         # 0: memory errors only
-export ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-18    # file and line in the stacks
+export ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-18    # file and line in the stacks (same version as clang)
 export UBSAN_OPTIONS=print_stacktrace=1
 ```
 

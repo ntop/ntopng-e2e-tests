@@ -698,6 +698,8 @@ anon denied /lua/pro/rest/v2/get/traffic_model/expected_filters.lua
 user denied /lua/pro/rest/v2/get/traffic_model/expected_filters.lua
 anon denied /lua/pro/rest/v2/get/traffic_model/graph.lua
 user denied /lua/pro/rest/v2/get/traffic_model/graph.lua
+anon denied /lua/pro/rest/v2/get/traffic_model/overview.lua
+user denied /lua/pro/rest/v2/get/traffic_model/overview.lua
 anon denied /lua/pro/rest/v2/get/traffic_model/protocols.lua
 user denied /lua/pro/rest/v2/get/traffic_model/protocols.lua
 anon denied /lua/pro/rest/v2/get/traffic_model/server_types.lua
