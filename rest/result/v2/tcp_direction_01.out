@@ -370,7 +370,7 @@
 {"used_ports":{"contacted":[],"host":"192.168.9.104","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.105","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:2222 SSH"],"host":"192.168.9.106","ifid":0,"server":[]}}
-{"used_ports":{"contacted":["tcp:587 SMTP"],"host":"192.168.9.107","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:587 Unknown"],"host":"192.168.9.107","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.108","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.109","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.9.110","ifid":0,"server":[]}}
@@ -503,7 +503,7 @@
 {"used_ports":{"contacted":[],"host":"192.168.10.104","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.105","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.106","ifid":0,"server":["tcp:2222 SSH"]}}
-{"used_ports":{"contacted":[],"host":"192.168.10.107","ifid":0,"server":["tcp:587 SMTP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.10.107","ifid":0,"server":["tcp:587 Unknown"]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.108","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.109","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.10.110","ifid":0,"server":[]}}

@@ -503,7 +503,7 @@
 {"used_ports":{"host":"192.168.10.104","ifid":1,"server":[]}}
 {"used_ports":{"host":"192.168.10.105","ifid":1,"server":[]}}
 {"used_ports":{"host":"192.168.10.106","ifid":1,"server":["tcp:2222 SSH"]}}
-{"used_ports":{"host":"192.168.10.107","ifid":1,"server":["tcp:587 SMTP"]}}
+{"used_ports":{"host":"192.168.10.107","ifid":1,"server":["tcp:587 Unknown"]}}
 {"used_ports":{"host":"192.168.10.108","ifid":1,"server":[]}}
 {"used_ports":{"host":"192.168.10.109","ifid":1,"server":[]}}
 {"used_ports":{"host":"192.168.10.110","ifid":1,"server":[]}}
