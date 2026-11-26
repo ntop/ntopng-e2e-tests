@@ -7,7 +7,7 @@ requires: pro
 # Server ports learned by the local servers (local_server_ports) and ports
 # contacted by the local clients (remote_contacted_ports), for the cases not
 # covered by the direction tests (tcp_direction_01, flow_direction_*):
-# server_ports_cases.pcap, generated with scapy, one flow per case (two for 8),
+# server_ports_cases.pcap, generated with scapy, one flow per case (two for 8-10),
 # client 192.168.11.i, server 192.168.12.i.
 #
 # A port is learned only from the flows whose direction is reliable (decided)
@@ -25,6 +25,12 @@ requires: pro
 #
 #   7  TCP 40007 -> 8080   handshake only (HTTP_Proxy guessed by the port): learned as Unknown
 #   8  TCP 4000x -> 8080   HTTP detected by DPI, then a handshake only: the port keeps HTTP
+#
+# The flows opened by another one teach no port, neither server nor contacted:
+#
+#   9  UDP 16384 <-> 16386 RTP and 16385 <-> 16387 RTCP media (both sides send): not learned
+#  10  TCP 40010 -> 21     FTP control (passive mode): learned; its data connection
+#      TCP 40110 -> 50000  (directory listing, FTP_DATA): not learned
 
 pre: |
   # Disable everything not related to this test
