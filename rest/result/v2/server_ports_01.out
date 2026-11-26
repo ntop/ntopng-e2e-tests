@@ -1,3 +1,5 @@
+{"cli":"192.168.11.10:40010","l7":"FTP_CONTROL","proto":"TCP","srv":"192.168.12.10:21"}
+{"cli":"192.168.11.10:40110","l7":"FTP_DATA","proto":"TCP","srv":"192.168.12.10:50000"}
 {"cli":"192.168.11.1:40001","l7":"HTTP","proto":"TCP","srv":"192.168.12.1:5555"}
 {"cli":"192.168.11.2:40002","l7":"HTTP","proto":"TCP","srv":"192.168.12.2:5555"}
 {"cli":"192.168.11.3:40003","l7":"Unknown","proto":"UDP","srv":"192.168.12.3:40100"}
@@ -7,6 +9,8 @@
 {"cli":"192.168.11.7:40007","l7":"HTTP_Proxy","proto":"TCP","srv":"192.168.12.7:8080"}
 {"cli":"192.168.11.8:40008","l7":"HTTP","proto":"TCP","srv":"192.168.12.8:8080"}
 {"cli":"192.168.11.8:40108","l7":"HTTP_Proxy","proto":"TCP","srv":"192.168.12.8:8080"}
+{"cli":"192.168.11.9:16384","l7":"RTP","proto":"UDP","srv":"192.168.12.9:16386"}
+{"cli":"192.168.11.9:16385","l7":"RTCP","proto":"UDP","srv":"192.168.12.9:16387"}
 {"used_ports":{"contacted":["tcp:5555 HTTP"],"host":"192.168.11.1","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.11.2","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.11.3","ifid":0,"server":[]}}
@@ -15,6 +19,8 @@
 {"used_ports":{"contacted":["udp:53 DNS"],"host":"192.168.11.6","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:8080 Unknown"],"host":"192.168.11.7","ifid":0,"server":[]}}
 {"used_ports":{"contacted":["tcp:8080 HTTP"],"host":"192.168.11.8","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.11.9","ifid":0,"server":[]}}
+{"used_ports":{"contacted":["tcp:21 FTP_CONTROL"],"host":"192.168.11.10","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.12.1","ifid":0,"server":["tcp:5555 HTTP"]}}
 {"used_ports":{"contacted":[],"host":"192.168.12.2","ifid":0,"server":[]}}
 {"used_ports":{"contacted":[],"host":"192.168.12.3","ifid":0,"server":[]}}
@@ -23,3 +29,5 @@
 {"used_ports":{"contacted":[],"host":"192.168.12.6","ifid":0,"server":["udp:53 DNS"]}}
 {"used_ports":{"contacted":[],"host":"192.168.12.7","ifid":0,"server":["tcp:8080 Unknown"]}}
 {"used_ports":{"contacted":[],"host":"192.168.12.8","ifid":0,"server":["tcp:8080 HTTP"]}}
+{"used_ports":{"contacted":[],"host":"192.168.12.9","ifid":0,"server":[]}}
+{"used_ports":{"contacted":[],"host":"192.168.12.10","ifid":0,"server":["tcp:21 FTP_CONTROL"]}}
