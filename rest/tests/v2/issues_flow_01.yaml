@@ -15,6 +15,7 @@ ignore:
   - tstamp
   - suppressed_until
   - alerts_url
+  - country
 
 pre: |
   # Issues are off by default (Preferences > Alerts > Issues)
