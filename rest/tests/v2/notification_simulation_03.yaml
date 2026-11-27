@@ -1,0 +1,37 @@
+# Tags of the active monitoring measurements: added to the alerts of the measurement, selected by
+# the notification policies with a tag filter. The tags of the dialog are simulated before saving,
+# then the saved ones; a deleted tag is removed from the measurements.
+# The only policy filters on a tag no real alert of the pcap has: nothing is actually sent.
+input: test_01.pcap
+
+ignore:
+
+runtime: |
+  R="http://localhost:3333/lua/rest/v2"
+  post() {
+    curl -s -u admin:admin -H "Content-Type: application/json" -d "$2" "${R}/$1"
+  }
+  simulate() {
+    post exec/notification/simulate.lua "$1" | jq -c '{rc: .rc_str, alerts: [.rsp[]? | {title, recipients: [.recipients[] | [.name, .status, [.policies[] | .name]]]}]}'
+  }
+  saved_tags() {
+    curl -s -u admin:admin "${R}/export/active_monitoring/config.lua" | jq -c '[.. | objects | select(has("tag_ids")) | .tag_ids]'
+  }
+  post add/notification/recipient.lua '{"recipient_name": "NOC", "endpoint_conf_type": "webhook", "webhook_url": "http://127.0.0.1:9/noc"}' | jq -c '{rc: .rc_str}'
+  post edit/tag/tag.lua '{"tags": [{"tag_id": 40, "tag_name": "Core Routers", "color": "#ff0000", "description": "", "tag_protocols": "", "tag_risks": "", "tag_ttl": 0}]}' | jq -c '{rc: .rc_str}'
+  post add/notification/policy.lua '{"policy_name": "Core Routers", "policy_notifications_type": "alerts", "policy_minimum_severity": "3", "policy_labels": "40", "policy_recipients": "1"}' | jq -c '{rc: .rc_str}'
+  # Not saved yet: no tags, then the tag of the dialog
+  simulate '{"simulation_source": "am", "am_host": "192.168.1.1", "measurement": "icmp", "tag_ids": ""}'
+  simulate '{"simulation_source": "am", "am_host": "192.168.1.1", "measurement": "icmp", "tag_ids": "40"}'
+  # Saved with the tag (hourly: not measured during the test)
+  post set/active_monitoring/measurement.lua '{"action": "add", "am_host": "192.168.1.1", "measurement": "icmp", "threshold": "100", "granularity": "hour", "tag_ids": "40"}' | jq -c '{rc: .rc_str, result: .rsp.result}'
+  saved_tags
+  simulate '{"simulation_source": "am", "am_host": "192.168.1.1", "measurement": "icmp"}'
+  # Edited without tag_ids: the tags are kept
+  post set/active_monitoring/measurement.lua '{"action": "edit", "am_host": "192.168.1.1", "measurement": "icmp", "threshold": "200", "granularity": "hour", "old_host": "192.168.1.1", "old_measurement": "icmp"}' | jq -c '{rc: .rc_str, result: .rsp.result}'
+  saved_tags
+  # Tag deleted: removed from the measurement
+  post delete/tag/tag.lua '{"tag_id": "40"}' | jq -c '{rc: .rc_str}'
+  saved_tags
+  post delete/active_monitoring/measurement.lua '{"am_host": "192.168.1.1", "measurement": "icmp"}' | jq -c '{rc: .rc_str}'
+  post delete/notification/policy.lua '{"policy_id": "0"}' | jq -c '{rc: .rc_str}'

@@ -1,0 +1,67 @@
+# Notification policies: add/edit/delete, validation, recipients of a policy (also set from the
+# recipient), recipient deletion, export with the configuration
+input: test_01.pcap
+
+ignore:
+
+runtime: |
+  R="http://localhost:3333/lua/rest/v2"
+  post() {
+    curl -s -u admin:admin -H "Content-Type: application/json" -d "$2" "${R}/$1"
+  }
+  get_policies() {
+    curl -s -u admin:admin "${R}/get/notification/policies.lua" | jq -c '{rc: .rc_str, policies: [.rsp[] | {policy_id, name, enabled, notifications_type, minimum_severity, check_categories, host_pools, am_hosts, tags, recipients}]}'
+  }
+  get_recipients() {
+    curl -s -u admin:admin "${R}/get/notification/recipients.lua" | jq -c '{rc: .rc_str, recipients: [.rsp[] | {recipient_id, recipient_name, builtin, minimum_severity, policies}]}'
+  }
+  # No policies on a new installation, the builtin recipient only
+  get_policies
+  get_recipients
+  # Two recipients
+  post add/notification/recipient.lua '{"recipient_name": "R1", "endpoint_conf_type": "webhook", "webhook_url": "http://127.0.0.1:9/r1"}' | jq -c '{rc: .rc_str, recipient_id: .rsp.recipient_id}'
+  post add/notification/recipient.lua '{"recipient_name": "R2", "endpoint_conf_type": "webhook", "webhook_url": "http://127.0.0.1:9/r2"}' | jq -c '{rc: .rc_str, recipient_id: .rsp.recipient_id}'
+  # Add: alerts with filters to R1 and R2, reports to R1
+  post add/notification/policy.lua '{"policy_name": "P1", "policy_notifications_type": "alerts", "policy_minimum_severity": "5", "policy_check_categories": "1,2", "policy_host_pools": "0", "policy_labels": "3", "policy_recipients": "1,2"}' | jq -c '{rc: .rc_str, policy_id: .rsp.policy_id}'
+  post add/notification/policy.lua '{"policy_name": "P2", "policy_notifications_type": "reports", "policy_minimum_severity": "3", "policy_recipients": "1"}' | jq -c '{rc: .rc_str, policy_id: .rsp.policy_id}'
+  get_policies
+  get_recipients
+  # Invalid: duplicate name, unknown type, builtin recipient, missing name, not existing recipient
+  post add/notification/policy.lua '{"policy_name": "P1", "policy_notifications_type": "alerts", "policy_minimum_severity": "5"}' | jq -c '{rc: .rc_str, type: .rsp.type}'
+  post add/notification/policy.lua '{"policy_name": "P3", "policy_notifications_type": "nothing", "policy_minimum_severity": "5"}' | jq -c '{rc: .rc_str, type: .rsp.type}'
+  post add/notification/policy.lua '{"policy_name": "P3", "policy_notifications_type": "alerts", "policy_minimum_severity": "5", "policy_recipients": "0"}' | jq -c '{rc: .rc_str, type: .rsp.type}'
+  post add/notification/policy.lua '{"policy_notifications_type": "alerts", "policy_minimum_severity": "5"}' | jq -c '{rc: .rc_str, type: .rsp.type, param: .rsp.missing_param}'
+  post add/notification/policy.lua '{"policy_name": "P3", "policy_notifications_type": "alerts", "policy_minimum_severity": "5", "policy_recipients": "50"}' | jq -c '{rc: .rc_str, type: .rsp.type}'
+  # Edit: disabled, no filters, R2 only
+  post edit/notification/policy.lua '{"policy_id": "0", "policy_name": "P1", "policy_enabled": "false", "policy_notifications_type": "alerts", "policy_minimum_severity": "4", "policy_recipients": "2"}' | jq -c '{rc: .rc_str}'
+  post edit/notification/policy.lua '{"policy_id": "9", "policy_name": "P9", "policy_notifications_type": "alerts", "policy_minimum_severity": "4"}' | jq -c '{rc: .rc_str, type: .rsp.type}'
+  get_policies
+  # The policies of a recipient: none, then both
+  post edit/notification/recipient.lua '{"recipient_id": "1", "recipient_name": "R1", "webhook_url": "http://127.0.0.1:9/r1", "recipient_policies": ""}' | jq -c '{rc: .rc_str}'
+  get_recipients
+  post edit/notification/recipient.lua '{"recipient_id": "1", "recipient_name": "R1", "webhook_url": "http://127.0.0.1:9/r1", "recipient_policies": "0,1"}' | jq -c '{rc: .rc_str}'
+  # Not sent: the policies are kept
+  post edit/notification/recipient.lua '{"recipient_id": "1", "recipient_name": "R1", "webhook_url": "http://127.0.0.1:9/r1"}' | jq -c '{rc: .rc_str}'
+  get_recipients
+  # A new recipient added to a policy
+  post add/notification/recipient.lua '{"recipient_name": "R3", "endpoint_conf_type": "webhook", "webhook_url": "http://127.0.0.1:9/r3", "recipient_policies": "1"}' | jq -c '{rc: .rc_str, recipient_id: .rsp.recipient_id}'
+  get_policies
+  # The policies are exported with the recipient names
+  curl -s -u admin:admin "${R}/export/notifications/config.lua" | jq -c '{rc: .rc_str, policies: [.rsp.modules.notifications.policies[] | {name, recipient_names}]}'
+  # A deleted recipient is removed from the policies
+  post delete/notification/recipient.lua '{"recipient_id": "1", "delete_endpoint": "true"}' | jq -c '{rc: .rc_str}'
+  get_policies
+  # Delete
+  post delete/notification/policy.lua '{"policy_id": "1"}' | jq -c '{rc: .rc_str}'
+  post delete/notification/policy.lua '{"policy_id": "1"}' | jq -c '{rc: .rc_str, type: .rsp.type}'
+  get_policies
+  # A deleted host pool (PoolA: id 2) or tag is removed from the filters; a policy losing its last one is disabled
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"pool_name": "PoolA", "pool_members": ""}' "${R}/add/host/pool.lua" | jq -c '{rc: .rc_str, pool_id: .rsp.pool_id}'
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"pool_name": "PoolB", "pool_members": ""}' "${R}/add/host/pool.lua" | jq -c '{rc: .rc_str, pool_id: .rsp.pool_id}'
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"tags": [{"tag_id": 40, "tag_name": "Tag40", "color": "#ff0000", "description": "", "tag_protocols": "", "tag_risks": "", "tag_ttl": 0}]}' "${R}/edit/tag/tag.lua" | jq -c '{rc: .rc_str}'
+  post add/notification/policy.lua '{"policy_name": "Pools A", "policy_notifications_type": "alerts", "policy_minimum_severity": "5", "policy_host_pools": "2", "policy_recipients": "2"}' | jq -c '{rc: .rc_str, policy_id: .rsp.policy_id}'
+  post add/notification/policy.lua '{"policy_name": "Pools A B and Tag", "policy_notifications_type": "alerts", "policy_minimum_severity": "5", "policy_host_pools": "2,3", "policy_labels": "40,3", "policy_recipients": "2"}' | jq -c '{rc: .rc_str, policy_id: .rsp.policy_id}'
+  post add/notification/policy.lua '{"policy_name": "Tag only", "policy_notifications_type": "alerts", "policy_minimum_severity": "5", "policy_labels": "40", "policy_recipients": "2"}' | jq -c '{rc: .rc_str, policy_id: .rsp.policy_id}'
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"pool": "2"}' "${R}/delete/host/pool.lua" | jq -c '{delete_pool: .rc_str}'
+  curl -s -u admin:admin -H "Content-Type: application/json" -d '{"tag_id": "40"}' "${R}/delete/tag/tag.lua" | jq -c '{delete_tag: .rc_str}'
+  get_policies

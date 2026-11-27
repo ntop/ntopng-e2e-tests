@@ -1,0 +1,52 @@
+# Notification simulation: stored or not (with the reason), notified recipients and the policies
+# notifying them (with their conditions) of the alerts of checks, traffic rules, SNMP device rules,
+# active monitoring, AI policies and Wazuh alert rules
+input: test_01.pcap
+
+ignore:
+
+runtime: |
+  R="http://localhost:3333/lua/rest/v2"
+  post() {
+    curl -s -u admin:admin -H "Content-Type: application/json" -d "$2" "${R}/$1"
+  }
+  simulate() {
+    post exec/notification/simulate.lua "$1" | jq -c '{rc: .rc_str, alerts: [.rsp[]? | {title, severity, category, disabled, stored, stored_condition, stored_reason, feeds_issues, recipients: [.recipients[] | [.name, .destination, .status, [.policies[] | [.name, .conditions]]]]}]}'
+  }
+  post add/notification/recipient.lua '{"recipient_name": "R1", "endpoint_conf_type": "webhook", "webhook_url": "http://127.0.0.1:9/r1"}' | jq -c '{rc: .rc_str}'
+  post add/notification/recipient.lua '{"recipient_name": "R2", "endpoint_conf_type": "webhook", "webhook_url": "http://127.0.0.1:9/r2"}' | jq -c '{rc: .rc_str}'
+  post edit/tag/tag.lua '{"tags": [{"tag_id": 40, "tag_name": "Tag40", "color": "#ff0000", "description": "", "tag_protocols": "", "tag_risks": "", "tag_ttl": 0}]}' | jq -c '{rc: .rc_str}'
+  post add/notification/policy.lua '{"policy_name": "All", "policy_notifications_type": "alerts", "policy_minimum_severity": "3", "policy_recipients": "1"}' | jq -c '{rc: .rc_str}'
+  post add/notification/policy.lua '{"policy_name": "Errors", "policy_notifications_type": "alerts", "policy_minimum_severity": "5", "policy_recipients": "2"}' | jq -c '{rc: .rc_str}'
+  post add/notification/policy.lua '{"policy_name": "Security", "policy_notifications_type": "alerts", "policy_minimum_severity": "3", "policy_check_categories": "1", "policy_recipients": "2"}' | jq -c '{rc: .rc_str}'
+  post add/notification/policy.lua '{"policy_name": "Default Pool", "policy_notifications_type": "alerts", "policy_minimum_severity": "3", "policy_host_pools": "0", "policy_recipients": "2"}' | jq -c '{rc: .rc_str}'
+  post add/notification/policy.lua '{"policy_name": "Tag40", "policy_notifications_type": "alerts", "policy_minimum_severity": "3", "policy_labels": "40", "policy_recipients": "2"}' | jq -c '{rc: .rc_str}'
+  post add/notification/policy.lua '{"policy_name": "Disabled", "policy_enabled": "false", "policy_notifications_type": "alerts", "policy_minimum_severity": "3", "policy_recipients": "1"}' | jq -c '{rc: .rc_str}'
+  post add/notification/policy.lua '{"policy_name": "Reports", "policy_notifications_type": "reports", "policy_minimum_severity": "3", "policy_recipients": "1"}' | jq -c '{rc: .rc_str}'
+  # Flow check with its saved configuration (default flow alert score)
+  simulate '{"simulation_source": "check", "check_subdir": "flow", "script_key": "blacklisted"}'
+  # Host check with the values of the dialog: critical severity, tag 40
+  simulate '{"simulation_source": "check", "check_subdir": "host", "script_key": "countries_contacts", "JSON": "{\"min\":{\"enabled\":true,\"script_conf\":{\"severity\":{\"severity_id\":6},\"operator\":\"gt\",\"threshold\":100}}}", "tag_ids": "40"}'
+  # Host check with debug severity: below the minimum severity of the alerts database
+  simulate '{"simulation_source": "check", "check_subdir": "host", "script_key": "countries_contacts", "JSON": "{\"min\":{\"enabled\":true,\"script_conf\":{\"severity\":{\"severity_id\":1},\"operator\":\"gt\",\"threshold\":100}}}", "tag_ids": ""}'
+  # Host check disabled in the dialog
+  simulate '{"simulation_source": "check", "check_subdir": "host", "script_key": "countries_contacts", "JSON": "{\"min\":{\"enabled\":false,\"script_conf\":{}}}", "tag_ids": ""}'
+  simulate '{"simulation_source": "traffic_rule", "ifid": "0", "rule_type": "Host", "rule_target": "192.168.1.1"}'
+  simulate '{"simulation_source": "traffic_rule", "ifid": "0", "rule_type": "interface", "rule_target": "0"}'
+  # Traffic Rules check disabled (Behavioural Checks): the rules raise no alert
+  post disable/check.lua '{"check_subdir": "interface", "script_key": "traffic_rules"}' | jq -c '{rc: .rc_str}'
+  simulate '{"simulation_source": "traffic_rule", "ifid": "0", "rule_type": "interface", "rule_target": "0"}'
+  post enable/check.lua '{"check_subdir": "interface", "script_key": "traffic_rules"}' | jq -c '{rc: .rc_str}'
+  simulate '{"simulation_source": "snmp_rule", "snmp_device": "all"}'
+  # SNMP Device Rules check disabled (Behavioural Checks): the rules raise no alert
+  post disable/check.lua '{"check_subdir": "snmp_device", "script_key": "snmp_device_interface_threshold_crossed"}' | jq -c '{rc: .rc_str}'
+  simulate '{"simulation_source": "snmp_rule", "snmp_device": "all"}'
+  post enable/check.lua '{"check_subdir": "snmp_device", "script_key": "snmp_device_interface_threshold_crossed"}' | jq -c '{rc: .rc_str}'
+  simulate '{"simulation_source": "am", "am_host": "8.8.8.8", "measurement": "icmp"}'
+  simulate '{"simulation_source": "ai_policy", "custom_score": "200"}'
+  simulate '{"simulation_source": "wazuh_rule", "wazuh_rule_immediate": "1"}'
+  # Invalid: unknown source, unknown check
+  simulate '{"simulation_source": "nothing"}'
+  simulate '{"simulation_source": "check", "check_subdir": "host", "script_key": "nothing"}'
+  # No real notification to the test recipients (unreachable webhooks)
+  for policy_id in 0 1 2 3 4 5 6; do post delete/notification/policy.lua "{\"policy_id\": \"${policy_id}\"}" > /dev/null; done

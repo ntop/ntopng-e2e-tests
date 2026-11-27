@@ -1,0 +1,17 @@
+# Notification simulation: administrators only (it lists the policies and the recipients)
+input: test_01.pcap
+
+login: true
+
+post: |
+  B=http://localhost:3333
+  APW="${NTOPNG_TEST_ADMIN_PASSWORD}"
+  PW=Bob_pw_1234
+  SIMULATE='{"simulation_source": "ai_policy", "custom_score": "100"}'
+  curl -s -u "admin:${APW}" -d username=bob -d full_name=bob -d "password=${PW}" -d "confirm_password=${PW}" \
+    -d user_role=unprivileged -d allowed_networks=0.0.0.0/0,::/0 -d allowed_interface= -d add_user_language=en \
+    "${B}/lua/rest/v2/add/ntopng/user.lua" | jq -c '{step: "add_user", rc: .rc_str}'
+  curl -s -u "admin:${APW}" -H "Content-Type: application/json" -d "${SIMULATE}" \
+    "${B}/lua/rest/v2/exec/notification/simulate.lua" | jq -c '{user: "admin", rc: .rc_str, alerts: (.rsp | length)}'
+  curl -s -u "bob:${PW}" -H "Content-Type: application/json" -d "${SIMULATE}" \
+    "${B}/lua/rest/v2/exec/notification/simulate.lua" | jq -c '{user: "bob", rc: .rc_str}'

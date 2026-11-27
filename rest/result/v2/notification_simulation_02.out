@@ -1,0 +1,3 @@
+{"rc":"OK","step":"add_user"}
+{"alerts":1,"rc":"OK","user":"admin"}
+{"rc":"NOT_GRANTED","user":"bob"}

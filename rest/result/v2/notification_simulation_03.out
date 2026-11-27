@@ -1,0 +1,14 @@
+{"rc":"OK"}
+{"rc":"OK"}
+{"rc":"OK"}
+{"alerts":[{"recipients":[],"title":"Active Monitoring (threshold crossed)"},{"recipients":[],"title":"Active Monitoring (host unreachable)"}],"rc":"OK"}
+{"alerts":[{"recipients":[["NOC","match",["Core Routers"]]],"title":"Active Monitoring (threshold crossed)"},{"recipients":[["NOC","match",["Core Routers"]]],"title":"Active Monitoring (host unreachable)"}],"rc":"OK"}
+{"rc":"OK","result":"ok"}
+[[40]]
+{"alerts":[{"recipients":[["NOC","match",["Core Routers"]]],"title":"Active Monitoring (threshold crossed)"},{"recipients":[["NOC","match",["Core Routers"]]],"title":"Active Monitoring (host unreachable)"}],"rc":"OK"}
+{"rc":"OK","result":"ok"}
+[[40]]
+{"rc":"OK"}
+[[]]
+{"rc":"OK"}
+{"rc":"OK"}

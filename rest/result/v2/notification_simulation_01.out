@@ -1,0 +1,28 @@
+{"rc":"OK"}
+{"rc":"OK"}
+{"rc":"OK"}
+{"rc":"OK"}
+{"rc":"OK"}
+{"rc":"OK"}
+{"rc":"OK"}
+{"rc":"OK"}
+{"rc":"OK"}
+{"rc":"OK"}
+{"alerts":[{"category":"Cybersecurity","disabled":false,"feeds_issues":false,"recipients":[["R1","(Webhook)","match",[["All",[]]]],["R2","(Webhook)","match",[["Default Pool",["Only for the hosts of the pools: Default"]],["Errors",[]],["Security",[]]]]],"severity":"Critical","stored":"match","stored_condition":null,"stored_reason":null,"title":"Blacklisted Flow"}],"rc":"OK"}
+{"alerts":[{"category":"Cybersecurity","disabled":false,"feeds_issues":false,"recipients":[["R1","(Webhook)","match",[["All",[]]]],["R2","(Webhook)","match",[["Default Pool",["Only for the hosts of the pools: Default"]],["Errors",[]],["Security",[]],["Tag40",[]]]]],"severity":"Critical","stored":"match","stored_condition":null,"stored_reason":null,"title":"Countries Contacts"}],"rc":"OK"}
+{"alerts":[{"category":"Cybersecurity","disabled":false,"feeds_issues":false,"recipients":[],"severity":"Info","stored":"no_match","stored_condition":null,"stored_reason":"due to severity filter (minimum Notice)","title":"Countries Contacts"}],"rc":"OK"}
+{"alerts":[{"category":"Cybersecurity","disabled":true,"feeds_issues":false,"recipients":[["R1","(Webhook)","match",[["All",[]]]],["R2","(Webhook)","match",[["Default Pool",["Only for the hosts of the pools: Default"]],["Security",[]]]]],"severity":"Notice","stored":"match","stored_condition":null,"stored_reason":null,"title":"Countries Contacts"}],"rc":"OK"}
+{"alerts":[{"category":"Network","disabled":false,"feeds_issues":false,"recipients":[["R1","(Webhook)","match",[["All",[]]]],["R2","(Webhook)","match",[["Default Pool",[]],["Errors",[]]]]],"severity":"Error","stored":"match","stored_condition":null,"stored_reason":null,"title":"Threshold Crossed"}],"rc":"OK"}
+{"alerts":[{"category":"Network","disabled":false,"feeds_issues":false,"recipients":[["R1","(Webhook)","match",[["All",[]]]],["R2","(Webhook)","match",[["Default Pool",[]],["Errors",[]]]]],"severity":"Error","stored":"match","stored_condition":null,"stored_reason":null,"title":"Interface Rule Threshold Crossed"}],"rc":"OK"}
+{"rc":"OK"}
+{"alerts":[{"category":"Network","disabled":true,"feeds_issues":false,"recipients":[["R1","(Webhook)","match",[["All",[]]]],["R2","(Webhook)","match",[["Default Pool",[]],["Errors",[]]]]],"severity":"Error","stored":"match","stored_condition":null,"stored_reason":null,"title":"Interface Rule Threshold Crossed"}],"rc":"OK"}
+{"rc":"OK"}
+{"alerts":[{"category":"SNMP","disabled":false,"feeds_issues":false,"recipients":[["R1","(Webhook)","match",[["All",[]]]],["R2","(Webhook)","match",[["Default Pool",["Only for the hosts of the pools: Default"]],["Errors",[]]]]],"severity":"Error","stored":"match","stored_condition":null,"stored_reason":null,"title":"Threshold Crossed"}],"rc":"OK"}
+{"rc":"OK"}
+{"alerts":[{"category":"SNMP","disabled":true,"feeds_issues":false,"recipients":[["R1","(Webhook)","match",[["All",[]]]],["R2","(Webhook)","match",[["Default Pool",["Only for the hosts of the pools: Default"]],["Errors",[]]]]],"severity":"Error","stored":"match","stored_condition":null,"stored_reason":null,"title":"Threshold Crossed"}],"rc":"OK"}
+{"rc":"OK"}
+{"alerts":[{"category":"Active Monitoring","disabled":null,"feeds_issues":false,"recipients":[["R1","(Webhook)","match",[["All",[]]]],["R2","(Webhook)","match",[["Default Pool",[]]]]],"severity":"Warning","stored":"match","stored_condition":null,"stored_reason":null,"title":"Active Monitoring (threshold crossed)"},{"category":"Active Monitoring","disabled":null,"feeds_issues":false,"recipients":[["R1","(Webhook)","match",[["All",[]]]],["R2","(Webhook)","match",[["Default Pool",[]],["Errors",[]]]]],"severity":"Critical","stored":"match","stored_condition":null,"stored_reason":null,"title":"Active Monitoring (host unreachable)"}],"rc":"OK"}
+{"alerts":[{"category":"Cybersecurity","disabled":null,"feeds_issues":false,"recipients":[["R1","(Webhook)","match",[["All",[]]]],["R2","(Webhook)","match",[["Default Pool",["Only for the hosts of the pools: Default"]],["Errors",[]],["Security",[]]]]],"severity":"Critical","stored":"match","stored_condition":null,"stored_reason":null,"title":"AI Policy"}],"rc":"OK"}
+{"alerts":[{"category":null,"disabled":null,"feeds_issues":false,"recipients":[],"severity":null,"stored":"no_match","stored_condition":null,"stored_reason":"as it is not an alert","title":"Wazuh alert (sent immediately)"}],"rc":"OK"}
+{"alerts":[],"rc":"INVALID_ARGUMENTS"}
+{"alerts":[],"rc":"INVALID_ARGUMENTS"}

@@ -830,6 +830,8 @@ anon denied /lua/rest/v2/add/host/pool_member.lua
 user denied /lua/rest/v2/add/host/pool_member.lua
 anon denied /lua/rest/v2/add/host/to_scan.lua
 user denied /lua/rest/v2/add/host/to_scan.lua
+anon denied /lua/rest/v2/add/notification/policy.lua
+user denied /lua/rest/v2/add/notification/policy.lua
 anon denied /lua/rest/v2/add/notification/recipient.lua
 user denied /lua/rest/v2/add/notification/recipient.lua
 anon denied /lua/rest/v2/add/ntopng/analyze_pcap.lua
@@ -888,6 +890,8 @@ anon denied /lua/rest/v2/delete/network/alerts.lua
 user denied /lua/rest/v2/delete/network/alerts.lua
 anon denied /lua/rest/v2/delete/notification/endpoint.lua
 user denied /lua/rest/v2/delete/notification/endpoint.lua
+anon denied /lua/rest/v2/delete/notification/policy.lua
+user denied /lua/rest/v2/delete/notification/policy.lua
 anon denied /lua/rest/v2/delete/notification/recipient.lua
 user denied /lua/rest/v2/delete/notification/recipient.lua
 anon denied /lua/rest/v2/delete/ntopng/user.lua
@@ -926,6 +930,8 @@ anon denied /lua/rest/v2/edit/network/edit.lua
 user denied /lua/rest/v2/edit/network/edit.lua
 anon denied /lua/rest/v2/edit/notification/endpoint.lua
 user denied /lua/rest/v2/edit/notification/endpoint.lua
+anon denied /lua/rest/v2/edit/notification/policy.lua
+user denied /lua/rest/v2/edit/notification/policy.lua
 anon denied /lua/rest/v2/edit/notification/recipient.lua
 user denied /lua/rest/v2/edit/notification/recipient.lua
 anon denied /lua/rest/v2/edit/ntopng/incr_flows.lua
@@ -1298,12 +1304,12 @@ anon denied /lua/rest/v2/get/network/networks.lua
 user allowed /lua/rest/v2/get/network/networks.lua
 anon denied /lua/rest/v2/get/network/networks_stats.lua
 user allowed /lua/rest/v2/get/network/networks_stats.lua
-anon denied /lua/rest/v2/get/notification/alert_types.lua
-user denied /lua/rest/v2/get/notification/alert_types.lua
 anon denied /lua/rest/v2/get/notification/endpoints.lua
 user denied /lua/rest/v2/get/notification/endpoints.lua
 anon denied /lua/rest/v2/get/notification/page_context.lua
 user denied /lua/rest/v2/get/notification/page_context.lua
+anon denied /lua/rest/v2/get/notification/policies.lua
+user denied /lua/rest/v2/get/notification/policies.lua
 anon denied /lua/rest/v2/get/notification/recipients.lua
 user denied /lua/rest/v2/get/notification/recipients.lua
 anon denied /lua/rest/v2/get/ntopng/about.lua
