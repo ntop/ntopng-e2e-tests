@@ -304,7 +304,7 @@ filter_ntopng_log() {
     cd ${NTOPNG_ROOT};
 
     # Filter log
-    cat ${1} | grep -i "ERROR:\|WARNING:\|Direct leak\|    #" > ${2}.stage1
+    cat ${1} | grep -iE "ERROR:|WARNING:|Direct leak|^ +#[0-9]+ " > ${2}.stage1
 
     # Process filtered log
     touch ${2}
