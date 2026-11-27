@@ -92,6 +92,8 @@ anon denied /lua/pro/rest/v2/delete/host/asset.lua
 user denied /lua/pro/rest/v2/delete/host/asset.lua
 anon denied /lua/pro/rest/v2/delete/host/asset_tag.lua
 user denied /lua/pro/rest/v2/delete/host/asset_tag.lua
+anon denied /lua/pro/rest/v2/delete/host/asset_vlan.lua
+user denied /lua/pro/rest/v2/delete/host/asset_vlan.lua
 anon denied /lua/pro/rest/v2/delete/infrastructure/instance.lua
 user denied /lua/pro/rest/v2/delete/infrastructure/instance.lua
 anon denied /lua/pro/rest/v2/delete/interface/map/data.lua
@@ -842,6 +844,8 @@ anon denied /lua/rest/v2/add/syslog/producer.lua
 user denied /lua/rest/v2/add/syslog/producer.lua
 anon denied /lua/rest/v2/add/tables/user_columns_config.lua
 user allowed /lua/rest/v2/add/tables/user_columns_config.lua
+anon denied /lua/rest/v2/add/tag/tag.lua
+user denied /lua/rest/v2/add/tag/tag.lua
 anon denied /lua/rest/v2/bind/host/pool/member.lua
 user denied /lua/rest/v2/bind/host/pool/member.lua
 anon denied /lua/rest/v2/blacklist/reload.lua
@@ -934,6 +938,8 @@ anon denied /lua/rest/v2/edit/notification/policy.lua
 user denied /lua/rest/v2/edit/notification/policy.lua
 anon denied /lua/rest/v2/edit/notification/recipient.lua
 user denied /lua/rest/v2/edit/notification/recipient.lua
+anon denied /lua/rest/v2/edit/ntopng/clickhouse_ts_migration.lua
+user denied /lua/rest/v2/edit/ntopng/clickhouse_ts_migration.lua
 anon denied /lua/rest/v2/edit/ntopng/incr_flows.lua
 user denied /lua/rest/v2/edit/ntopng/incr_flows.lua
 anon denied /lua/rest/v2/edit/ntopng/incr_hosts.lua
@@ -950,6 +956,8 @@ anon denied /lua/rest/v2/exec/host/schedule_active_scan.lua
 user denied /lua/rest/v2/exec/host/schedule_active_scan.lua
 anon denied /lua/rest/v2/exec/llm/mcp.lua
 user denied /lua/rest/v2/exec/llm/mcp.lua
+anon denied /lua/rest/v2/exec/notification/simulate.lua
+user denied /lua/rest/v2/exec/notification/simulate.lua
 anon denied /lua/rest/v2/exec/notification/test_recipient.lua
 user denied /lua/rest/v2/exec/notification/test_recipient.lua
 anon denied /lua/rest/v2/export/active_monitoring/config.lua
@@ -1018,6 +1026,8 @@ anon denied /lua/rest/v2/get/asn/get_as_data.lua
 user allowed /lua/rest/v2/get/asn/get_as_data.lua
 anon denied /lua/rest/v2/get/asn/get_top_asn.lua
 user allowed /lua/rest/v2/get/asn/get_top_asn.lua
+anon denied /lua/rest/v2/get/asn/get_transit_as_data.lua
+user allowed /lua/rest/v2/get/asn/get_transit_as_data.lua
 anon denied /lua/rest/v2/get/asn/page_context.lua
 user allowed /lua/rest/v2/get/asn/page_context.lua
 anon denied /lua/rest/v2/get/asn/pie.lua
@@ -1362,6 +1372,8 @@ anon denied /lua/rest/v2/get/ntopng/test_wazuh_connectivity.lua
 user denied /lua/rest/v2/get/ntopng/test_wazuh_connectivity.lua
 anon denied /lua/rest/v2/get/ntopng/timeseries.lua
 user denied /lua/rest/v2/get/ntopng/timeseries.lua
+anon denied /lua/rest/v2/get/ntopng/toasts.lua
+user allowed /lua/rest/v2/get/ntopng/toasts.lua
 anon denied /lua/rest/v2/get/ntopng/update_dismissed.lua
 user allowed /lua/rest/v2/get/ntopng/update_dismissed.lua
 anon denied /lua/rest/v2/get/ntopng/user.lua
