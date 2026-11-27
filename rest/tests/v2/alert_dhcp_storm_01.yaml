@@ -1,0 +1,18 @@
+input: dhcp_storm.pcap
+
+requires: pro
+
+# DHCP Storm detection (threshold: 2048 DHCP packets in one second) with 2100
+# DHCP DISCOVER per second:
+# - 1st second: all sent by 00:50:56:9A:1B:2C with a random client MAC (chaddr)
+#   each: it is reported as main sender (no IP: DISCOVER from 0.0.0.0)
+# - 2nd second: each sent by a different random source MAC: no main sender
+# A single DISCOVER in the 3rd second closes the 2nd one.
+# NOTE: the storms are queued in redis (NetworkInterface::checkDHCPStorm) and
+# turned into alerts by the minute interface check dhcp_storm, which does not
+# run on pcap interfaces (see PeriodicActivities.cpp): the queue is checked.
+
+ignore:
+
+runtime: |
+  redis-cli -n "${NTOPNG_TEST_REDIS}" lrange ntopng.dhcp.storm.0 0 -1

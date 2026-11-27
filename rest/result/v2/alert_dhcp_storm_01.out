@@ -1,0 +1,2 @@
+{"epoch":1700000000,"num_client_macs":2026,"num_pkts":2100,"num_replies":0,"num_requests":2100,"sender_ip":"","sender_mac":"00:50:56:9A:1B:2C","sender_pkts":2100,"sender_vlan_id":0}
+{"epoch":1700000001,"num_client_macs":2209,"num_pkts":2100,"num_replies":0,"num_requests":2100,"sender_ip":"","sender_mac":"","sender_pkts":0,"sender_vlan_id":0}
